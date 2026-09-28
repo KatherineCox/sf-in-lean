@@ -392,7 +392,7 @@ throughout the STLC chapters:
   `<{ ~(Tm.var "X") t }>` inserts the expression {lean}`Tm.var "X"` as the function
   and the Lean variable `t` as its argument. The same escape is needed to
   insert a capitalized Lean variable, since an unescaped capitalized name is
-  taken literally as an STLC name.
+  assumed to be an STLC name.
 
 This capitalization convention applies to actual variable names in concrete
 STLC examples and inside `<{ ... }>` brackets. In grammars, inference rules,

@@ -1037,6 +1037,11 @@ def subst (x : String) (s : Tm) (t : Tm) : Tm :=
       <{ if [x := s] t₁ then [x := s] t₂ else [x := s] t₃ }>
 ```
 
+:::full
+Note that due to an unfortunate limitation of Lean's notation system, we
+must use constructor names for match statements rather than our custom syntax.
+:::
+
 ::::details "Notation encoding"
 ```lean
 open Lean PrettyPrinter in

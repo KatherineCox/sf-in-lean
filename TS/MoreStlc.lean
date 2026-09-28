@@ -374,9 +374,9 @@ Values of sum type are "destructed" by case analysis:
 ::::
 
 ```display
-    GetNat ⦂ Nat+Bool → Nat
+    GetNat ⦂ Nat + Bool → Nat
     GetNat =
-      λX:Nat+Bool,
+      λX:Nat + Bool,
         case X of
           inl N => N
         | inr B => if B then 1 else 0

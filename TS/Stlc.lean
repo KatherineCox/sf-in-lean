@@ -380,7 +380,7 @@ The notation distinguishes these two uses by naming convention, which we will fo
 throughout the STLC chapters:
 
 - A name beginning with a capital Latin letter is taken literally as a name in
-  the STLC syntax. Thus `X`, `Y`, and `Zed` are STLC term variables. Such a
+  the STLC syntax. Thus `X`, `Y`, and `Z` are STLC term variables. Such a
   name must be a single Lean identifier and cannot contain a dot. In languages
   with named base types, which we will see in the {ref "Sub"}[Sub] chapter,
   names such as `A`, `Int`, and `Bool` name those types.

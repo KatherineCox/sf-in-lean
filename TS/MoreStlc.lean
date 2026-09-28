@@ -1942,14 +1942,6 @@ example :
         "X" (Tm.var "X")
         "Y" (Tm.var "Y") := rfl
 
-/--
-warning: Variable name `XS` is not explicitly referenced.
-
-Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
-  [apply] _XS
-
-Note: This linter can be disabled with `set_option linter.unusedVariables false`
--/
 #guard_msgs in
 example :
     (<{

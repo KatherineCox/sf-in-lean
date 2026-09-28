@@ -531,16 +531,7 @@ end Delab
 
 :::ignore
 ```lean -show
-/--
-info: <{ λ X : Bool . λ X : Bool . X }> : Tm
----
-warning: Variable name `X` is not explicitly referenced.
-
-Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
-  [apply] _X
-
-Note: This linter can be disabled with `set_option linter.unusedVariables false`
--/
+/-- info: <{ λ X : Bool . λ X : Bool . X }> : Tm -/
 #guard_msgs in
 #check <{ λ X : Bool . λ X : Bool . X }>
 
@@ -699,13 +690,6 @@ warning: Variable name `term` is not explicitly referenced.
 
 Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
   [apply] _term
-
-Note: This linter can be disabled with `set_option linter.unusedVariables false`
----
-warning: Variable name `X` is not explicitly referenced.
-
-Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
-  [apply] _X
 
 Note: This linter can be disabled with `set_option linter.unusedVariables false`
 -/
@@ -1107,16 +1091,7 @@ variable (x y : String) (s t t₁ t₂ t₃ : Tm) (τ : Ty)
 #guard_msgs in
 #check <{ [X := X] [X := Y] Z }>
 
-/--
-info: <{ [X := X] (λ Y : Bool . X) }> : Tm
----
-warning: Variable name `Y` is not explicitly referenced.
-
-Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
-  [apply] _Y
-
-Note: This linter can be disabled with `set_option linter.unusedVariables false`
--/
+/-- info: <{ [X := X] (λ Y : Bool . X) }> : Tm -/
 #guard_msgs in
 #check <{ [X := X] (λ Y : Bool . X) }>
 
@@ -1132,16 +1107,7 @@ Note: This linter can be disabled with `set_option linter.unusedVariables false`
 #guard_msgs in
 #check <{ ([X := Z] Y) ([X := Z] X) }>
 
-/--
-info: <{ [X := λ Y : Bool . Z] (X Z) }> : Tm
----
-warning: Variable name `Y` is not explicitly referenced.
-
-Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
-  [apply] _Y
-
-Note: This linter can be disabled with `set_option linter.unusedVariables false`
--/
+/-- info: <{ [X := λ Y : Bool . Z] (X Z) }> : Tm -/
 #guard_msgs in
 #check <{ [X := (λ Y : Bool . Z)] (X Z) }>
 ```
@@ -1835,16 +1801,7 @@ def HasType.unexpand : Unexpander := StlcCommon.Delab.unexpandHasType
   (Tm.var "X")
   Ty.bool
 
-/--
-info: fun Γ t τ => <{ Z ↦ Bool ; Γ ⊢ t ⦂ τ }> : Context → Tm → Ty → Prop
----
-warning: Variable name `Z` is not explicitly referenced.
-
-Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
-  [apply] _Z
-
-Note: This linter can be disabled with `set_option linter.unusedVariables false`
--/
+/-- info: fun Γ t τ => <{ Z ↦ Bool ; Γ ⊢ t ⦂ τ }> : Context → Tm → Ty → Prop -/
 #guard_msgs in
 #check fun (Γ : Context) (t : Tm) (τ : Ty) => <{ Z ↦ Bool ; Γ ⊢ t ⦂ τ }>
 ```

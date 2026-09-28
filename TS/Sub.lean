@@ -1472,16 +1472,7 @@ Checks that the extended grammar parses the way it should.
 #guard_msgs in
 #check <{ fst (X , Y) }>
 
-/--
-info: <{ λ X : Bool . λ Y : ⊤ . if X then true else false }> : Tm
----
-warning: Variable name `Y` is not explicitly referenced.
-
-Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
-  [apply] _Y
-
-Note: This linter can be disabled with `set_option linter.unusedVariables false`
--/
+/-- info: <{ λ X : Bool . λ Y : ⊤ . if X then true else false }> : Tm -/
 #guard_msgs in
 #check <{ λ X : Bool . λ Y : ⊤ . if X then true else false }>
 

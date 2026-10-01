@@ -87,8 +87,7 @@ def Bexp.Equiv (b₁ b₂ : Bexp) : Prop :=
 
 We'll also define a type class `Equiv`, so that these relations (and
 the one for commands, below) can all be written with the notation
-`≃`.  The `@[simp]` lemmas let {tactic}`simp` unfold the notation back to the
-definitions:
+`≃`.
 
 ```lean
 class Equiv (α : Type) where
@@ -1502,8 +1501,10 @@ theorem Bexp.foldConstants_sound : Bexp.TransSound Bexp.foldConstants := by
   induction b with
   | bool b => cases b <;> rfl
   | eq a₁ a₂ =>
-    have h₁ := Aexp.foldConstants_sound a₁ st
-    have h₂ := Aexp.foldConstants_sound a₂ st
+    have h₁ : Aexp.eval st a₁.foldConstants = Aexp.eval st a₁ :=
+      Aexp.foldConstants_sound a₁ st
+    have h₂ : Aexp.eval st a₂.foldConstants = Aexp.eval st a₂ :=
+      Aexp.foldConstants_sound a₂ st
     cases Bexp.foldConstants_comp a₁ a₂ with
     | inl h =>
       -- The only interesting case: both `a₁` and `a₂` fold to constants
@@ -1512,8 +1513,10 @@ theorem Bexp.foldConstants_sound : Bexp.TransSound Bexp.foldConstants := by
     | inr h =>
       simp_all
   | neq a₁ a₂ =>
-    have h₁ := Aexp.foldConstants_sound a₁ st
-    have h₂ := Aexp.foldConstants_sound a₂ st
+    have h₁ : Aexp.eval st a₁.foldConstants = Aexp.eval st a₁ :=
+      Aexp.foldConstants_sound a₁ st
+    have h₂ : Aexp.eval st a₂.foldConstants = Aexp.eval st a₂ :=
+      Aexp.foldConstants_sound a₂ st
     cases Bexp.foldConstants_comp a₁ a₂ with
     | inl h =>
       obtain ⟨n₁, n₂, hn₁, hn₂⟩ := h
@@ -1522,8 +1525,10 @@ theorem Bexp.foldConstants_sound : Bexp.TransSound Bexp.foldConstants := by
       simp_all
   | le a₁ a₂ =>
     solution!
-      have h₁ := Aexp.foldConstants_sound a₁ st
-      have h₂ := Aexp.foldConstants_sound a₂ st
+      have h₁ : Aexp.eval st a₁.foldConstants = Aexp.eval st a₁ :=
+      Aexp.foldConstants_sound a₁ st
+      have h₂ : Aexp.eval st a₂.foldConstants = Aexp.eval st a₂ :=
+        Aexp.foldConstants_sound a₂ st
       cases Bexp.foldConstants_comp a₁ a₂ with
       | inl h =>
         obtain ⟨n₁, n₂, hn₁, hn₂⟩ := h
@@ -1532,8 +1537,10 @@ theorem Bexp.foldConstants_sound : Bexp.TransSound Bexp.foldConstants := by
         simp_all
   | gt a₁ a₂ =>
     solution!
-      have h₁ := Aexp.foldConstants_sound a₁ st
-      have h₂ := Aexp.foldConstants_sound a₂ st
+      have h₁ : Aexp.eval st a₁.foldConstants = Aexp.eval st a₁ :=
+      Aexp.foldConstants_sound a₁ st
+      have h₂ : Aexp.eval st a₂.foldConstants = Aexp.eval st a₂ :=
+        Aexp.foldConstants_sound a₂ st
       cases Bexp.foldConstants_comp a₁ a₂ with
       | inl h =>
         obtain ⟨n₁, n₂, hn₁, hn₂⟩ := h
@@ -2583,12 +2590,9 @@ theorem swap_noninterfering_assignments (l₁ l₂ : Ident) (a₁ a₂ : Aexp)
 ```
 ::::
 :::::
-:::dev "Sati"
-This exercise does not have any associated lean theorem, what should be done?
-I have marked it as manual for now.
-:::
+
 :::::full
-::::exercise (rating := 4) (name := "for_while_equiv") (manual := true) (optional := true)
+::::exercise (rating := 4) (name := "for_while_equiv") (optional := true)
 This exercise extends the optional `add_for_loop` exercise from
 the {ref "Imp"}[Imp] chapter, where you were asked to extend the language
 of commands with C-style `for` loops.  Prove that the command:

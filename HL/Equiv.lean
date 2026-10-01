@@ -32,8 +32,8 @@ Advice for Working on Exercises:
   experimentation or following your nose.  You need to start with
   an idea about why the property is true and how the proof is
   going to go.  The best way to do this is to write out at least a
-  sketch of an informal proof on paper -- one that intuitively
-  convinces you of the truth of the theorem -- before starting to
+  sketch of an informal proof on paper - one that intuitively
+  convinces you of the truth of the theorem - before starting to
   work on the formal one.  Alternately, grab a friend and try to
   convince them that the theorem is true; then try to formalize
   your explanation.
@@ -48,13 +48,13 @@ Advice for Working on Exercises:
 In {ref "Slang"}[an earlier chapter], we investigated the correctness of a very
 simple program transformation: the `optimize0plus` function.  The
 programming language we were considering was the first version of
-the language of arithmetic expressions -- with no variables -- so
+the language of arithmetic expressions - with no variables - so
 in that setting it was very easy to define what it means for a
 program transformation to be correct: it should always yield a
 program that evaluates to the same number as the original.
 
 To talk about the correctness of program transformations for the
-full Imp language -- in particular, assignment -- we need to
+full Imp language - in particular, assignment - we need to
 consider the role of mutable state and develop a more
 sophisticated notion of correctness, which we'll call _behavioral
 equivalence_.
@@ -314,7 +314,7 @@ theorem if_true_simple {c₁ c₂ : Com} : imp {if (true) {c₁} else {c₂}} �
 
 ::::full
 Of course, no programmer would write a conditional whose condition
-is literally `true`.  (At least, no human programmer -- compilers
+is literally `true`.  (At least, no human programmer - compilers
 and macro preprocessors do this sort of thing internally all the
 time!) But they might write one whose condition is _equivalent_ to
 `true`:
@@ -819,7 +819,7 @@ We next consider some fundamental properties of program equivalence.
 
 ::::full
 First, let's verify that the equivalences on {name}`Aexp`s, {name}`Bexp`s, and
-{name}`Com`s really are _equivalences_ -- i.e., that they are reflexive,
+{name}`Com`s really are _equivalences_ - i.e., that they are reflexive,
 symmetric, and transitive. These proofs are all easy. We also register
 the reflexivity lemmas with the `@[refl]` tag to the {tactic}`rfl` to
 prove goals about them and the symmetry lemmas with the `@[symm]` tag
@@ -868,7 +868,7 @@ Less obviously, behavioral equivalence is also a _congruence_.
 That is, the equivalence of two subprograms implies the
 equivalence of the larger programs in which they are embedded:
 
-```
+```display +centered
        a ≃ a'
 ----------------------
 (x := a) ≃ (x := a')
@@ -894,7 +894,7 @@ properties are important in the following section (in the proof of
 us to replace a small part of a large program with an equivalent
 small part and know that the whole large programs are equivalent
 _without_ doing an explicit proof about the parts that didn't
-change -- i.e., the "proof burden" of a small change to a large
+change - i.e., the "proof burden" of a small change to a large
 program is proportional to the size of the change, not the
 program!
 ::::
@@ -917,7 +917,7 @@ theorem Com.congruence_asgn {x : Ident} {a a' : Aexp} (ha : a ≃ a') :
 The congruence property for loops is a little more interesting,
 since it requires induction.
 
-_Theorem_: Equivalence is a congruence for `while` -- that is, if
+_Theorem_: Equivalence is a congruence for `while` - that is, if
 `b` is equivalent to `b'` and `c` is equivalent to `c'`, then
 `while (b) {c}` is equivalent to `while (b') {c'}`.
 
@@ -1216,7 +1216,7 @@ rewriting `0 + X` to just `X`): we are focusing on a single
 optimization for the sake of simplicity.
 
 It is not hard to incorporate other ways of simplifying
-expressions -- the definitions and proofs just get longer.  We'll
+expressions - the definitions and proofs just get longer.  We'll
 consider some in the exercises.
 ::::
 
@@ -1696,7 +1696,7 @@ theorem test_optimize0plus :
 
 Prove that these three functions are sound, as we did for
 `foldConstants`.  Make sure you use the congruence lemmas in the
-proof for {name}`Com.optimize0plus` -- otherwise it will be _long_!
+proof for {name}`Com.optimize0plus` - otherwise it will be _long_!
 As with the proofs for `foldConstants`,
 you may find the {tactic}`fun_induction` tactic helpful here.
 
@@ -1882,7 +1882,7 @@ theorem subst_inequiv : ¬ SubstEquivProperty := by
 :::::full
 ::::exercise (rating := 4) (name := "better_subst_equiv") (optional := true)
 
-The equivalence we had in mind above was not complete nonsense --
+The equivalence we had in mind above was not complete nonsense -
 in fact, it was actually almost right.  To make it correct, we
 just need to exclude the case where the variable `X` occurs in the
 right-hand side of the first assignment statement.
@@ -2019,7 +2019,7 @@ where `X` is an identifier. The effect of executing `havoc X` is
 to assign an _arbitrary_ number to the variable `X`,
 nondeterministically. For example, after executing the program:
 
-```
+```display
   havoc Y;
   Z := Y * 2
 ```
@@ -2555,7 +2555,7 @@ end Himp
 
 :::::full
 ::::exercise (rating := 3) (name := "swap_noninterfering_assignments") (optional := true)
-(Hint: You may or may not -- depending on how you approach it -- need
+(Hint: You may or may not - depending on how you approach it - need
 to use `ext` explicitly for this one.)
 
 ```lean

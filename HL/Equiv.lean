@@ -16,10 +16,6 @@ file := some "Equiv"
 
 ```lean
 open scoped HasEval MyGetElem Com
-abbrev W : Ident := "W"
-abbrev X : Ident := "X"
-abbrev Y : Ident := "Y"
-abbrev Z : Ident := "Z"
 ```
 
 ::::full

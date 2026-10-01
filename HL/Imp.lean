@@ -1611,8 +1611,8 @@ working with the bare definitions. This section explores some examples.
 
 ```lean
 theorem plus2_spec {st : State} {n : Nat} {st' : State}
-    (hx : st["X"] = n) (heval : st =[ plus2 ]=> st') :
-    st'["X"] = n + 2 := by
+    (hx : st[X] = n) (heval : st =[ plus2 ]=> st') :
+    st'[X] = n + 2 := by
   -- Inverting `heval` forces one step of the evaluation relation: since
   -- `plus2` is an assignment, `st'` must be `st` extended at `X`.
   rw [plus2] at heval

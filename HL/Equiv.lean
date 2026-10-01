@@ -1681,9 +1681,6 @@ theorem test_optimize0plus :
     rfl
 ```
 
-:::gradeTheorem 1 test_optimize0plus
-:::
-
 Prove that these three functions are sound, as we did for
 `foldConstants`.  Make sure you use the congruence lemmas in the
 proof for {name}`Com.optimize0plus` - otherwise it will be _long_!
@@ -1718,15 +1715,6 @@ theorem Com.optimize0plus_sound : Com.TransSound Com.optimize0plus := by
         apply Bexp.optimize0plus_sound
 ```
 
-:::gradeTheorem "0.5" Aexp.optimize0plus_sound
-:::
-
-:::gradeTheorem "0.5" Bexp.optimize0plus_sound
-:::
-
-:::gradeTheorem 2 Com.optimize0plus_sound
-:::
-
 Finally, let's define a compound optimizer on commands that first
 folds constants (using {name}`Com.foldConstants`) and then eliminates
 `0 + n` terms (using {name}`Com.optimize0plus`).
@@ -1746,8 +1734,6 @@ theorem optimizer_sound : Com.TransSound optimizer := by
     · apply Com.foldConstants_sound
 ```
 
-:::gradeTheorem 2 optimizer_sound
-:::
 ::::
 :::::
 
@@ -2271,8 +2257,6 @@ theorem ptwice_equiv_pcopy :
           contradiction
 ```
 
-:::gradeTheorem 6 ptwice_equiv_pcopy
-:::
 ::::
 :::::
 

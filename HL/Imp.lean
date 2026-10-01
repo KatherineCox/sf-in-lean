@@ -909,14 +909,14 @@ def subtract_slowly_body : Com := imp {
 
 def subtract_slowly : Com := imp {
   while (X ≠ 0) {
-    ~subtract_slowly_body
+    subtract_slowly_body
   }
 }
 
 def subtract_3_from_5_slowly : Com := imp {
   X := 3;
   Z := 5;
-  ~subtract_slowly
+  subtract_slowly
 }
 ```
 
@@ -938,7 +938,7 @@ def exp_body : Com := imp {
 }
 def pexp : Com := imp {
   while (Y ≠ 0) {
-    ~exp_body
+    exp_body
   }
 }
 /- (Note that `pexp` should be run in a state where `Z` is `1`.) -/
@@ -1728,7 +1728,7 @@ prove a theorem `no_whiles_terminating` that says this.  Use either
 
 ```lean
 theorem no_whiles_terminating {c : Com} (st : State) (h : Com.NoWhilesR c) :
-    ∃ st', st =[ ~c ]=> st' := by
+    ∃ st', st =[ c ]=> st' := by
   solution!
     induction h generalizing st with
     | skip => exists st; constructor
@@ -1796,14 +1796,14 @@ def factBody : Com := imp {
 
 def factLoop : Com := imp {
   while (Z ≠ 0) {
-    ~factBody
+    factBody
   }
 }
 
 def factCom : Com := imp {
   Z := X;
   Y := 1;
-  ~factLoop
+  factLoop
 }
 ```
 
@@ -1839,7 +1839,7 @@ Needs an informal proof!
 ```lean
 theorem factBody_preserves_invariant {st st' : State} {n : Nat}
     (hinv : FactInvariant n st) (hz : st[Z] ≠ 0)
-    (heval : st =[ ~factBody ]=> st') :
+    (heval : st =[ factBody ]=> st') :
     FactInvariant n st' := by
   rw [FactInvariant] at hinv ⊢
   rw [factBody] at heval
@@ -1867,7 +1867,7 @@ invariant:
 
 ```lean
 theorem factLoop_preserves_invariant {st st' : State} {n : Nat}
-    (hinv : FactInvariant n st) (heval : st =[ ~factLoop ]=> st') :
+    (hinv : FactInvariant n st) (heval : st =[ factLoop ]=> st') :
     FactInvariant n st' := by
   generalize heq : factLoop = c at heval
   induction heval with
@@ -1892,9 +1892,9 @@ condition guarding the loop must be false at the end:
 
 ```lean
 theorem guard_false_after_loop {b : Bexp} {c : Com} {st st' : State}
-    (heval : st =[ while (~b) {~c} ]=> st') :
+    (heval : st =[ while (b) {c} ]=> st') :
     b.eval st' = false := by
-  generalize heq : (imp { while (~b) {~c} }) = cmd at heval
+  generalize heq : (imp { while (b) {c} }) = cmd at heval
   induction heval with
   | whileFalse hb =>
     injection heq with hb' _
@@ -1908,7 +1908,7 @@ Finally, we can patch it all together...
 
 ```lean
 theorem factCom_correct {st st' : State} {n : Nat}
-    (hx : st[X] = n) (heval : st =[ ~factCom ]=> st') :
+    (hx : st[X] = n) (heval : st =[ factCom ]=> st') :
     st'[Y] = realFact n := by
   rw [factCom] at heval
   inversion heval with
@@ -1954,7 +1954,7 @@ def SsInvariant (n z : Nat) (st : State) : Prop :=
 -- SOLUTION
 theorem ss_body_preserves_invariant {st st' : State} {n z : Nat}
     (hinv : SsInvariant n z st) (hx : st[X] ≠ 0)
-    (heval : st =[ ~subtract_slowly_body ]=> st') :
+    (heval : st =[ subtract_slowly_body ]=> st') :
     SsInvariant n z st' := by
   rw [SsInvariant] at hinv ⊢
   rw [subtract_slowly_body] at heval
@@ -1971,7 +1971,7 @@ theorem ss_body_preserves_invariant {st st' : State} {n z : Nat}
         lia -- Interestingly, this is all we need here!
 
 theorem ss_preserves_invariant {st st' : State} {n z : Nat}
-    (hinv : SsInvariant n z st) (heval : st =[ ~subtract_slowly ]=> st') :
+    (hinv : SsInvariant n z st) (heval : st =[ subtract_slowly ]=> st') :
     SsInvariant n z st' := by
   generalize heq : subtract_slowly = c at heval
   induction heval with
@@ -1987,7 +1987,7 @@ theorem ss_preserves_invariant {st st' : State} {n z : Nat}
   | skip | asgn | seq | ifTrue | ifFalse => simp [subtract_slowly] at heq
 
 theorem ss_correct {st st' : State} {n z : Nat}
-    (hx : st[X] = n) (hz : st[Z] = z) (heval : st =[ ~subtract_slowly ]=> st') :
+    (hx : st[X] = n) (hz : st[Z] = z) (heval : st =[ subtract_slowly ]=> st') :
     st'[Z] = z - n := by
   have hinv : SsInvariant n z st := by
     simp [SsInvariant, hx, hz]
@@ -2514,8 +2514,8 @@ theorem while_continue {b : Bexp} {c : Com} {st st' : State} {s : Result}
 ```lean
 theorem while_stops_on_break {b : Bexp} {c : Com} {st st' : State}
     (h₁ : b.eval st = true)
-    (h₂ : st =[ imp { ~c } ]=> st' // sBreak) :
-    st =[ imp { while (~b) {~c} } ]=> st' // sContinue := by
+    (h₂ : st =[ imp { c } ]=> st' // sBreak) :
+    st =[ imp { while (b) {c} } ]=> st' // sContinue := by
   solution!
     exact .whileBreak h₁ h₂
 ```
@@ -2792,34 +2792,34 @@ inductive Com.EvalR : Com → State → State → Status → Prop where
   -- SOLUTION
   | throw {st : State} : EvalR (imp {throw}) st st sThrow
   | tryNormal {c₁ c₂ : Com} {st st' : State} (h : EvalR c₁ st st' sNormal) :
-      EvalR (imp {try {~c₁} catch {~c₂}}) st st' sNormal
+      EvalR (imp {try {c₁} catch {c₂}}) st st' sNormal
   | tryThrow {c₁ c₂ : Com} {st st' st'' : State} {s : Status}
       (h₁ : EvalR c₁ st st' sThrow)
       (h₂ : EvalR c₂ st' st'' s) :
-      EvalR (imp {try {~c₁} catch {~c₂}}) st st'' s
+      EvalR (imp {try {c₁} catch {c₂}}) st st'' s
   | asgn {st : State} {a : Aexp} {n : Nat} {x : Ident} (h : a.eval st = n) :
-      EvalR (imp {x := ~a}) st (x →ₜ n ; st) sNormal
+      EvalR (imp {x := a}) st (x →ₜ n ; st) sNormal
   | seqNormal {c₁ c₂ : Com} {st st' st'' : State} {s : Status}
       (h₁ : EvalR c₁ st st' sNormal)
       (h₂ : EvalR c₂ st' st'' s) :
-      EvalR (imp {~c₁; ~c₂}) st st'' s
+      EvalR (imp {c₁; c₂}) st st'' s
   | seqThrow {c₁ c₂ : Com} {st st' : State} (h : EvalR c₁ st st' sThrow) :
-      EvalR (imp {~c₁; ~c₂}) st st' sThrow
+      EvalR (imp {c₁; c₂}) st st' sThrow
   | ifTrue {st st' : State} {b : Bexp} {c₁ c₂ : Com} {s : Status} (hb : b.eval st = true)
       (hc : EvalR c₁ st st' s) :
-      EvalR (imp {if (~b) {~c₁} else {~c₂}}) st st' s
+      EvalR (imp {if (b) {c₁} else {c₂}}) st st' s
   | ifFalse {st st' : State} {b : Bexp} {c₁ c₂ : Com} {s : Status} (hb : b.eval st = false)
       (hc : EvalR c₂ st st' s) :
-      EvalR (imp {if (~b) {~c₁} else {~c₂}}) st st' s
+      EvalR (imp {if (b) {c₁} else {c₂}}) st st' s
   | whileFalse {b : Bexp} {st : State} {c : Com} (hb : b.eval st = false) :
-      EvalR (imp {while (~b) {~c}}) st st sNormal
+      EvalR (imp {while (b) {c}}) st st sNormal
   | whileNormal {st st' st'' : State} {b : Bexp} {c : Com} {s : Status} (hb : b.eval st = true)
       (hc : EvalR c st st' sNormal)
-      (hloop : EvalR (imp {while (~b) {~c}}) st' st'' s) :
-      EvalR (imp {while (~b) {~c}}) st st'' s
+      (hloop : EvalR (imp {while (b) {c}}) st' st'' s) :
+      EvalR (imp {while (b) {c}}) st st'' s
   | whileThrow {st st' : State} {b : Bexp} {c : Com} (hb : b.eval st = true)
       (hc : EvalR c st st' sThrow) :
-      EvalR (imp {while (~b) {~c}}) st st' sThrow
+      EvalR (imp {while (b) {c}}) st st' sThrow
   -- END SOLUTION
 
 scoped notation:40 st0:41 " =[ " c " ]=> " st1:41 " // " s:41 => Com.EvalR c st0 st1 s
@@ -2844,8 +2844,8 @@ example :
 -- LATER: see comments in the break exercise
 
 theorem ceval_deterministic_throw {c : Com} {st st₁ st₂ : State} {s₁ s₂ : Status}
-    (h₁ : st =[ imp { ~c } ]=> st₁ // s₁)
-    (h₂ : st =[ imp { ~c } ]=> st₂ // s₂) :
+    (h₁ : st =[ imp { c } ]=> st₁ // s₁)
+    (h₂ : st =[ imp { c } ]=> st₂ // s₂) :
     st₁ = st₂ ∧ s₁ = s₂ := by
   solution!
     induction h₁ generalizing st₂ s₂ with (try (inversion h₂ <;> lia))

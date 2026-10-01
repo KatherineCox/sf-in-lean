@@ -460,7 +460,7 @@ theorem while_false {b : Bexp} {c : Com} (hb : b ≃ bexp {false}) :
 ```
 
 :::::full
-::::exercise (rating := 2) (name := "while_false_informal") (level := Advanced) (manual := true) (optional := true)
+::::exercise (rating := 2) (name := "while_false_informal") (level := Advanced) (optional := true)
 Write an informal proof of `while_false`.
 
 :::solution
@@ -553,7 +553,7 @@ theorem while_true_nonterm {b : Bexp} {c : Com} {st st' : State} (hb : b ≃ bex
 ```
 
 :::::full
-::::exercise (rating := 2) (name := "while_true_nonterm_informal") (manual := true) (optional := true)
+::::exercise (rating := 2) (name := "while_true_nonterm_informal") (optional := true)
 Explain what the lemma `while_true_nonterm` means in English.
 
 :::solution
@@ -715,7 +715,7 @@ theorem assign_equiv {X : Ident} {a : Aexp} (ha : aexp { X } ≃ a) :
 :::::
 
 :::::full
-::::exercise (rating := 2) (name := "equiv_classes") (manual := true) (optional := true)
+::::exercise (rating := 2) (name := "equiv_classes") (optional := true)
 Given the following programs, group together those that are
 equivalent in Imp. Your answer should be given as a list of lists,
 where each sub-list represents a group of equivalent programs. For
@@ -801,11 +801,6 @@ def equiv_classes : List (List Com) := solution!(
 )
 ```
 
-:::grade
-```
-GRADE_MANUAL 2: equiv_classes
-```
-:::
 ::::
 :::::
 
@@ -1109,11 +1104,6 @@ Some less contrived examples:
   to `X`).
 :::
 
-:::grade
-```
-GRADE_MANUAL 3: not_congr
-```
-:::
 :::::
 ::::::
 
@@ -1388,7 +1378,7 @@ theorem Aexp.foldConstants_sound' : TransSound Aexp.foldConstants := by
 ```
 
 :::::full
-::::exercise (rating := 3) (manual := true) (optional := true) (name := "Bexp.fold_eq_informal")
+::::exercise (rating := 3) (optional := true) (name := "Bexp.fold_eq_informal")
 Here is an informal proof of the `eq` case of the soundness
 argument for boolean expression constant folding.  Read it
 carefully and compare it to the formal proof that follows.  Then
@@ -1625,7 +1615,7 @@ theorem Com.foldConstants_sound : Com.TransSound Com.foldConstants := by
 ::::exercise (rating := 4) (name := "optimize0plus_var") (optional := true)
 Recall the definition `optimize0plus` from the {ref "Slang"}[Slang] chapter:
 
-```
+```display
 def optimize0plus (a : Aexp) : Aexp :=
   match a with
   | num   n          => num n

@@ -306,13 +306,13 @@ theorem nand_test4 : nand MyBool.true  MyBool.true  = MyBool.false := by rfl
 --  `MyBool.true` when all of its inputs are `MyBool.true`, and
 --  `MyBool.false` otherwise.
 
-def and3 (b1 : MyBool) (b2 : MyBool) (b3 : MyBool) : MyBool
-  := sorry
+def and3 (b1 : MyBool) (b2 : MyBool) (b3 : MyBool) : MyBool :=
+  and (and b1 b2) b3
 
-theorem and3_test1 : and3 MyBool.true  MyBool.true  MyBool.true  = MyBool.true  := sorry
-theorem and3_test2 : and3 MyBool.false MyBool.true  MyBool.true  = MyBool.false := sorry
-theorem and3_test3 : and3 MyBool.true  MyBool.false MyBool.true  = MyBool.false := sorry
-theorem and3_test4 : and3 MyBool.true  MyBool.true  MyBool.false = MyBool.false := sorry
+theorem and3_test1 : and3 MyBool.true  MyBool.true  MyBool.true  = MyBool.true  := by rfl
+theorem and3_test2 : and3 MyBool.false MyBool.true  MyBool.true  = MyBool.false := by rfl
+theorem and3_test3 : and3 MyBool.true  MyBool.false MyBool.true  = MyBool.false := by rfl
+theorem and3_test4 : and3 MyBool.true  MyBool.true  MyBool.false = MyBool.false := by rfl
 
 --  ## A First Taste of Proofs
 

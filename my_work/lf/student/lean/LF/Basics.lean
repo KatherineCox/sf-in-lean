@@ -290,13 +290,15 @@ example : (!MyBool.false) = MyBool.true := by rfl
 --  are `MyBool.false`. Make sure that the `example` assertions below can
 --  be verified by Lean.
 
-def nand (b1 : MyBool) (b2 : MyBool) : MyBool
-  := sorry
+def nand (b1 : MyBool) (b2 : MyBool) : MyBool :=
+  match b1 with
+  | MyBool.true => not b2
+  | MyBool.false => MyBool.true
 
-theorem nand_test1 : nand MyBool.true  MyBool.false = MyBool.true  := sorry
-theorem nand_test2 : nand MyBool.false MyBool.false = MyBool.true  := sorry
-theorem nand_test3 : nand MyBool.false MyBool.true  = MyBool.true  := sorry
-theorem nand_test4 : nand MyBool.true  MyBool.true  = MyBool.false := sorry
+theorem nand_test1 : nand MyBool.true  MyBool.false = MyBool.true  := by rfl
+theorem nand_test2 : nand MyBool.false MyBool.false = MyBool.true  := by rfl
+theorem nand_test3 : nand MyBool.false MyBool.true  = MyBool.true  := by rfl
+theorem nand_test4 : nand MyBool.true  MyBool.true  = MyBool.false := by rfl
 
 --  ### Exercise (1 star): and3 ⭐
 

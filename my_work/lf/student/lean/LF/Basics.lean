@@ -448,7 +448,8 @@ theorem true_and' : ∀ (b : MyBool), (MyBool.true && b) = b := by
 --  proof.
 
 theorem false_or : ∀ (b : MyBool), (MyBool.false || b) = b := by
-  sorry
+  intro b
+  rfl
 
 --  (End of exercise)
 

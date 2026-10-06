@@ -628,11 +628,14 @@ def isRed' (c : Color) : Bool :=
 --  possible day of the week, or you could try to come up with a shorter
 --  solution...
 
-def is_weekend (d : Day) : Bool
-  := sorry
+def is_weekend (d : Day) : Bool :=
+  match d with
+  | Day.saturday => Bool.true
+  | Day.sunday => Bool.true
+  | _ => Bool.false
 
-theorem is_weekend_test1 : is_weekend Day.sunday = true := sorry
-theorem is_weekend_test2 : is_weekend Day.friday = false := sorry
+theorem is_weekend_test1 : is_weekend Day.sunday = true := by rfl
+theorem is_weekend_test2 : is_weekend Day.friday = false := by rfl
 
 --  ### Exercise (1 star): isInversion ⭐
 

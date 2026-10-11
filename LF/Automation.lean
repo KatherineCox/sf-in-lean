@@ -1098,7 +1098,7 @@ exactly the shape expected by {name}`mStarApp`.)
 The following lemmas show that the intuition about matching given
 at the beginning of the section can be obtained from the formal
 inductive definition.
-
+:::::
 :::::full
 ::::exercise (rating := 1) (name := "EmptySet_is_empty")
 
@@ -1189,7 +1189,7 @@ theorem empty_equiv {α : Type} (s : List α) :
 Since the definition of {name}`ExpMatch` has a recursive
 structure, we might expect that proofs involving regular
 expressions will often require induction on evidence.
-:::::
+
 
 ::::terse
 Naturally, proofs about {name}`ExpMatch` often require induction (on evidence!).
@@ -1249,7 +1249,6 @@ theorem in_re_match {α : Type} {s : List α} {re : RegExp α} {x : α}
       | inl hin₁ => exact ih₁ hin₁
       | inr hin₂ => exact ih₂ hin₂
 ```
-::::full
 
 :::::full
 ::::exercise (rating := 1) (name := "reNotEmpty") (manual := true)
@@ -1322,7 +1321,6 @@ theorem reNotEmpty_correct {α : Type} (re : RegExp α) :
 ```
 GRADE_MANUAL 3: reNotEmpty
 ```
-:::
 ::::
 
 :::::
@@ -1546,7 +1544,7 @@ to prove the main lemma.
 
 Your job is to complete the proofs of the helper lemmas; the main
 lemma relies on these.
-
+:::::
 :::::full
 ::::exercise (rating := 2) (name := "weak_pumping_char")
 ```lean
@@ -1717,7 +1715,7 @@ theorem weak_pumping_star_zero {α : Type} (re : RegExp α)
 :::gradeTheorem 1 weak_pumping_star_zero
 :::
 ::::
-:::::
+
 
 ::::exercise (rating := 5) (name := "weak_pumping_star_app")
 ```lean
@@ -1789,7 +1787,7 @@ theorem weak_pumping_star_app {α : Type} (s₁ s₂ : List α) (re : RegExp α)
           apply mStarApp <;> assumption
 ```
 ::::
-:::::
+
 
 :::::full
 ::::exercise (rating := 3) (name := "weak_pumping")

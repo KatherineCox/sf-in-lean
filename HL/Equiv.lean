@@ -2624,14 +2624,11 @@ theorem swap_noninterfering_assignments (l₁ l₂ : Ident) (a₁ a₂ : Aexp)
   imp { l₁ := a₁; l₂ := a₂ } ≃ imp { l₂ := a₂; l₁ := a₁ } := by
     solution!
 
-      have hs : ∀ {l₁ l₂ : Ident} {a₁ a₂ : Aexp},
-          l₁ ≠ l₂ →
-          VarNotUsedInAexp l₁ a₂ →
-          VarNotUsedInAexp l₂ a₁ →
-          ∀ {st st' : State},
-            (st =[ l₁ := a₁; l₂ := a₂ ]=> st') →
-            st =[ l₂ := a₂; l₁ := a₁ ]=> st' := by
-        intro l₁ l₂ a₁ a₂ hneq hne₁ hne₂ st st' h
+      have hs {l₁ l₂ : Ident} {a₁ a₂ : Aexp} (hneq : l₁ ≠ l₂)
+          (hne₁ : VarNotUsedInAexp l₁ a₂)
+          (hne₂ : VarNotUsedInAexp l₂ a₁) {st st' : State}
+          (h : st =[ l₁ := a₁; l₂ := a₂ ]=> st') :
+          st =[ l₂ := a₂; l₁ := a₁ ]=> st' := by
         inversion h with
         | seq h₁ h₂ =>
           inversion h₂; inversion h₁; subst_vars

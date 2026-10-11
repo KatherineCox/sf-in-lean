@@ -1251,7 +1251,7 @@ theorem in_re_match {α : Type} {s : List α} {re : RegExp α} {x : α}
 ```
 
 :::::full
-::::exercise (rating := 1) (name := "reNotEmpty") (manual := true)
+::::exercise (rating := 3) (name := "reNotEmpty") (manual := true)
 Write a recursive function `reNotEmpty` that tests whether a
 regular expression matches some string.
 
@@ -1275,52 +1275,47 @@ def reNotEmpty {α : Type} (re : RegExp α) : Bool :=
   | Star _ => true)
 
 theorem reNotEmpty_correct {α : Type} (re : RegExp α) :
+  (∃ s, s =~ re) ↔ reNotEmpty re = true := by
   solution!
-    (∃ s, s =~ re) ↔ reNotEmpty re = true := by
-  induction re with (simp only [reNotEmpty])
-  | EmptySet =>
-    simp only [Bool.false_eq_true, iff_false, not_exists]
-    intro s h; inversion h
-  | EmptyStr =>
-    simp only [iff_true]; exists []; constructor
-  | Char x =>
-    simp only [iff_true]; exists [x]; constructor
-  | App re₁ re₂ ih₁ ih₂ =>
-    simp only [Bool.and_eq_true]
-    constructor
-    · intro h
-      obtain ⟨s, h⟩ := h
-      inversion h with
-      | mApp s₁ s₂ h₁ h₂ =>
-        constructor
-        case left  => apply ih₁.mp; exists s₁
-        case right => apply ih₂.mp; exists s₂
-    · intro h
-      obtain ⟨h₁, h₂⟩ := h
-      obtain ⟨s₁, hs₁⟩ := ih₁.mpr h₁
-      obtain ⟨s₂, hs₂⟩ := ih₂.mpr h₂
-      exists (s₁ ++ s₂); constructor <;> assumption
-  | Union re₁ re₂ ih₁ ih₂ =>
-    simp only [Bool.or_eq_true]
-    constructor
-    · intro h
-      obtain ⟨s, h⟩ := h
-      inversion h with
-      | mUnionL h₁ => left; apply ih₁.mp; exists s
-      | mUnionR h₂ => right; apply ih₂.mp; exists s
-    · intro h
-      obtain h₁ | h₂ := h
-      case inl => obtain ⟨s, hs⟩ := ih₁.mpr h₁; exists s; constructor; assumption
-      case inr => obtain ⟨s, hs⟩ := ih₂.mpr h₂; exists s; apply mUnionR; assumption
-  | Star re _ =>
-    simp only [iff_true]; exists []; constructor
+    (induction re with (simp only [reNotEmpty])
+    | EmptySet =>
+      simp only [Bool.false_eq_true, iff_false, not_exists]
+      intro s h; inversion h
+    | EmptyStr =>
+      simp only [iff_true]; exists []; constructor
+    | Char x =>
+      simp only [iff_true]; exists [x]; constructor
+    | App re₁ re₂ ih₁ ih₂ =>
+      simp only [Bool.and_eq_true]
+      constructor
+      · intro h
+        obtain ⟨s, h⟩ := h
+        inversion h with
+        | mApp s₁ s₂ h₁ h₂ =>
+          constructor
+          case left  => apply ih₁.mp; exists s₁
+          case right => apply ih₂.mp; exists s₂
+      · intro h
+        obtain ⟨h₁, h₂⟩ := h
+        obtain ⟨s₁, hs₁⟩ := ih₁.mpr h₁
+        obtain ⟨s₂, hs₂⟩ := ih₂.mpr h₂
+        exists (s₁ ++ s₂); constructor <;> assumption
+    | Union re₁ re₂ ih₁ ih₂ =>
+      simp only [Bool.or_eq_true]
+      constructor
+      · intro h
+        obtain ⟨s, h⟩ := h
+        inversion h with
+        | mUnionL h₁ => left; apply ih₁.mp; exists s
+        | mUnionR h₂ => right; apply ih₂.mp; exists s
+      · intro h
+        obtain h₁ | h₂ := h
+        case inl => obtain ⟨s, hs⟩ := ih₁.mpr h₁; exists s; constructor; assumption
+        case inr => obtain ⟨s, hs⟩ := ih₂.mpr h₂; exists s; apply mUnionR; assumption
+    | Star re _ =>
+      simp only [iff_true]; exists []; constructor)
 ```
 
-
-::grade
-```
-GRADE_MANUAL 3: reNotEmpty
-```
 ::::
 
 :::::
@@ -1466,7 +1461,7 @@ To get started, we need to define "sufficiently long."  Since we
 are working in a constructive logic, we actually need to be able
 to _calculate_, for each regular expression `re`, a minimum length
 for strings `s` to guarantee "pumpability."
-
+:::::
 ```lean
 def pumpingConstant {α : Type} (re : RegExp α) : Nat :=
   match re with
@@ -1544,7 +1539,7 @@ to prove the main lemma.
 
 Your job is to complete the proofs of the helper lemmas; the main
 lemma relies on these.
-:::::
+
 :::::full
 ::::exercise (rating := 2) (name := "weak_pumping_char")
 ```lean

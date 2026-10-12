@@ -18,8 +18,17 @@ file := some "Equiv"
 open scoped HasEval MyGetElem Com
 ```
 
+This chapter develops a notion of _behavioral equivalence_ for {ref "Imp"}[Imp]'s
+expressions and commands.
+
 ::::full
-Advice for Working on Exercises:
+To illustrate it use, we verify
+that program transformations such as constant folding preserve
+behavior. Along the way we also see techniques for proving two
+programs are _not_ equivalent, and close with an extended look at
+what equivalence means once Imp is made nondeterministic.
+
+*Advice for Working on Exercises:*
 
 - Most of the Lean proofs we ask you to do in this chapter are
   similar to proofs that we've provided.  Before starting to work
@@ -45,7 +54,7 @@ Advice for Working on Exercises:
 # Behavioral Equivalence
 
 ::::full
-In {ref "Slang"}[an earlier chapter], we investigated the correctness of a very
+In the {ref "Slang"}[Slang chapter], we investigated the correctness of a very
 simple program transformation: the `optimize0plus` function.  The
 programming language we were considering was the first version of
 the language of arithmetic expressions - with no variables - so
@@ -74,18 +83,7 @@ For `Aexp`s and `Bexp`s with variables, the definition we want is
 clear: two `Aexp`s or `Bexp`s are "behaviorally equivalent" if
 they evaluate to the same result in every state.
 ::::
-
-```lean
-def Aexp.Equiv (a₁ a₂ : Aexp) : Prop :=
-  ∀ (st : State),
-    a₁.eval st = a₂.eval st
-
-def Bexp.Equiv (b₁ b₂ : Bexp) : Prop :=
-  ∀ (st : State),
-    b₁.eval st = b₂.eval st
-```
-
-We'll also define a type class `Equiv`, so that these relations (and
+We'll define a type class `Equiv`, so that these relations (and
 the one for commands, below) can all be written with the notation
 `≃`.
 
@@ -96,21 +94,17 @@ class Equiv (α : Type) where
 infix:70 " ≃ " => Equiv.equiv -- you can type `≃` as \simeq
 
 instance : Equiv Aexp where
-  equiv := Aexp.Equiv
+  equiv := fun a₁ a₂ =>
+    ∀ (st : State), Aexp.eval st a₁ = Aexp.eval st a₂
 
 instance : Equiv Bexp where
-  equiv := Bexp.Equiv
+  equiv := fun b₁ b₂ =>
+    ∀ (st : State), Bexp.eval st b₁ = Bexp.eval st b₂
 
-@[simp]
-theorem Aexp.equiv_notation {a₁ a₂ : Aexp} :
-    a₁.Equiv a₂ ↔ a₁ ≃ a₂ := by rfl
 @[simp]
 theorem Aexp.equiv_def {a₁ a₂ : Aexp} :
     a₁ ≃ a₂ ↔ ∀ (st : State), a₁.eval st = a₂.eval st := by rfl
 
-@[simp]
-theorem Bexp.equiv_notation {b₁ b₂ : Bexp} :
-    b₁.Equiv b₂ ↔ b₁ ≃ b₂ := by rfl
 @[simp]
 theorem Bexp.equiv_def {b₁ b₂ : Bexp} :
     b₁ ≃ b₂ ↔ ∀ (st : State), b₁.eval st = b₂.eval st := by rfl
@@ -138,22 +132,18 @@ starting states, don't terminate in any final state at all!
 
 What we need instead is this: two commands are behaviorally
 equivalent if, for any given starting state, they either (1) both
-diverge or else (2) both terminate in the same final state.  A
-compact way to express this is "if the first one terminates in a
-particular state then so does the second, and vice versa."
+_diverge_ (fail to terminate in any final state) or else (2) both
+terminate in the same final state.  A compact way to express this is
+"if the first one terminates in a particular state then so does the
+second, and vice versa."
 ::::
 
 ```lean
-def Com.Equiv (c₁ c₂ : Com) : Prop :=
-    ∀ {st st' : State},
-      (st =[ c₁ ]=> st') ↔ (st =[ c₂ ]=> st')
-
 instance : Equiv Com where
-  equiv := Com.Equiv
+  equiv := fun c₁ c₂ =>
+    ∀ {st st' : State},
+    (st =[ c₁ ]=> st') ↔ st =[ c₂ ]=> st'
 
-@[simp]
-theorem Com.equiv_notation {c₁ c₂ : Com} :
-    c₁.Equiv c₂ ↔ c₁ ≃ c₂ := by rfl
 @[simp]
 theorem Com.equiv_def {c₁ c₂ : Com} : c₁ ≃ c₂ ↔
     ∀ {st st' : State},
@@ -821,10 +811,13 @@ We next consider some fundamental properties of program equivalence.
 ::::full
 First, let's verify that the equivalences on {name}`Aexp`s, {name}`Bexp`s, and
 {name}`Com`s really are _equivalences_ - i.e., that they are reflexive,
-symmetric, and transitive. These proofs are all easy. We also register
-the reflexivity lemmas with the `@[refl]` tag to the {tactic}`rfl` to
-prove goals about them and the symmetry lemmas with the `@[symm]` tag
-to swap sides of goals about equivalence using the {tactic}`symm`.
+symmetric, and transitive. These proofs are all easy.
+
+We also tag each reflexivity lemma with the `@[refl]` attribute: this lets
+the {tactic}`rfl` tactic close a goal like `c ≃ c` directly, just as it
+closes `c = c`. Likewise, we tag each symmetry lemma with the `@[symm]`
+attribute, which lets the {tactic}`symm` tactic swap the two sides of a goal
+or hypothesis stated with `≃`, exactly as it does for `=`.
 ::::
 
 ```lean
@@ -861,7 +854,7 @@ Lean has a standard library definition for relations that are equivalences, unsu
 one need only supply proofs of the three properties above:
 
 ```lean
-theorem Com.equiv_equivalence : Equivalence Com.Equiv where
+theorem Com.equiv_equivalence : Equivalence (Equiv.equiv (α := Com)) where
   refl := @Com.equiv_refl
   symm := Com.equiv_symm
   trans := Com.equiv_trans
@@ -1092,7 +1085,7 @@ example :
 
 ::::::full
 :::::exercise (rating := 3) (name := "not_congr") (level := Advanced) (manual := true)
-We've shown that the {name}`Com.Equiv` relation is both an equivalence and
+We've shown that the {name}`Equiv` relation is both an equivalence and
 a congruence on commands.  Can you think of a relation on commands
 that is an equivalence but _not_ a congruence?  Write down the
 relation (formally), together with an informal sketch of a proof
@@ -1131,30 +1124,18 @@ optimizations such as constant folding are canonical examples,
 but there are many others.
 
 A program transformation is _sound_ if it preserves the
-behavior of the original program.
+behavior of the original program.  Since {name}`Aexp`, {name}`Bexp`, and
+{name}`Com` all have `≃`-equivalence via the `Equiv` class, we can state
+soundness once, generically, instead of writing it out three times.
 ::::
 
 ```lean
-def Aexp.TransSound (trans : Aexp → Aexp) : Prop :=
-  ∀ (a : Aexp), (trans a) ≃ a
+def TransSound {T : Type} [Equiv T] (trans : T → T) : Prop :=
+  ∀ (t : T), (trans t) ≃ t
 
 @[simp]
-theorem Aexp.transSound_def {trans : Aexp → Aexp} :
-    TransSound trans ↔ ∀ (a : Aexp), (trans a) ≃ a := by rfl
-
-def Bexp.TransSound (trans : Bexp → Bexp) : Prop :=
-  ∀ (b : Bexp), (trans b) ≃ b
-
-@[simp]
-theorem Bexp.transSound_def {trans : Bexp → Bexp} :
-    TransSound trans ↔ ∀ (b : Bexp), (trans b) ≃ b := by rfl
-
-def Com.TransSound (trans : Com → Com) : Prop :=
-  ∀ (c : Com), (trans c) ≃ c
-
-@[simp]
-theorem Com.transSound_def {trans : Com → Com} :
-    TransSound trans ↔ ∀ (c : Com), (trans c) ≃ c := by rfl
+theorem transSound_def {T : Type} [Equiv T] {trans : T → T} :
+    TransSound trans ↔ ∀ (t : T), (trans t) ≃ t := by rfl
 ```
 
 ## The Constant-Folding Transformation
@@ -1531,7 +1512,7 @@ completing the case.
 
 ```lean
 theorem Bexp.foldConstants_sound :
-    Bexp.TransSound Bexp.foldConstants := by
+    TransSound Bexp.foldConstants := by
   intro b st
   induction b with
   | bool b => cases b <;> rfl
@@ -1607,7 +1588,7 @@ Complete the `while` case of the following proof.
 
 ```lean
 theorem Com.foldConstants_sound :
-    Com.TransSound Com.foldConstants := by
+    TransSound Com.foldConstants := by
   intro c
   induction c with
   | skip =>
@@ -1751,13 +1732,13 @@ you may find the {tactic}`fun_induction` tactic helpful here.
 
 ```lean
 theorem Aexp.optimize0plus_sound :
-    Aexp.TransSound Aexp.optimize0plus := by
+    TransSound Aexp.optimize0plus := by
   solution!
     intro a st
     fun_induction Aexp.optimize0plus a <;> simp_all
 
 theorem Bexp.optimize0plus_sound :
-    Bexp.TransSound Bexp.optimize0plus := by
+    TransSound Bexp.optimize0plus := by
   solution!
     intro b st
     fun_induction Bexp.optimize0plus b <;>
@@ -1765,7 +1746,7 @@ theorem Bexp.optimize0plus_sound :
       rw [Aexp.optimize0plus_sound, Aexp.optimize0plus_sound]
 
 theorem Com.optimize0plus_sound :
-    Com.TransSound Com.optimize0plus := by
+    TransSound Com.optimize0plus := by
   solution!
     intro c
     induction c with
@@ -1792,7 +1773,7 @@ def optimizer (c : Com) := Com.optimize0plus (Com.foldConstants c)
 Prove that this optimizer is sound.
 
 ```lean
-theorem optimizer_sound : Com.TransSound optimizer := by
+theorem optimizer_sound : TransSound optimizer := by
   solution!
     intro c
     apply Com.equiv_trans

@@ -1263,6 +1263,19 @@ one of them doesn't, in which case folding `a₁ + a₂` (etc.) just rebuilds th
 the already-folded operands. This theorem is meant to be consumed with {tactic}`cases`
 to split a proof into those two scenarios; we will see its use when proving
 `Aexp.foldConstants_sound` below.
+
+Note we could also show the following as a proof
+```lean
+theorem Aexp.foldConstants_add_other_left (h : ¬∃ n₁, a₁.foldConstants = .num n₁) :
+    aexp{ a₁ + a₂ }.foldConstants = aexp { ~a₁.foldConstants + ~a₂.foldConstants} := by
+  rw [Aexp.foldConstants.eq_3]
+  split
+  next n₁ n₂ h₁ h₂ =>
+    exfalso
+    apply h
+    exists n₁
+  next h => rfl
+```
 ::::
 
 ```lean

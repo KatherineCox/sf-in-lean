@@ -1667,8 +1667,13 @@ GRADE_MANUAL 3: multXandYinZ_spec
 :::::
 ::::::
 
+:::dev "Cheng (chengz3)" PotentialImprovement (year := 2026)
+This exercise is required in the Rocq original. It was made
+optional to lighten the CIS 5000 Fall 2026 homework that bundles Slang, Imp, and Equiv. If the homework grouping changes, consider making it required again and restoring the grade directive `:::gradeTheorem 3 loop_never_stops`.
+:::
+
 ::::::full
-:::::exercise (rating := 3) (name := "loop_never_stops")
+:::::exercise (rating := 3) (name := "loop_never_stops") (optional := true)
 Hint: proceed by induction on the assumed derivation showing that {name}`loop`
 terminates.  Most of the cases are immediately contradictory and so can be
 solved in one step (by {tactic}`simp`/{tactic}`contradiction` on the impossible command
@@ -1690,9 +1695,6 @@ theorem loop_never_stops (st st' : State) :
           subst e₁; simp at hb
     exact key loop st st' contra rfl
 ```
-
-:::gradeTheorem 3 loop_never_stops
-:::
 :::::
 ::::::
 

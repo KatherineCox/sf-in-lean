@@ -1083,8 +1083,12 @@ example :
 ```
 ::::
 
+:::dev "Cheng (chengz3)" PotentialImprovement (year := 2026)
+This exercise is required (Advanced) in the Rocq original. It was made optional to lighten the Fall 2026 homework that bundles Slang, Imp, and Equiv in one week. If the homework grouping changes, consider making it required again; it would then need a `:::grade` block with `GRADE_MANUAL 3: not_congr`.
+:::
+
 ::::::full
-:::::exercise (rating := 3) (name := "not_congr") (level := Advanced) (manual := true)
+:::::exercise (rating := 3) (name := "not_congr") (level := Advanced) (optional := true) (manual := true)
 We've shown that the {name}`Equiv` relation is both an equivalence and
 a congruence on commands.  Can you think of a relation on commands
 that is an equivalence but _not_ a congruence?  Write down the

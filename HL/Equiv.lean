@@ -1203,7 +1203,9 @@ we might have written more lemmas like the following:
 theorem Aexp.foldConstants_add_num
   (h₁ : a₁.foldConstants = .num n₁)
   (h₂ : a₂.foldConstants = .num n₂) :
-  (aexp{a₁ + a₂}).foldConstants = .num (n₁ + n₂) := by sorry
+  (aexp{a₁ + a₂}).foldConstants = .num (n₁ + n₂) := by
+  simp only [Aexp.foldConstants]
+  simp [h₁, h₂]
 -- @[simp]
 theorem Aexp.foldConstants_add_other
   (h : ¬∃ n₁ n₂,

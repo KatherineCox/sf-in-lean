@@ -1218,7 +1218,39 @@ These are _conditional_ {tactic}`simp` lemmas — the equation in the conclusion
 one or more hypotheses. These hypotheses are themselves about {name}`Aexp.foldConstants`,
 which {tactic}`simp` would have to recursively simplify. But the hypotheses say things
 like "`a₁.foldConstants` equal to a numeral" for an abstract `a₁`, and {tactic}`simp`
-cannot further simplify that. It's a specific case a proof must consider.
+cannot further simplify that. You can see that in the state in the proof of
+{name}`Aexp.foldConstants_add_num` just after the `simp only [Aexp.foldConstants]` part —
+It leaves a `match` in the goal that the proof must subsequently consider.
+
+:::instructors
+You can see this concretely as follows. I didn't add this because I'm not sure we've
+explained the auto-equation stuff that Lean would do.
+
+```lean (name := foldConstants_equations)
+#print equations Aexp.foldConstants
+```
+
+```leanOutput foldConstants_equations
+equations:
+@[backward_defeq] theorem Aexp.foldConstants.eq_1 : ∀ (n : Nat), (Aexp.num n).foldConstants = Aexp.num n
+@[backward_defeq] theorem Aexp.foldConstants.eq_2 : ∀ (x : Ident), (Aexp.id x).foldConstants = Aexp.id x
+@[backward_defeq] theorem Aexp.foldConstants.eq_3 : ∀ (a₁ a₂ : Aexp),
+  aexp {a₁ + a₂}.foldConstants =
+    match a₁.foldConstants, a₂.foldConstants with
+    | Aexp.num n₁, Aexp.num n₂ => Aexp.num (n₁ + n₂)
+    | a₁', a₂' => aexp {a₁' + a₂'}
+@[backward_defeq] theorem Aexp.foldConstants.eq_4 : ∀ (a₁ a₂ : Aexp),
+  aexp {a₁ - a₂}.foldConstants =
+    match a₁.foldConstants, a₂.foldConstants with
+    | Aexp.num n₁, Aexp.num n₂ => Aexp.num (n₁ - n₂)
+    | a₁', a₂' => aexp {a₁' - a₂'}
+@[backward_defeq] theorem Aexp.foldConstants.eq_5 : ∀ (a₁ a₂ : Aexp),
+  aexp {a₁ * a₂}.foldConstants =
+    match a₁.foldConstants, a₂.foldConstants with
+    | Aexp.num n₁, Aexp.num n₂ => Aexp.num (n₁ * n₂)
+    | a₁', a₂' => aexp {a₁' * a₂'}
+```
+:::
 
 The {name}`Aexp.foldConstants_cases` theorem helps with that, capturing a common pattern
 of compound expressions: for any `a₁` and `a₂`, either folding turns both of them into numerals —

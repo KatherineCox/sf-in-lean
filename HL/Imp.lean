@@ -2196,7 +2196,12 @@ theorem sExecute2 :
 :::gradeTheorem 1 sExecute1
 :::
 
-:::gradeTheorem "0.5" sExecute2
+:::dev "Cheng (chengz3)" PotentialImprovement (year := 2026)
+`sExecute2` is deliberately not autograded (Rocq: `GRADE_THEOREM 0.5: s_execute2`).
+Its natural proofs (`rfl`, `decide`) reduce the string literal in the `X` lookup, and
+comparator's kernel replay rejects any such proof
+(https://github.com/leanprover/comparator/issues/93), failing the comparison for the
+whole submission. Restore `:::gradeTheorem "0.5" sExecute2` once that is fixed.
 :::
 
 Next, write a function that compiles an {name}`Aexp` into a stack

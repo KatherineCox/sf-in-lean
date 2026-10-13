@@ -71,10 +71,11 @@ equivalence_.
 
 ::::full
 For example:
+::::
+
 - `X + 2` is behaviorally equivalent to `1 + X + 1`
 - `X - X` is behaviorally equivalent to `0`
 - `(X - 1) + 1` is _not_ behaviorally equivalent to `X`
-::::
 
 ## Definitions
 
@@ -83,9 +84,8 @@ For `Aexp`s and `Bexp`s with variables, the definition we want is
 clear: two `Aexp`s or `Bexp`s are "behaviorally equivalent" if
 they evaluate to the same result in every state.
 ::::
-We'll define a type class `Equiv`, so that these relations (and
-the one for commands, below) can all be written with the notation
-`≃`.
+Instances of the type class `Equiv` express the meaning
+of behavioral equivalence, and are written with the notation `≃`.
 
 ```lean
 class Equiv (α : Type) where
@@ -545,7 +545,8 @@ theorem while_true_nonterm {b : Bexp} {c : Com} {st st' : State}
     | whileTrue hb' hc' hwhile ih1 ih2 =>
       exact ih2 heq
     | skip | asgn | seq | ifTrue | ifFalse =>
-      contradiction -- `heq` says that different commands are equal
+      -- `heq` says that different commands are equal
+      contradiction
 ```
 
 :::::full
@@ -1197,9 +1198,85 @@ theorem Aexp.foldConstants_cases (a₁ a₂ : Aexp) :
     simp [foldConstants, ha₁]
 ```
 
-:::dev "Niklas Halonen (xhalo32)"
-Make sure we have explained what named `cases` hypotheses do (`cases ha₁ : a₁.foldConstants` in the above proof).
+::::full
+The {name}`Aexp.foldConstants_cases` theorem is also a characterizing lemma, but it's
+different from ones we've seen before, which have always been equations. To keep that style,
+we might have written more lemmas like the following:
+```lean
+-- (don't want to actually add to simp set) @[simp]
+theorem Aexp.foldConstants_add_num
+  (h₁ : a₁.foldConstants = .num n₁)
+  (h₂ : a₂.foldConstants = .num n₂) :
+  (aexp{a₁ + a₂}).foldConstants = .num (n₁ + n₂) := by
+  simp only [Aexp.foldConstants]
+  simp [h₁, h₂]
+-- @[simp]
+theorem Aexp.foldConstants_add_other
+  (h : ¬∃ n₁ n₂,
+    a₁.foldConstants = .num n₁ ∧ a₂.foldConstants = .num n₂) :
+  (aexp{ a₁ + a₂ }).foldConstants =
+    aexp { ~a₁.foldConstants + ~a₂.foldConstants} := by sorry
+-- etc.
+```
+These are _conditional_ {tactic}`simp` lemmas — the equation in the conclusion depends on
+one or more hypotheses. These hypotheses are themselves about {name}`Aexp.foldConstants`,
+which {tactic}`simp` would have to recursively simplify. But the hypotheses say things
+like "`a₁.foldConstants` equal to a numeral" for an abstract `a₁`, and {tactic}`simp`
+cannot further simplify that. You can see that in the state in the proof of
+{name}`Aexp.foldConstants_add_num` just after the `simp only [Aexp.foldConstants]` part —
+It leaves a `match` in the goal that the proof must subsequently consider.
+
+:::instructors
+You can see this concretely as follows. I didn't add this because I'm not sure we've
+explained the auto-equation stuff that Lean would do.
+
+```lean (name := foldConstants_equations)
+#print equations Aexp.foldConstants
+```
+
+```leanOutput foldConstants_equations
+equations:
+@[backward_defeq] theorem Aexp.foldConstants.eq_1 : ∀ (n : Nat), (Aexp.num n).foldConstants = Aexp.num n
+@[backward_defeq] theorem Aexp.foldConstants.eq_2 : ∀ (x : Ident), (Aexp.id x).foldConstants = Aexp.id x
+@[backward_defeq] theorem Aexp.foldConstants.eq_3 : ∀ (a₁ a₂ : Aexp),
+  aexp {a₁ + a₂}.foldConstants =
+    match a₁.foldConstants, a₂.foldConstants with
+    | Aexp.num n₁, Aexp.num n₂ => Aexp.num (n₁ + n₂)
+    | a₁', a₂' => aexp {a₁' + a₂'}
+@[backward_defeq] theorem Aexp.foldConstants.eq_4 : ∀ (a₁ a₂ : Aexp),
+  aexp {a₁ - a₂}.foldConstants =
+    match a₁.foldConstants, a₂.foldConstants with
+    | Aexp.num n₁, Aexp.num n₂ => Aexp.num (n₁ - n₂)
+    | a₁', a₂' => aexp {a₁' - a₂'}
+@[backward_defeq] theorem Aexp.foldConstants.eq_5 : ∀ (a₁ a₂ : Aexp),
+  aexp {a₁ * a₂}.foldConstants =
+    match a₁.foldConstants, a₂.foldConstants with
+    | Aexp.num n₁, Aexp.num n₂ => Aexp.num (n₁ * n₂)
+    | a₁', a₂' => aexp {a₁' * a₂'}
+```
 :::
+
+The {name}`Aexp.foldConstants_cases` theorem helps with that, capturing a common pattern
+of compound expressions: for any `a₁` and `a₂`, either folding turns both of them into numerals —
+in which case folding `a₁ + a₂` (and `-`, and `*`) collapses to a single numeral — or at least
+one of them doesn't, in which case folding `a₁ + a₂` (etc.) just rebuilds the operator around
+the already-folded operands. This theorem is meant to be consumed with {tactic}`cases`
+to split a proof into those two scenarios; we will see its use when proving
+`Aexp.foldConstants_sound` below.
+
+Note we could also show the following as a proof
+```lean
+theorem Aexp.foldConstants_add_other_left (h : ¬∃ n₁, a₁.foldConstants = .num n₁) :
+    aexp{ a₁ + a₂ }.foldConstants = aexp { ~a₁.foldConstants + ~a₂.foldConstants} := by
+  rw [Aexp.foldConstants.eq_3]
+  split
+  next n₁ n₂ h₁ h₂ =>
+    exfalso
+    apply h
+    exists n₁
+  next h => rfl
+```
+::::
 
 ```lean
 example : (aexp { (1 + 2) * X }).foldConstants =

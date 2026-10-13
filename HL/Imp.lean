@@ -2196,7 +2196,12 @@ theorem sExecute2 :
 :::gradeTheorem 1 sExecute1
 :::
 
-:::gradeTheorem "0.5" sExecute2
+:::dev "Cheng (chengz3)" PotentialImprovement (year := 2026)
+`sExecute2` is deliberately not autograded (Rocq: `GRADE_THEOREM 0.5: s_execute2`).
+Its natural proofs (`rfl`, `decide`) reduce the string literal in the `X` lookup, and
+comparator's kernel replay rejects any such proof
+(https://github.com/leanprover/comparator/issues/93), failing the comparison for the
+whole submission. Restore `:::gradeTheorem "0.5" sExecute2` once that is fixed.
 :::
 
 Next, write a function that compiles an {name}`Aexp` into a stack
@@ -2560,9 +2565,6 @@ scoped notation:40 st0:41 " =[ " c " ]=> " st1:41 " // " s:41 =>
     Com.EvalR c st0 st1 s
 ```
 
-:::autogradedHole Com.EvalR
-:::
-
 :::instructors
 We don't make the notation with `c:imp_com` since it would need the custom `macro_rules`
 and elaborators which for a one-off thing are not worth the noise.
@@ -2616,21 +2618,6 @@ theorem seq_stops_on_break {c₁ c₂ : Com} {st st' : State}
   solution!
     exact .seqBreak h
 ```
-
-:::gradeTheorem "1.5" break_ignore
-:::
-
-:::gradeTheorem "1.5" while_continue
-:::
-
-:::gradeTheorem 1 while_stops_on_break
-:::
-
-:::gradeTheorem 1 seq_continue
-:::
-
-:::gradeTheorem 1 seq_stops_on_break
-:::
 ::::
 :::::
 
@@ -2652,8 +2639,6 @@ theorem while_break_true {b : Bexp} {c : Com} {st st' : State}
     | @whileBreak st =>
       exists st
 ```
-:::gradeTheorem 3 while_break_true
-:::
 ::::
 :::::
 
@@ -2716,8 +2701,6 @@ theorem ceval_deterministic {c : Com} {st st₁ st₂ : State}
         specialize ih hc'
         lia
 ```
-:::gradeTheorem 4 ceval_deterministic
-:::
 ::::
 :::::
 

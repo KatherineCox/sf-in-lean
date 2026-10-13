@@ -24,8 +24,8 @@ expressions and commands.
 ::::full
 To illustrate it use, we verify
 that program transformations such as constant folding preserve
-behavior. Along the way we also see techniques for proving two
-programs are _not_ equivalent, and close with an extended look at
+behavior. Along the way we also see techniques for proving that two
+programs are _not_ equivalent. Finally, we close with an extended look at
 what equivalence means once Imp is made nondeterministic.
 
 *Advice for Working on Exercises:*
@@ -1126,7 +1126,7 @@ but there are many others.
 A program transformation is _sound_ if it preserves the
 behavior of the original program.  Since {name}`Aexp`, {name}`Bexp`, and
 {name}`Com` all have `≃`-equivalence via the `Equiv` class, we can state
-soundness once, generically, instead of writing it out three times.
+soundness once, generically, instead of writing it out separately for each type of Imp syntax.
 ::::
 
 ```lean

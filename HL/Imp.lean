@@ -1667,8 +1667,13 @@ GRADE_MANUAL 3: multXandYinZ_spec
 :::::
 ::::::
 
+:::dev "Cheng (chengz3)" PotentialImprovement (year := 2026)
+This exercise is required in the Rocq original. It was made
+optional to lighten the CIS 5000 Fall 2026 homework that bundles Slang, Imp, and Equiv. If the homework grouping changes, consider making it required again and restoring the grade directive `:::gradeTheorem 3 loop_never_stops`.
+:::
+
 ::::::full
-:::::exercise (rating := 3) (name := "loop_never_stops")
+:::::exercise (rating := 3) (name := "loop_never_stops") (optional := true)
 Hint: proceed by induction on the assumed derivation showing that {name}`loop`
 terminates.  Most of the cases are immediately contradictory and so can be
 solved in one step (by {tactic}`simp`/{tactic}`contradiction` on the impossible command
@@ -1690,9 +1695,6 @@ theorem loop_never_stops (st st' : State) :
           subst e₁; simp at hb
     exact key loop st st' contra rfl
 ```
-
-:::gradeTheorem 3 loop_never_stops
-:::
 :::::
 ::::::
 
@@ -2194,7 +2196,12 @@ theorem sExecute2 :
 :::gradeTheorem 1 sExecute1
 :::
 
-:::gradeTheorem "0.5" sExecute2
+:::dev "Cheng (chengz3)" PotentialImprovement (year := 2026)
+`sExecute2` is deliberately not autograded (Rocq: `GRADE_THEOREM 0.5: s_execute2`).
+Its natural proofs (`rfl`, `decide`) reduce the string literal in the `X` lookup, and
+comparator's kernel replay rejects any such proof
+(https://github.com/leanprover/comparator/issues/93), failing the comparison for the
+whole submission. Restore `:::gradeTheorem "0.5" sExecute2` once that is fixed.
 :::
 
 Next, write a function that compiles an {name}`Aexp` into a stack
@@ -2558,9 +2565,6 @@ scoped notation:40 st0:41 " =[ " c " ]=> " st1:41 " // " s:41 =>
     Com.EvalR c st0 st1 s
 ```
 
-:::autogradedHole Com.EvalR
-:::
-
 :::instructors
 We don't make the notation with `c:imp_com` since it would need the custom `macro_rules`
 and elaborators which for a one-off thing are not worth the noise.
@@ -2614,21 +2618,6 @@ theorem seq_stops_on_break {c₁ c₂ : Com} {st st' : State}
   solution!
     exact .seqBreak h
 ```
-
-:::gradeTheorem "1.5" break_ignore
-:::
-
-:::gradeTheorem "1.5" while_continue
-:::
-
-:::gradeTheorem 1 while_stops_on_break
-:::
-
-:::gradeTheorem 1 seq_continue
-:::
-
-:::gradeTheorem 1 seq_stops_on_break
-:::
 ::::
 :::::
 
@@ -2650,8 +2639,6 @@ theorem while_break_true {b : Bexp} {c : Com} {st st' : State}
     | @whileBreak st =>
       exists st
 ```
-:::gradeTheorem 3 while_break_true
-:::
 ::::
 :::::
 
@@ -2714,8 +2701,6 @@ theorem ceval_deterministic {c : Com} {st st₁ st₂ : State}
         specialize ih hc'
         lia
 ```
-:::gradeTheorem 4 ceval_deterministic
-:::
 ::::
 :::::
 

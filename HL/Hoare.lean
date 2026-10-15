@@ -94,82 +94,38 @@ when we print them?
 :::
 
 ::::full
-In an {ref "Imp"}[earlier chapter], we began applying the mathematical tools
-developed in the first part of the course to studying the theory
-of a small programming language, Imp.
+In the {ref "Imp"}[Imp] and {ref "Equiv"}[Equiv] chapters, we built up the
+mathematical machinery for talking about Imp programs precisely — an
+evaluation relation giving their operational semantics, and a notion of
+behavioral equivalence for judging when two programs do the same thing.
+We now turn to a different kind of question: whether a single program
+behaves the way we intend.
 
-- We defined a type of _abstract syntax trees_ for Imp, together
-  with an _evaluation relation_ (a partial function on states)
-  that specifies the _operational semantics_ of programs.
+Our goal in this chapter is to develop the tools for simple _program
+verification_: using the precise definition of Imp to prove, formally,
+that particular programs satisfy particular specifications of their
+behavior. We'll develop a reasoning system called _Floyd-Hoare Logic_ —
+usually shortened to _Hoare Logic_ — that equips each syntactic
+construct of Imp with a generic "proof rule," so that the structure of a
+correctness proof mirrors the structure of the program it is about.
+First developed in the 1960s, Hoare Logic remains the basis of a
+multitude of tools used in academia and industry to specify and verify
+real software systems.
 
-  The language we defined, though small, captures some of the key
-  features of full-blown languages like C, C++, and Java,
-  including the fundamental notion of mutable state and some
-  common control structures.
-
-- We proved a number of _metatheoretic properties_ -- "meta" in
-  the sense that they are properties of the language as a whole,
-  rather than of particular programs in the language.  These
-  included:
-
-    - determinism of evaluation
-
-    - equivalence of some different ways of writing down the
-      definitions (e.g., functional and relational definitions of
-      arithmetic expression evaluation)
-
-    - guaranteed termination of certain classes of programs
-
-    - correctness (in the sense of preserving meaning) of a number
-      of useful program transformations
-
-    - behavioral equivalence of programs (in the {ref "Equiv"}[Equiv] chapter).
-
-If we stopped here, we would already have something useful: a set
-of tools for defining and discussing programming languages and
-language features that are mathematically precise, flexible, and
-easy to work with, applied to a set of key properties.  All of
-these properties are things that language designers, compiler
-writers, and users might care about knowing.  Indeed, many of them
-are so fundamental to our understanding of the programming
-languages we deal with that we might not consciously recognize
-them as "theorems."  But properties that seem intuitively obvious
-can sometimes be quite subtle (sometimes also subtly wrong!).
-
-In another volume of this series (_{volumeName "ts"}[]_),
-we expand upon the theme of metatheoretic properties of whole
-languages when we discuss _types_ and _type
-soundness_. In this chapter, though, we turn to a different set
-of issues.
+Hoare Logic combines two beautiful ideas: a natural way of writing down
+_specifications_ of programs, and a _structured proof technique_ for
+proving that programs are correct with respect to such specifications —
+where by "structured" we mean that the structure of proofs directly
+mirrors the structure of the programs that they are about.
 ::::
 
-Our goal in this chapter is to develop the tools to work through
-some simple examples of _program verification_ -- i.e., to use the
-precise definition of Imp to prove formally that particular
-programs satisfy particular specifications of their behavior.
-
-We'll develop a reasoning system called _Floyd-Hoare Logic_ --
-often shortened to just _Hoare Logic_ -- in which each of the
-syntactic constructs of Imp is equipped with a generic "proof
-rule" that can be used to reason compositionally about the
-correctness of programs involving this construct.
-
-::::full
-Hoare Logic originated in the 1960s, and it continues to be the
-subject of intensive research right up to the present day.  It
-lies at the core of a multitude of tools that are being used in
-academia and industry to specify and verify real software systems.
+::::terse
+Now we consider a systematic method for proving that Imp programs
+do what we intend them to do. We develop:
+- a natural notation for _program specifications_ and
+- a _compositional_ proof technique for program correctness,
+  called Hoare logic
 ::::
-
-:::slidebreak
-:::
-
-Hoare Logic combines two beautiful ideas: a natural way of writing
-down _specifications_ of programs, and a _structured proof
-technique_ for proving that programs are correct with respect to
-such specifications -- where by "structured" we mean that the
-structure of proofs directly mirrors the structure of the programs
-that they are about.
 
 :::dev PotentialImprovement
 Add some material talking about particular impressive
@@ -178,55 +134,7 @@ It would also be good to talk a little more about the history of
 Hoare logic and give some pointers to good books (Esp. JCR's).
 :::
 
-:::dev
-```
-HIDE: MRC'20: The terse version used to start with just an outline of
-what we've done and of this chapter, but it never mentioned Hoare logic!
-The text above seems like a better intro.
 
-MRC'20: this is the former terse intro.
-
- What we've done so far:
-
- - Formalized Imp
-      - identifiers and states
-      - abstract syntax trees
-      - evaluation functions (for [aexp]s and [bexp]s)
-      - evaluation relation (for commands)
-
- - Proved some _metatheoretic_ properties
-     - determinism of evaluation
-     - equivalence of some different ways of writing down the
-       definitions (e.g., functional and relational definitions of
-       arithmetic expression evaluation)
-     - guaranteed termination of certain classes of programs
-     - meaning-preservation of some program transformations
-     - behavioral equivalence of programs ([Equiv])
-
- We've dealt with a few sorts of properties of Imp programs:
-   - Termination
-   - Nontermination
-   - Equivalence
-
- Topic:
-   - A systematic method for reasoning about the _functional
-     correctness_ of programs in Imp
-
- Goals:
-   - a natural notation for _program specifications_ and
-   - a _compositional_ proof technique for program correctness
-
- Plan:
-   - specifications (assertions / Hoare triples)
-   - proof rules
-   - loop invariants
-   - decorated programs
-   - examples
-```
-:::
-:::dev "Roger Burtonpatel (rogerburtonpatel)" NOW
-It would be great for @mwhicks to look at this intro
-and decide what needs to be in a terse block. I suspect it should be _very_ short an high-level.
 :::
 
 # Assertions

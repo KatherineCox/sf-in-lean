@@ -1293,6 +1293,22 @@ assignment, one for sequencing, one for conditionals, etc. -- plus
 a couple of "structural" rules for gluing things together.  We
 will then be able to prove programs correct using these proof
 rules, without ever unfolding the definition of {name}`ValidHoareTriple`.
+
+The presentation of Hoare logic in this chapter could be
+described as _model-theoretic_: the proof rules for each of the
+syntactic forms are presented as _theorems_ about the evaluation
+behavior of programs, justified according to {name}`ValidHoareTriple`.
+Another way of presenting Hoare logic is to define a completely
+separate proof system — a set of axioms and inference rules as
+part of an inductive proposition — and then say that a
+proof of a Hoare triple is a valid derivation in that logic.
+Then we would prove this logic _sound_ in the sense that all proofs
+in that logic (its derivations) have a corresponding (Lean) proof
+of {name}`ValidHoareTriple`. This approach could be
+described as _proof theoretic_. Since the most natural proof of soundness
+would be via the model-theoretic approach, we present that
+approach and leave a proof theoretic presentation (and discussion
+of its potential advantages) to a future development.
 ::::
 
 ::::terse
@@ -1306,6 +1322,8 @@ Here's our plan:
     `ValidHoareTriple`
   - prove programs correct using these proof rules, without ever
     unfolding the definition of `ValidHoareTriple`
+  - we state the rules as theorems, rather than as a separate inductive
+    proof system
 ::::
 
 ## Skip

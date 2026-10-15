@@ -2108,10 +2108,10 @@ valid, then the other must certainly be as well.  We can capture
 this observation with the following rule:
 
 ```display +centered
-   {{P'}} c {{Q}}
-     P ↞↠ P'
----------------------
-   {{P}} c {{Q}}
+{{P'}} c {{Q}}
+    P ↞↠ P'
+--------------
+{{P}} c {{Q}}
 ```
 
 :::slidebreak
@@ -2124,14 +2124,14 @@ observation is captured by two _Rules of Consequence_.
 
 ```display +centered
 {{P'}} c {{Q}}
-   P ↠ P'
+    P ↠ P'
 --------------   (hoare_consequence_pre)
- {{P}} c {{Q}}
+{{P}} c {{Q}}
 
 {{P}} c {{Q'}}
-  Q' ↠ Q
+   Q' ↠ Q
 --------------    (hoare_consequence_post)
- {{P}} c {{Q}}
+{{P}} c {{Q}}
 ```
 
 :::slidebreak
@@ -2212,14 +2212,9 @@ theorem assertion_sub_example2 :
     apply hoare_consequence_pre (P' := {{ (X < 5) [X ↦ X + 1] }})
     · exact hoare_asgn
     · rw [assertImplies_def]
-      intro st h
-      simp <;> lia
+      simp
+      lia
 ```
-
-:::dev "Niklas Halonen (xhalo32)"
-The above proof uses `simp <;> lia` purely because `lia` can't see that `X` and
-`"X"` are the same (they are currently marked as `@[simp]` in Imp).
-:::
 
 :::slidebreak
 :::
@@ -2228,11 +2223,11 @@ Finally, here is a combined rule of consequence that allows us to
 vary both the precondition and the postcondition.
 
 ```display +centered
-       {{P'}} c {{Q'}}
-          P ↠ P'
-          Q' ↠ Q
------------------------------   (hoare_consequence)
-       {{P}} c {{Q}}
+{{P'}} c {{Q'}}
+     P ↠ P'
+    Q' ↠ Q
+---------------   (hoare_consequence)
+ {{P}} c {{Q}}
 ```
 
 :::dev "Niklas Halonen (xhalo32)"
@@ -2319,7 +2314,10 @@ From now on, we will not usually rewrite {name}`assertImplies_def` explicitly.
 
 Since, after the {tactic}`rw` and {tactic}`intro`, the remaining steps just
 apply hypotheses to the goal (and each other), the remaining proof can be
-compressed into a single tactic: {tactic}`apply_rules`.
+compressed into a single tactic: {tactic}`apply_rules`.  Besides local
+hypotheses, {tactic}`apply_rules` also tries `rfl` and `trivial`
+automatically, and `apply_rules [l₁, l₂, …]` additionally tries the given
+lemmas.
 
 ```lean
 theorem hoare_consequence_pre'' {P P' Q : Assertion} {c : Com}
@@ -2405,7 +2403,7 @@ theorem assertion_sub_example2' :
     {{X < 5}} := by
   apply hoare_consequence_pre
   · exact hoare_asgn
-  · simp [assertImplies_def] <;> -- an arithmetic goal remains
+  · simp [assertImplies_def] -- an arithmetic goal remains
     lia
 ```
 
@@ -2874,8 +2872,14 @@ theorem if_example :
     · assertion_auto
 ```
 
-:::slidebreak
-:::
+:::dev "Mike Hicks (mwhicks1)"
+`if_example'` (and the `if_minus_plus` solution below) write
+`apply hoare_consequence_pre hoare_asgn (by assertion_auto)`, supplying
+`hoare_consequence_pre`'s two arguments directly instead of applying it
+and closing the two resulting goals separately. This idiom has
+never been shown to students. Options: teach the general fact here with a
+sentence or two, or introduce the approach properly earlier in the text.
+===
 
 We can even shorten it a little bit more.
 
@@ -2891,6 +2895,7 @@ theorem if_example' :
   apply hoare_if <;>
     apply hoare_consequence_pre hoare_asgn (by assertion_auto)
 ```
+:::
 
 ::::::full
 :::::exercise (rating := 2) (name := "if_minus_plus")
@@ -4923,7 +4928,9 @@ theorem hoare_if {P Q : Assertion} {b : Bexp} {c₁ c₂ : Com}
   intro st r heval hpre
   inversion heval with
   | ifTrue hb hc =>
-    -- b is true
+    -- b is true; `htrue` needs a proof of `P st ∧ b.eval st = true`,
+    -- which `apply_rules` builds from `hpre` and `hb` via `And.intro`
+    -- (conjunction-introduction isn't one of its automatic defaults)
     apply_rules [And.intro]
   | ifFalse hb hc =>
     -- b is false

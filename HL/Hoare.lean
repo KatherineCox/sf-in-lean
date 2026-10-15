@@ -345,10 +345,6 @@ informal to formal, we replace `X` with `st[X]` but leave `m`
 alone.
 ::::
 
-:::dev "Roger Burtonpatel (rogerburtonpatel)" PotentialImprovement
-Once Yipeng rewrites the notation for Lean, we will go over _all_ of this text again.
-:::
-
 ::::full
 The convention described above can be implemented with a little
 syntax magic, much as we did with the `imp { … }` notation in
@@ -1133,10 +1129,20 @@ category-specific variant is from {name}`HasEval` in Imp.  It's a bit more
 complicated since `{{ }}`-notation is already used for assertions.
 :::
 
+We overload the `{{ P }} c {{ Q }}` notation across
+command types with a typeclass, the same way the `Equiv` typeclass of
+{ref "Equiv"}[Equiv] overloads `≃`:
+
 ```lean
 class HasTriple (α : Type) where
   Triple : Assertion → α → Assertion → Prop
 
+instance : HasTriple Com where
+  Triple := ValidHoareTriple
+```
+
+::::details "Notation: Hoare triples"
+```lean
 namespace HasTriple
 
 /-- Hoare triple: `{{ P }} c {{ Q }}` with `imp_com` command syntax -/
@@ -1144,11 +1150,10 @@ scoped syntax:lead "{{" term "}} " imp_com:min " {{" term "}}" : term
 scoped macro_rules
   | `({{ $P }} $c:imp_com {{ $Q }}) =>
       ``(HasTriple.Triple ({{ $P }}) (imp { $c }) ({{ $Q }}))
-end HasTriple
 
-instance : HasTriple Com where
-  Triple := ValidHoareTriple
+end HasTriple
 ```
+::::
 
 :::dev "Niklas Halonen (xhalo32)"
 Something strange is going on in `theorem if_example`, using
@@ -1160,7 +1165,6 @@ was to mark `ValidHoareTriple` irreducible.
 It has to do something with `apply` and `refine` looking inside the
 implication in `∀ {st st'}, ...`
 :::
-
 
 We make {name}`ValidHoareTriple` irreducible for technical reasons.
 In your proofs, if you need to prove the validity of a Hoare triple,
@@ -1309,7 +1313,7 @@ Here's our plan:
 Since `skip` doesn't change the state, it preserves any
 assertion `P`:
 
-```display
+```display +centered
 --------------------  (hoare_skip)
 {{ P }} skip {{ P }}
 ```
@@ -1330,9 +1334,9 @@ If command `c₁` takes any state where `P` holds to a state where
 where `R` holds, then doing `c₁` followed by `c₂` will take any
 state where `P` holds to one where `R` holds:
 
-```display
- {{ P }} c₁ {{ Q }}
- {{ Q }} c₂ {{ R }}
+```display +centered
+  {{ P }} c₁ {{ Q }}
+  {{ Q }} c₂ {{ R }}
 ----------------------  (hoare_seq)
 {{ P }} c₁; c₂ {{ R }}
 ```
@@ -1566,6 +1570,10 @@ a quick go at implementing it, but did not succeed yet.
 Introduce a notation typeclass for this (e.g. HasSubst)
 :::
 
+We write assertion substitution with the notation `P [X ↦ a]`, implemented
+the same `{{ }}`-plus-typeclass way as the notations above.
+
+::::details "Notation: Assertion substitution"
 ```lean
 namespace Assertion
 
@@ -1583,18 +1591,8 @@ macro_rules
     | `($_:ident) => ``(Assertion.subst $x (aexp { $a }) $P $st)
     | _ => ``(Assertion.subst $x (aexp { $a }) ({{ $P }}) $st)
 
-theorem subst_def {x : Ident} {a : Aexp} {P : Assertion} :
-    Assertion.subst x a P = fun (st : State) => P (x →ₜ a.eval st ; st) := by rfl
-
-@[simp]
-theorem subst_apply {x : Ident} {a : Aexp} {P : Assertion} {st : State} :
-    Assertion.subst x a P st ↔ P (x →ₜ a.eval st ; st) := by rfl
-
 end Assertion
-```
 
-::::details "Notation encoding: printing substitutions back"
-```lean
 namespace Assertion.Delab
 open Lean PrettyPrinter Delaborator SubExpr Imp.Delab
 
@@ -1625,6 +1623,19 @@ end Assertion.Delab
 #check (Assertion.subst X (aexp { 2 * X }) ({{ X ≤ 10 }}))
 ```
 :::
+
+```lean
+namespace Assertion
+
+theorem subst_def {x : Ident} {a : Aexp} {P : Assertion} :
+    Assertion.subst x a P = fun (st : State) => P (x →ₜ a.eval st ; st) := by rfl
+
+@[simp]
+theorem subst_apply {x : Ident} {a : Aexp} {P : Assertion} {st : State} :
+    Assertion.subst x a P st ↔ P (x →ₜ a.eval st ; st) := by rfl
+
+end Assertion
+```
 
 This notation allows us to write this operation as:
 
@@ -1699,11 +1710,23 @@ fun st =>
 That is, `P'` is the assertion that `X + 1` is at most `5`.
 ::::
 Some examples of using substitution:
-```lean
+```lean (name := substDemo)
 #check {{ (X ≤ 10) [X ↦ 2 * X] }}
 #check (∀ st, ({{ (X ≤ 10) [X ↦ 2 * X] }}) st)
 -- Written explicitly:
 #check (fun st => Assertion.subst X (aexp { 2 * X }) ({{ X ≤ 10 }}) st)
+```
+
+```leanOutput substDemo
+{{(X ≤ 10) [X ↦ 2 * X]}} : State → Prop
+```
+
+```leanOutput substDemo
+∀ (st : State), ({{(X ≤ 10) [X ↦ 2 * X]}}) st : Prop
+```
+
+```leanOutput substDemo
+{{(X ≤ 10) [X ↦ 2 * X]}} : State → Prop
 ```
 
 :::slidebreak
@@ -1749,8 +1772,8 @@ Most of the `simp` calls rely on {name}`Assertion.subst_apply` and
 Now, using the substitution operation we've just defined, we can
 give the precise proof rule for assignment:
 
-```display
----------------------------- (hoare_asgn)
+```display +centered
+-------------------------- (hoare_asgn)
 {{Q [X ↦ a]}} X := a {{Q}}
 ```
 
@@ -1846,8 +1869,8 @@ time they see it.  If it still seems puzzling to you, it may help
 to think a little about alternative "forward" rules.  Here is a
 seemingly natural one:
 
-```display
------------------------------- (hoare_asgn_wrong)
+```display +centered
+----------------------------- (hoare_asgn_wrong)
 {{ True }} X := a {{ X = a }}
 ```
 
@@ -1904,7 +1927,7 @@ By using a _parameter_ `m` (a Lean number) to remember the
 original value of `X` we can define a Hoare rule for assignment
 that does, intuitively, "work forwards" rather than backwards.
 
-```display
+```display +centered
 ------------------------------------------ (hoare_asgn_fwd)
 {{ P ∧ X = m }}
   X := a
@@ -1951,7 +1974,7 @@ Another way to define a forward rule for assignment is to
 existentially quantify over the previous value of the assigned
 variable.  Prove that it is correct.
 
-```display
+```display +centered
 ------------------------------------ (hoare_asgn_fwd_exists)
 {{ P }}
   X := a
@@ -2129,7 +2152,7 @@ However, they are logically _equivalent_, so if one triple is
 valid, then the other must certainly be as well.  We can capture
 this observation with the following rule:
 
-```display
+```display +centered
    {{P'}} c {{Q}}
      P <<->> P'
 ---------------------
@@ -2144,16 +2167,16 @@ strengthening the precondition or weakening the postcondition of a
 valid triple always produces another valid triple. This
 observation is captured by two _Rules of Consequence_.
 
-```display
-       {{P'}} c {{Q}}
-          P ->> P'
------------------------------   (hoare_consequence_pre)
-       {{P}} c {{Q}}
+```display +centered
+{{P'}} c {{Q}}
+   P ->> P'
+--------------   (hoare_consequence_pre)
+ {{P}} c {{Q}}
 
-       {{P}} c {{Q'}}
-         Q' ->> Q
------------------------------    (hoare_consequence_post)
-       {{P}} c {{Q}}
+{{P}} c {{Q'}}
+  Q' ->> Q
+--------------    (hoare_consequence_post)
+ {{P}} c {{Q}}
 ```
 
 :::slidebreak
@@ -2249,7 +2272,7 @@ The above proof uses `simp <;> lia` purely because `lia` can't see that `X` and
 Finally, here is a combined rule of consequence that allows us to
 vary both the precondition and the postcondition.
 
-```display
+```display +centered
        {{P'}} c {{Q'}}
           P ->> P'
           Q' ->> Q
@@ -2303,7 +2326,7 @@ application of a hypothesis.)
 Here's a good candidate for automation:
 ::::
 
-```display
+```recall
 theorem hoare_consequence_pre {P P' Q : Assertion} {c : Com}
     (hhoare : {{ P' }} c {{ Q }}) (himp : P ->> P') :
     {{ P }} c {{ Q }} := by
@@ -2755,10 +2778,10 @@ Certainly, if the same assertion `Q` holds after executing
 either of the branches, then it holds after the whole conditional.
 So we might be tempted to write:
 
-```display
+```display +centered
         {{P}} c₁ {{Q}}
         {{P}} c₂ {{Q}}
----------------------------------
+--------------------------------
 {{P}} if b then c₁ else c₂ {{Q}}
 ```
 
@@ -2797,9 +2820,9 @@ postcondition `Q`).
 Better:
 ::::
 
-```display
-{{P ∧   b}} c₁ {{Q}}
-{{P ∧ ¬ b}} c₂ {{Q}}
+```display +centered
+        {{P ∧   b}} c₁ {{Q}}
+        {{P ∧ ¬ b}} c₂ {{Q}}
 ------------------------------------  (hoare_if)
 {{P}} if b then c₁ else c₂ end {{Q}}
 ```
@@ -2976,6 +2999,10 @@ the `macro_rules` with the new `Com` (a copy of the template `imp` macro
 from Imp, plus one case).
 :::
 
+We also need to extend the `imp { }` notation to parse the new `if1`
+command.
+
+::::details "Notation encoding: commands, macro rules"
 ```lean
 /-- One-sided conditional -/
 scoped syntax "if1 " "(" imp_bexp ")" ppHardSpace "{" imp_com "}" : imp_com
@@ -3012,7 +3039,6 @@ The delaborators are re-instantiated the same way: the Imp printer is
 parameterized over the namespace of the command constructors, so the
 extended printer is that printer at `If1.Com` plus one case for `if1`.
 
-::::details "Notation encoding: printing the extended commands back"
 ```lean
 namespace Delab
 
@@ -3270,7 +3296,7 @@ must be restored.
 ::::full
 As a first attempt at a `while` rule, we could try:
 
-```display
+```display +centered
        {{P}} c {{P}}
 ---------------------------
 {{P}} while b do c end {{P}}
@@ -3284,8 +3310,8 @@ But the rule also omits two crucial pieces of information.  First,
 the loop terminates when `b` becomes false.  So we can strengthen
 the postcondition in the conclusion:
 
-```display
-        {{P}} c {{P}}
+```display +centered
+          {{P}} c {{P}}
 ---------------------------------
 {{P}} while b do c end {{P ∧ ¬b}}
 ```
@@ -3293,8 +3319,8 @@ the postcondition in the conclusion:
 Second, the loop body will be executed only if `b` is true.  So we
 can also strengthen the precondition in the premise:
 
-```display
-      {{P ∧ b}} c {{P}}
+```display +centered
+        {{P ∧ b}} c {{P}}
 --------------------------------- (hoare_while)
 {{P}} while b do c end {{P ∧ ¬b}}
 ```
@@ -3307,8 +3333,8 @@ can also strengthen the precondition in the premise:
 The Hoare while rule combines the idea of a command invariant with
 information about when guard `b` does or does not hold.
 
-```display
-      {{P ∧ b}} c {{P}}
+```display +centered
+        {{P ∧ b}} c {{P}}
 --------------------------------- (hoare_while)
 {{P}} while b do c end {{P ∧ ¬b}}
 ```
@@ -3920,6 +3946,10 @@ the body will always execute at least once.
 Copy of the template `imp` macro from Imp, plus one case.
 :::
 
+We also need to extend the `imp { }` notation to parse the new `repeat`
+command.
+
+::::details "Notation encoding: commands, macro rules"
 ```lean
 /-- Repeat loop -/
 scoped syntax "repeat" ppHardSpace "{" ppLine imp_com ppDedent(ppLine "}")
@@ -3942,10 +3972,7 @@ scoped macro_rules
     `(Com.repeatUntil (imp {$c}) (bexp {$b}))
   | `(imp { ~$c }) =>
     pure c
-```
 
-::::details "Notation encoding: printing the extended commands back"
-```lean
 namespace Delab
 
 open Lean PrettyPrinter Imp.Delab
@@ -4297,12 +4324,12 @@ Imp programs.
 
 The rules of Hoare Logic are:
 
-```display
-       --------------------------- (hoare_asgn)
-       {{Q [X ↦ a]}} X := a {{Q}}
+```display +centered
+     -------------------------- (hoare_asgn)
+     {{Q [X ↦ a]}} X := a {{Q}}
 
-       --------------------  (hoare_skip)
-       {{ P }} skip {{ P }}
+        --------------------  (hoare_skip)
+        {{ P }} skip {{ P }}
 
          {{ P }} c₁ {{ Q }}
          {{ Q }} c₂ {{ R }}
@@ -4315,8 +4342,8 @@ The rules of Hoare Logic are:
 {{P}} if b then c₁ else c₂ end {{Q}}
 
          {{P ∧ b}} c {{P}}
-  -----------------------------------  (hoare_while)
-  {{P}} while b do c end {{P ∧ ¬ b}}
+ -----------------------------------  (hoare_while)
+ {{P}} while b do c end {{P ∧ ¬ b}}
 
           {{P'}} c {{Q'}}
              P ->> P'
@@ -4395,7 +4422,13 @@ inductive Com : Type where
   | cond : Bexp → Com → Com → Com
   | whileDo : Bexp → Com → Com
   | havoc : Ident → Com
+```
 
+We also need to extend the `imp { }` notation to parse the new `havoc`
+command, and to print it back.
+
+::::details "Notation encoding: commands, macro rules"
+```lean
 /-- Havoc: set a variable to a nondeterministically chosen number
 (`havoc x;`).  As with `skip`, the word `havoc` is not reserved: the
 production accepts any identifier and the macro below rejects
@@ -4437,7 +4470,10 @@ attribute [app_unexpander Com.cond] unexpandComCond
 attribute [app_unexpander Com.whileDo] unexpandComWhileDo
 
 end Delab
+```
+::::
 
+```lean
 inductive Com.EvalR : Com → State → State → Prop where
   | skip {st : State} : EvalR (imp {skip}) st st
   | asgn {st : State} {a : Aexp} {n : Nat} {x : Ident} (h : a.eval st = n) :
@@ -4626,6 +4662,10 @@ inductive Com : Type where
 Copy of the template `imp` macro from Imp, plus one case.
 :::
 
+We also need to extend the `imp { }` notation to parse the new `assert`
+and `assume` commands.
+
+::::details "Notation encoding: commands, macro rules"
 ```lean
 /-- Assert / assume (`assert (b);`, `assume (b);`).  As with `skip`, the
 words `assert` and `assume` are not reserved: the production accepts any
@@ -4651,10 +4691,7 @@ scoped macro_rules
     `(Com.whileDo (bexp {$b}) (imp {$c}))
   | `(imp { ~$c }) =>
     pure c
-```
 
-::::details "Notation encoding: printing the extended commands back"
-```lean
 namespace Delab
 
 open Lean PrettyPrinter Imp.Delab

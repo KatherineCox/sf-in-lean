@@ -38,7 +38,7 @@ completely or at least using it very seldom; instead, we should
 just include uses of implication in each rule.  This would (a) make
 the assignment rule, especially, MUCH easier to explain, and (b)
 better align with the next chapter.  (One reason this chapter is
-hard to explain is that the assignment rule is so rigid -- this
+hard to explain is that the assignment rule is so rigid — this
 forces us to state the first several of examples in a silly, rigid,
 confusing way.) BCP 23: I think this change is quite important.
 Should be given high priority.
@@ -50,7 +50,7 @@ Any chance we could move the (awkwardly placed)
 weakest precondition discussion to this chapter instead?
 
 The terse version of the chapter needs serious
-work -- it has gotten quite ragged after a bunch of reorganization
+work — it has gotten quite ragged after a bunch of reorganization
 of the chapter over the past couple years.  BCP 23: Did some work
 on it.  Bit better now.  But the notation issues make everything a
 bit heavy.
@@ -137,7 +137,7 @@ Hoare logic and give some pointers to good books (Esp. JCR's).
 # Assertions
 
 An _assertion_ is a logical claim about the state of a program's
-memory -- formally, a predicate of {name}`State`s.
+memory — formally, a predicate of {name}`State`s.
 
 ```lean
 open scoped Com MyGetElem KVPair
@@ -245,7 +245,7 @@ This example also illustrates a convention that we'll use
 throughout the Hoare Logic chapters: in informal assertions,
 capital letters like `X`, `Y`, and `Z` are Imp variables, while
 lowercase letters like `x`, `y`, `m`, and `n` are ordinary Lean
-variables (of type {name}`Nat`).  This is why, when translating from
+variables.  This is why, when translating from
 informal to formal, we replace `X` with `st[X]` but leave `m`
 alone.
 ::::
@@ -691,12 +691,12 @@ theorem assertIff_def {P Q : Assertion} :
 
 ::::full
 To type `↞↠` in VS Code, we can write `\llrr` or `\ll-\rr-`.
-
-The matching delaborators print implications and equivalences between
-assertions back in `↠` and `↞↠` notation.
 ::::
 
 ::::details "Notation encoding: printing implications back"
+The matching delaborators print implications and equivalences between
+assertions back in `↠` and `↞↠` notation.
+
 ```lean
 namespace Assertion.Delab
 open Lean PrettyPrinter Delaborator SubExpr
@@ -853,7 +853,7 @@ Paraphrase the following in English.
 ::::::
 
 ::::quiz
-Is the following Hoare triple _valid_ -- i.e., is the
+Is the following Hoare triple _valid_ — i.e., is the
 claimed relation between `P`, `c`, and `Q` true?
 
 ```display
@@ -1003,7 +1003,7 @@ Yes: the loop never terminates.
 
 ::::::full
 :::::exercise (rating := 1) (name := "valid_triples") (optional := true)
-Which of the following Hoare triples are _valid_ -- i.e., the
+Which of the following Hoare triples are _valid_ — i.e., the
 claimed relation between `P`, `c`, and `Q` is true?
 
 ```display
@@ -1220,8 +1220,8 @@ method for proving the validity of specific Hoare triples.  That
 is, we want the structure of a program's correctness proof to
 mirror the structure of the program itself.  To this end, in the
 sections below, we'll introduce a rule for reasoning about each of
-the different syntactic forms of commands in Imp -- one for
-assignment, one for sequencing, one for conditionals, etc. -- plus
+the different syntactic forms of commands in Imp — one for
+assignment, one for sequencing, one for conditionals, etc. — plus
 a couple of "structural" rules for gluing things together.  We
 will then be able to prove programs correct using these proof
 rules, without ever unfolding the definition of {name}`ValidHoareTriple`.
@@ -1346,8 +1346,8 @@ Hoare triple:
 It may seem as though coming up with that precondition must have
 taken some clever thought.  But there is a mechanical way we could
 have done it: if we take the postcondition `X = 1` and in it
-replace `X` with `Y`---that is, replace the left-hand side of the
-assignment statement with the right-hand side---we get the
+replace `X` with `Y` — that is, replace the left-hand side of the
+assignment statement with the right-hand side — we get the
 precondition, `Y = 1`.
 ::::
 
@@ -1463,15 +1463,15 @@ rule.  We'll do that later in some exercises.
 Here are some valid instances of the assignment rule:
 
 ```display
-{{ (X ≤ 5) [X ↦ X + 1] }}         (that is, X + 1 ≤ 5)
+{{ (X ≤ 5) [X ↦ X + 1] }}        (that is, X + 1 ≤ 5)
   X := X + 1
 {{ X ≤ 5 }}
 
-{{ (X = 3) [X ↦ 3] }}              (that is, 3 = 3)
+{{ (X = 3) [X ↦ 3] }}            (that is, 3 = 3)
   X := 3
 {{ X = 3 }}
 
-{{ (0 ≤ X ∧ X ≤ 5) [X ↦ 3] }}   (that is, 0 ≤ 3 ∧ 3 ≤ 5)
+{{ (0 ≤ X ∧ X ≤ 5) [X ↦ 3] }}    (that is, 0 ≤ 3 ∧ 3 ≤ 5)
   X := 3
 {{ 0 ≤ X ∧ X ≤ 5 }}
 ```
@@ -1504,9 +1504,22 @@ However, we can achieve the same effect by evaluating `P` in an
 updated state, defined as follows:
 
 ```lean
-def Assertion.subst (x : Ident) (a : Aexp) (P : Assertion) :
-    Assertion :=
+namespace Assertion
+
+def subst (x : Ident) (a : Aexp) (P : Assertion) : Assertion :=
   fun (st : State) => P (x →ₜ a.eval st ; st)
+
+theorem subst_def {x : Ident} {a : Aexp} {P : Assertion} :
+    Assertion.subst x a P =
+      fun (st : State) => P (x →ₜ a.eval st ; st) := by
+  rfl
+
+@[simp]
+theorem subst_apply {x : Ident} {a : Aexp} {P : Assertion}
+    {st : State} :
+    Assertion.subst x a P st ↔ P (x →ₜ a.eval st ; st) := by rfl
+
+end Assertion
 ```
 
 :::dev BeforeNextRelease
@@ -1576,36 +1589,20 @@ end Assertion.Delab
 ```
 :::
 
-```lean
-namespace Assertion
-
-theorem subst_def {x : Ident} {a : Aexp} {P : Assertion} :
-    Assertion.subst x a P =
-      fun (st : State) => P (x →ₜ a.eval st ; st) := by
-  rfl
-
-@[simp]
-theorem subst_apply {x : Ident} {a : Aexp} {P : Assertion}
-    {st : State} :
-    Assertion.subst x a P st ↔ P (x →ₜ a.eval st ; st) := by rfl
-
-end Assertion
-```
-
 This notation allows us to write this operation as:
 
 ```display
 P [ X ↦ a ]
 ```
 
-That is, `P [X ↦ a]` stands for an assertion -- let's call it
-`P'` -- that behaves just like `P` except that, wherever `P` looks up
+That is, `P [X ↦ a]` stands for an assertion — let's call it
+`P'` — that behaves just like `P` except that, wherever `P` looks up
 the variable `X` in the current state, `P'` instead uses the value
 of the expression `a`.
 
 ::::full
 To see how this works in more detail, let's calculate what happens with
-a couple of examples.  First, suppose `P'` is `(X ≤ 5) [X ↦ 3]` --
+a couple of examples.  First, suppose `P'` is `(X ≤ 5) [X ↦ 3]` —
 that is, more formally, `P'` is the Lean expression
 
 ```display
@@ -1782,7 +1779,7 @@ Of course, we'd probably prefer to work with this simpler triple:
 We will see how to do so in the next section.
 
 Several proofs below use the facts about total-map updates
-proved in the _Typeclasses_ chapter -- {name}`TotalMap.update_eq`,
+proved in the _Typeclasses_ chapter — {name}`TotalMap.update_eq`,
 {name}`TotalMap.update_neq`, {name}`TotalMap.update_shadow`,
 {name}`TotalMap.update_same`, and {name}`TotalMap.update_permute`.  Make
 sure you understand their statements.
@@ -1973,7 +1970,7 @@ theorem hoare_asgn_fwd_exists {a : Aexp} {P : Assertion} :
 /- HIDE: BCP 19: This sequence of quizzes seems confusing /
 confused. The "trivial" ones, as Robert points out, are NOT
 trivial...  BCP 21: I'm going to hide all these quizzes for the
-moment -- they seem worse than nothing in present form. -/
+moment — they seem worse than nothing in present form. -/
 -- QUIZ
 /- Here is the assignment rule again:
 [[
@@ -2056,7 +2053,7 @@ they are paying attention -/
     (A) Yes
 
     (B) No -/
-/- INSTRUCTORS: another wrong one -- valid, but not an instance of the rule! -/
+/- INSTRUCTORS: another wrong one — valid, but not an instance of the rule! -/
 -- /QUIZ
 
 -- QUIZ
@@ -2082,7 +2079,7 @@ leads into the discussion of the rule of consequence. -/
 
 Sometimes the preconditions and postconditions we get from the
 Hoare rules won't quite be the ones we want in the particular
-situation at hand -- they may be logically equivalent but have a
+situation at hand — they may be logically equivalent but have a
 different syntactic form that fails to unify with the goal we are
 trying to prove, or they actually may be logically weaker (for
 preconditions) or stronger (for postconditions) than what we need.
@@ -2260,8 +2257,8 @@ streamlined using the automation techniques that we introduced in
 the _Automation_ chapter of _{volumeName "lf"}[]_.
 
 Recall that  {tactic}`simp` rewrites with any lemmas we pass it.  The
-definitions whose meaning we keep needing to expose in this chapter --
-{name}`ValidHoareTriple`, {name}`AssertImplies`, and {name}`Assertion.subst` -- each
+definitions whose meaning we keep needing to expose in this chapter —
+{name}`ValidHoareTriple`, {name}`AssertImplies`, and {name}`Assertion.subst` — each
 come with a characterizing lemma ({name}`validHoareTriple_def`,
 {name}`assertImplies_def`, {name}`Assertion.subst_def`) restating the definition
 as an equation.  Passing these lemmas to {tactic}`simp` replaces the defined
@@ -2471,7 +2468,7 @@ theorem hoare_asgn_example1''' :
 Again, we have quite a nice proof script.  All the low-level
 details of proofs about assertions have been taken care of
 automatically. Of course, {tactic}`assertion_auto` isn't able to prove
-everything we could possibly want to know about assertions --
+everything we could possibly want to know about assertions —
 there's no magic here! But it's pretty good.
 
 ::::::full
@@ -2674,7 +2671,7 @@ should this be 3 or 4 stars?
 
 :::dev "Benjamin Pierce (bcpierce00)" PotentialImprovement (year := 2020)
 We got a LOT of questions about this problem this
-year -- many students clearly find it puzzling.  I added the
+year — many students clearly find it puzzling.  I added the
 extended hint below to try to help.
 :::
 
@@ -2796,7 +2793,7 @@ Better:
 ::::full
 To interpret this rule formally, we need to do a little work.
 Strictly speaking, the assertion we've written, `P ∧ b`, is the
-conjunction of an assertion and a boolean expression -- i.e., it
+conjunction of an assertion and a boolean expression — i.e., it
 doesn't typecheck.  To fix this, we need a way of formally
 "lifting" any {name}`Bexp` `b` to an assertion.  Inside the `{{ }}`
 brackets, a boolean expression `b` stands for the assertion "the
@@ -3485,9 +3482,9 @@ Yes.
 
 :::dev BeforeNextRelease
 This last quiz should be turned into a discussion in the
-text, at least in the full version -- indeed, maybe all these
+text, at least in the full version — indeed, maybe all these
 should be turned into a long discussion of what it means to be a
-loop invariant -- I think that would be pretty helpful.
+loop invariant — I think that would be pretty helpful.
 :::
 
 ::::full
@@ -3609,7 +3606,7 @@ where loop invariants are first used. -/
 
     In both cases, we did not answer the question: "Does this procedure
     always terminate?" But partial correctness is also a feature of Hoare
-    logic -- we assume [st =[ c ]=> st'] before checking whether [st']
+    logic — we assume [st =[ c ]=> st'] before checking whether [st']
     satisfies the postcondition.
 
     The purpose of these two (extremely) informal proofs was to
@@ -3623,7 +3620,7 @@ where loop invariants are first used. -/
        Hoare triple.
     2. The loop invariant is preserved by the loop body, but at termination,
        we know something more: recall how we finished the
-       gcd-correctness proof -- "when the loop terminates, ..., and
+       gcd-correctness proof — "when the loop terminates, ..., and
        that B = 0. ..." Thus, the post-condition is [P ∧ ¬ b], where
        [b] is the loop condition.
     3. What do we demand of the loop body [c]? [{{ P }} c {{ P }}]
@@ -3780,7 +3777,7 @@ doing the right things at the beginning.
 
 MRC'20: Maybe I'm an outlier, but a WORKINCLASS that surprises me
 and maybe gets me stuck is not ideal. The truly interesting thing
-about this example is that it's provable --not the actual proof.
+about this example is that it's provable — not the actual proof.
 I propose that it not be worked in class, but that the proof
 be provided.
 
@@ -3885,7 +3882,7 @@ in place of C-style for loops.
 :::
 
 :::dev "Benjamin Pierce (bcpierce00)" PotentialImprovement (year := 2020)
-I think this exercise is not actually very nice --
+I think this exercise is not actually very nice —
 the hoare rule for repeat is really not that nice.  Let's do
 replace with FOR-DOWNTO as suggested.
 BCP 21: For the moment, I'm making it optional.
@@ -4345,7 +4342,7 @@ more interesting programs satisfy interesting specifications of
 their behavior.
 
 Crucially, we will do so without ever again unfolding the
-definition of Hoare triples (via {name}`validHoareTriple_def`) -- i.e.,
+definition of Hoare triples (via {name}`validHoareTriple_def`) — i.e.,
 we will take the rules of Hoare logic as a closed world for reasoning
 about programs.
 
@@ -4368,7 +4365,7 @@ total-correctness Hoare Logic.  The crucial rule would be something like this:
 
 We could define TC-triples, ask them to prove this rule, and then in
 Hoare2.v, as them to carry out some proofs as decorated programs.
-(Asking them to prove this rule might be a bit much, though -- probably
+(Asking them to prove this rule might be a bit much, though — probably
 requires some fanciness with Rocq...)
 :::
 
@@ -4525,7 +4522,7 @@ theorem hoare_consequence_pre {P P' Q : Assertion} {c : Com}
 
 :::::exercise (rating := 3) (name := "hoare_havoc") (level := Advanced)
 :::dev "Benjamin Pierce (bcpierce00)" BeforeNextRelease (year := 2021)
-This exercise turns out to be quite hard -- a lot
+This exercise turns out to be quite hard — a lot
 of people get stuck.  We should make it advanced the next time
 through.  BCP 23: Made it advanced.  Can we also explain it better?
 :::

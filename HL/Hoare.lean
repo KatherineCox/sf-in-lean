@@ -93,6 +93,13 @@ when we print them?
 
 :::
 
+:::dev "Mike Hicks (mwhicks1)" (year := 2026)
+The terse version of this chapter is not sufficiently terse, IMO.
+Too much explanation in the text itself. When going through this
+in class I found myself scrolling through a lot of the text that
+is shown to get to the good parts.
+:::
+
 ::::full
 In the {ref "Imp"}[Imp] and {ref "Equiv"}[Equiv] chapters, we built up the
 mathematical machinery for talking about Imp programs precisely — an

@@ -2879,16 +2879,15 @@ theorem if_example :
     · assertion_auto
 ```
 
-:::dev "Mike Hicks (mwhicks1)"
-`if_example'` (and the `if_minus_plus` solution below) write
-`apply hoare_consequence_pre hoare_asgn (by assertion_auto)`, supplying
-`hoare_consequence_pre`'s two arguments directly instead of applying it
-and closing the two resulting goals separately. This idiom has
-never been shown to students. Options: teach the general fact here with a
-sentence or two, or introduce the approach properly earlier in the text.
-===
-
-We can even shorten it a little bit more.
+::::full
+We can even shorten it a little bit more. Wherever Lean expects a term of
+some type, we may write `(by <tactics>)` in its place: the tactics run
+immediately, and the proof they produce is spliced in as that term. Here we
+use it to supply {name}`hoare_consequence_pre`'s second argument, the
+implication `P ↠ P'`, directly at the call site, instead of `apply`-ing
+{name}`hoare_consequence_pre` and discharging that goal afterward with a
+separate bullet.
+::::
 
 ```lean
 theorem if_example' :
@@ -2902,7 +2901,6 @@ theorem if_example' :
   apply hoare_if <;>
     apply hoare_consequence_pre hoare_asgn (by assertion_auto)
 ```
-:::
 
 ::::::full
 :::::exercise (rating := 2) (name := "if_minus_plus")

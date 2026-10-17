@@ -1083,7 +1083,8 @@ macro_rules
 
 namespace DCom.Delab
 
-open Lean PrettyPrinter Delaborator SubExpr Parenthesizer Imp.Elab Imp.Delab
+open Lean PrettyPrinter Delaborator SubExpr Parenthesizer
+  Imp.Elab Imp.Delab
 
 @[category_parenthesizer «dcom»]
 def dcom.parenthesizer : CategoryParenthesizer := fun prec => do
@@ -1104,7 +1105,8 @@ def getAssnBody (stx : Term) : Term :=
 
 private def getDCom? (stx : Term) : Option (TSyntax `dcom) :=
   match stx with
-  | `(dcom { $d:dcom }) => some <| withSourceInfoOf (canonical := false) stx d
+  | `(dcom { $d:dcom }) =>
+      some <| withSourceInfoOf (canonical := false) stx d
   | _ => none
 
 @[app_unexpander DCom.skip]
@@ -1333,7 +1335,7 @@ def Decorated.erase (dec : Decorated) : Com :=
 ```
 
 :::instructors
-the `unfold` isn't needed, but it lets us recall
+The `unfold` isn't needed, but it lets us recall
 what `dec_while` is without having to print it.
 :::
 
@@ -2373,7 +2375,7 @@ theorem parity_correct (m : Nat) :
 :::
 
 :::instructors
-the main idea introduced here is preserving equalities for
+The main idea introduced here is preserving equalities for
 variables that don't change, and it appears in its purest form here.
 :::
 
@@ -2494,7 +2496,7 @@ theorem sqrt_correct (m : Nat) :
 :::
 
 :::instructors
-using easier version of this: counting up, instead of
+Using an easier version of this: counting up, instead of
 counting down...
 :::
 
@@ -3929,10 +3931,12 @@ macro_rules
 
 namespace DCom.Delab
 
-open Lean PrettyPrinter Delaborator SubExpr Parenthesizer Imp.Elab Imp.Delab
+open Lean PrettyPrinter Delaborator SubExpr Parenthesizer
+  Imp.Elab Imp.Delab
 
 @[category_parenthesizer «sparse_dcom»]
-def sparse_dcom.parenthesizer : CategoryParenthesizer := fun prec => do
+def sparse_dcom.parenthesizer : CategoryParenthesizer :=
+  fun prec => do
   maybeParenthesize `sparse_dcom false wrapParens prec <|
     parenthesizeCategoryCore `sparse_dcom prec
 where
@@ -3944,7 +3948,8 @@ where
 
 private def getDCom? (stx : Term) : Option (TSyntax `sparse_dcom) :=
   match stx with
-  | `(sdcom { $d:sparse_dcom }) => some <| withSourceInfoOf (canonical := false) stx d
+  | `(sdcom { $d:sparse_dcom }) =>
+      some <| withSourceInfoOf (canonical := false) stx d
   | _ => none
 
 @[app_delab SparseAnnotations.DCom.skip]
@@ -3993,7 +3998,9 @@ def unexpandWhileDo : Unexpander
 @[app_unexpander SparseAnnotations.DCom.assert]
 def unexpandAssert : Unexpander
   | `($_ $assertion) =>
-      `(sdcom { assert {{ $(_root_.DCom.Delab.getAssnBody assertion) }} })
+      `(sdcom {
+        assert {{ $(_root_.DCom.Delab.getAssnBody assertion) }}
+      })
   | _ => throw ()
 
 end DCom.Delab

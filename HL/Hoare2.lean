@@ -168,13 +168,28 @@ exercise -- nice because it has nested loops...
 ```
 :::
 
+::::full
+In {ref "Hoare"}[Hoare], we defined Hoare Logic's proof rules and
+proved them sound. In this chapter, we put those rules to work:
+verifying Imp programs by formalizing the informal proof sketches we
+call _decorated programs_.
+
+Such proofs require _specifications_, i.e., the pre- and post-conditions
+that explain what programs are supposed to do. Let's play with
+writing specifications.
+::::
+
+::::terse
+In this chapter, we put Hoare Logic's rules to work, verifying Imp
+programs via formal _decorated programs_.
+::::
+
 ::::quiz
 :::instructors
 Pretty trivial, but still not without interest
 :::
 
-On a piece of paper (or whatever), write down a Hoare-triple
-specification for the following program:
+Write down a Hoare-triple specification for the following program:
 
 ```display
 X := 2;
@@ -191,7 +206,8 @@ opportunity to talk about parameters (m).
 Write down a (useful) specification for the following program:
 
 ```display
-X := X + 1; Y := X + 1
+X := X + 1;
+Y := X + 1
 ```
 
 :::instructors
@@ -1242,13 +1258,25 @@ end DCom.Delab
 ```
 :::
 
-::::terse
-(We then need to redefine all our Notations to get nice
-concrete syntax for `dcom`.)
-::::
-
 :::slidebreak
 :::
+
+```lean
+example : DCom :=
+  dcom { skip {{ True }} }
+
+example : DCom :=
+  dcom {
+    while (true) do
+      {{ True }}
+      skip {{ True }}
+    end
+      {{ True }}
+  }
+```
+
+To inspect the fully elaborated term behind this notation, put
+`set_option pp.all true in` before a `#check` or `#print` command.
 
 To provide the initial precondition that goes at the very top of a
 decorated program, we introduce a new type `decorated`:
@@ -1260,34 +1288,6 @@ structure Decorated where
 ```
 
 :::slidebreak
-:::
-
-:::dev
-HIDE: Add FOLD here
-:::
-
-:::dev "Benjamin Pierce (bcpierce00)" PotentialImprovement (year := 2021)
-The above FOLD seems not to work, at least in the
-terse version. :-(
-:::
-
-```lean
-example : DCom :=
-  .skip ({{ True }})
-
-example : DCom :=
-  .whileDo (bexp {true}) ({{ True }})
-    (.skip ({{ True }})) ({{ True }})
-```
-
-To inspect the fully elaborated term behind this notation, put
-`set_option pp.all true in` before a `#check` or `#print` command.
-
-The formal definitions can use either constructors directly or the
-decorated-command notation introduced above.
-
-:::dev
-HIDE: Add /FOLD here
 :::
 
 An example `decorated` program that decrements `X` to `0`:
@@ -1316,8 +1316,7 @@ Print dec_while.
 :::slidebreak
 :::
 
-It is easy to go from a `dcom` to a `com` by erasing all
-annotations.
+It is easy to go from a `dcom` to a `com` by erasing all annotations.
 
 ```lean
 def DCom.erase (d : DCom) : Com :=
@@ -1334,11 +1333,6 @@ def Decorated.erase (dec : Decorated) : Com :=
   dec.body.erase
 ```
 
-:::instructors
-The `unfold` isn't needed, but it lets us recall
-what `dec_while` is without having to print it.
-:::
-
 ::::full
 ```lean
 example :
@@ -1352,6 +1346,18 @@ example :
 ```
 ::::
 
+::::terse
+We cannot use `dcom { ... }` syntax in pattern matches.
+::::
+
+::::full
+Aside: In the {name}`DCom.erase` function we do not use `dcom { ... }` syntax in the
+pattern match. This is because `dcom` syntax is implemented with `elab_rules`, which
+provides no way to extend patterns, but provides more helpful error messages than
+does `macro_rules`, which we used to implement the `imp` syntax. In a definition,
+you can use either constructors directly or the decorated-command notation.
+::::
+
 :::slidebreak
 :::
 
@@ -1362,16 +1368,6 @@ postcondition from a decorated program.
 def Decorated.precondition (dec : Decorated) : Assertion :=
   dec.pre
 ```
-
-:::dev "Benjamin Pierce (bcpierce00)" BeforeNextRelease (year := 2025)
-```
-It would be nice to use <{ ... }> notations
-in this definition and the ones below...
-     | <{ skip {{p}} }>        => p
-     | <{ _; d₂ }>             => post d₂
-     | <{ _ := _ {{q}} }>      => q
-```
-:::
 
 ```lean
 def DCom.postcondition (d : DCom) : Assertion :=

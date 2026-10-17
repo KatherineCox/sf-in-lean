@@ -2379,7 +2379,6 @@ The main idea introduced here is preserving equalities for
 variables that don't change, and it appears in its purest form here.
 :::
 
-::::::full
 The following program computes the integer square root of `X`
 by naive iteration:
 
@@ -2392,8 +2391,11 @@ by naive iteration:
 {{ Z*Z≤m ∧ m<(Z+1)*(Z+1) }}
 ```
 
+::::terse
 WORK IN CLASS
+::::
 
+::::::full
 As we did before, we can try to use the postcondition as a
 candidate loop invariant, obtaining the following decorated program:
 
@@ -2506,7 +2508,6 @@ for future exercise builders, together with some hints on how to
 write programs that are easier to verify
 :::
 
-::::full
 Here is a program that squares `X` by repeated addition:
 
 ```display
@@ -2520,8 +2521,11 @@ Here is a program that squares `X` by repeated addition:
 {{ Z = m*m }}
 ```
 
+::::terse
 WORK IN CLASS
+::::
 
+::::full
 The first thing to note is that the loop reads `X` but doesn't
 change its value. As we saw in the previous example, it can be a good idea
 in such cases to add `X = m` to the loop invariant.  The other thing
@@ -4491,7 +4495,7 @@ def IsWp (p : Assertion) (c : Com) (q : Assertion) : Prop :=
 Make a quiz based on this!
 :::
 
-:::::exercise (rating := 1) (name := "wp") (optional := true)
+:::::exercise (rating := 1) (name := "wp") (optional := true) (checkVisibility := false)
 What are weakest preconditions of the following commands
 for the following postconditions?
 
@@ -4605,8 +4609,6 @@ theorem hoare_asgn_weakest
     apply hP _ hst
     exact Com.EvalR.asgn rfl
 ```
-:::gradeTheorem 2 hoare_asgn_weakest
-:::
 :::::
 
 :::::exercise (rating := 2) (name := "hoare_havoc_weakest") (level := Advanced) (optional := true)

@@ -564,7 +564,7 @@ def monochrome (c : Color) : Bool :=
   match c with
   | Color.black => Bool.true
   | Color.white => Bool.true
-  | Color.primary p => Bool.false
+  | Color.primary _ => Bool.false
 
 --  Since the `primary` constructor takes an argument, a pattern that
 --  matches `.primary` should include a variable, a constant of appropriate
@@ -1363,14 +1363,34 @@ theorem four_eq_succ_three : four = succ three := by rfl
 
 --  Finish the proof using the `add` rules:
 
+-- This was my version, it works but takes 5 rewrites
+-- theorem one_plus_one_eq_two : one + one = two := by
+--   rewrite [one_eq_succ_zero]  -- succ zero + succ zero = two
+--   rewrite [two_eq_succ_one]   -- succ zero + succ zero = succ one
+--   rewrite [one_eq_succ_zero]  -- succ zero + succ zero = succ (succ zero)
+--   rewrite [add_one]           -- succ (succ zero) + zero = succ (succ zero)
+--   rewrite [add_zero]          -- succ (succ zero) = succ (succ zero)
+--   rfl
+
+
+-- this is their version, with 3 rewrites
 theorem one_plus_one_eq_two : one + one = two := by
-  rewrite [one_eq_succ_zero]
-  sorry
+  rewrite [one_eq_succ_zero]  -- succ zero + succ zero = two
+  rewrite [add_succ]          -- succ (succ zero + zero) = two
+  rewrite [add_zero]          -- succ (succ zero) = two
+  rfl  -- I guess this is allowed because succ (succ zero) is the definition of two?
 
 --  Try the same for `two + two = four`.
 
 theorem two_plus_two_eq_four : two + two = four := by
-  sorry
+  rewrite [four_eq_succ_three]
+  rewrite [three_eq_succ_two]
+  rewrite [two_eq_succ_one]
+  rewrite [add_succ]
+  rewrite [one_eq_succ_zero]
+  rewrite [add_succ]
+  rewrite [add_zero]
+  rfl
 
 --  #### Multiplication
 

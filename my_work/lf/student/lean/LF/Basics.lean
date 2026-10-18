@@ -1519,11 +1519,12 @@ example : ble four two = false := by rfl
 
 --  Define a less-than function in terms of `ble`.
 
-def blt (n m : Nat) : Bool := sorry
+def blt (n m : Nat) : Bool :=
+  ble (succ n) m
 
-theorem blt_test1 : blt two two = false := sorry
-theorem blt_test2 : blt two four = true  := sorry
-theorem blt_test3 : blt four two = false := sorry
+theorem blt_test1 : blt two two = false := by rfl
+theorem blt_test2 : blt two four = true  := by rfl
+theorem blt_test3 : blt four two = false := by rfl
 
 attribute [irreducible] blt ble
 

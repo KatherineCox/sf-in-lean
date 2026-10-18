@@ -1414,10 +1414,12 @@ scoped infixl:70 " * " => mul
 --  helpful as a model.
 
 theorem mul_zero : ∀ n : Nat, n * zero = zero := by
-  sorry
+  intro n
+  rfl
 
 theorem mul_succ : ∀ n m : Nat, n * (succ m) = (n * m) + n := by
-  sorry
+  intro n m
+  rfl
 
 attribute [irreducible] mul
 

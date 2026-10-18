@@ -1772,13 +1772,39 @@ example : decWhile.VerificationConditions := by
 To automate the overall process of verification, we can use
 `verification_conditions_correct` to extract the verification conditions, use the logic of `verify_assertion` to verify them as much as it can, and finally tidy up any remaining bits by hand.
 
+```lean -show
+-- Adapted from One An's `hoare2-meluge-pass`.
+
+-- These boolean comparisons
+-- in guards simplify straight to propositions rather than to
+-- `decide (…) = true`, whose `Decidable` instance `simp` leaves behind.
+theorem Bexp.eval_le_true {st : State} {a₁ a₂ : Aexp} :
+    (Bexp.le a₁ a₂).eval st = true ↔ a₁.eval st ≤ a₂.eval st := by
+  simp
+
+theorem Bexp.eval_le_false {st : State} {a₁ a₂ : Aexp} :
+    (Bexp.le a₁ a₂).eval st = false ↔ ¬ a₁.eval st ≤ a₂.eval st := by
+  simp
+
+theorem Bexp.eval_gt_true {st : State} {a₁ a₂ : Aexp} :
+    (Bexp.gt a₁ a₂).eval st = true ↔ a₁.eval st > a₂.eval st := by
+  simp
+
+theorem Bexp.eval_gt_false {st : State} {a₁ a₂ : Aexp} :
+    (Bexp.gt a₁ a₂).eval st = false ↔ ¬ a₁.eval st > a₂.eval st := by
+  simp
+```
+
 ```lean
 -- Unlike `verify_assertion`, this leaves any conjunct `lia` cannot
 -- prove open as a separate goal.
 macro "verify" : tactic =>
   `(tactic|
     (apply verification_conditions_correct;
-     simp +decide [assertImplies_def, assertIff_def,
+     simp +decide [-Bexp.eval_le, -Bexp.eval_gt,
+       Bexp.eval_le_true, Bexp.eval_le_false,
+       Bexp.eval_gt_true, Bexp.eval_gt_false,
+       assertImplies_def, assertIff_def,
        validHoareTriple_def, Assertion.subst_def];
      all_goals and_intros;
      all_goals try lia))
@@ -2380,8 +2406,10 @@ theorem parity_outer_triple_valid (m : Nat) :
       symm
       apply parity_lt_2
       lia
+```
 
--- SOLUTION
+:::solution
+```lean
 /- Here is another loop invariant — arguably a more natural
 one —
 which sadly leads to a rather long proof. -/
@@ -2423,24 +2451,25 @@ theorem l2 (m : Nat) (h : Even m) : Even (m + 2) := by
   apply Even.addTwo
   exact h
 
-theorem l3' (m : Nat) (h₁ : Even m) : ¬ Even (m + 1) := by
-  induction m with
+theorem Even.not_add_one {n : Nat} (h : Even n) :
+    ¬ Even (n + 1) := by
+  induction n with
   | zero =>
     intro h₂
     inversion h₂
-  | succ m ih =>
+  | succ n ih =>
     intro h₂
     apply ih
     · inversion h₂ with
-      | addTwo h => exact h
-    · exact h₁
+      | addTwo h' => exact h'
+    · exact h
 
 theorem l3 (m : Nat) (h : 1 ≤ m) (h₁ : Even m)
     (h₂ : Even (m - 1)) : False := by
   apply l2 at h₂
   have g : m - 1 + 2 = m + 1 := by lia
   rw [g] at h₂
-  apply l3' at h₁
+  apply Even.not_add_one at h₁
   apply h₁
   exact h₂
 
@@ -2512,21 +2541,22 @@ def findParityDec' (m : Nat) : Decorated where
     ↠ {{ post }}
   }
 
-theorem l4 (m : Nat) (h : 2 ≤ m) : Even (m - 2) ↔ Even m := by
-  cases m with
+theorem Even.sub_two_iff {n : Nat} (h : 2 ≤ n) :
+    Even (n - 2) ↔ Even n := by
+  cases n with
   | zero =>
     constructor
     · intro _
       apply Even.zero
     · intro _
       apply Even.zero
-  | succ m =>
-    cases m with
+  | succ n =>
+    cases n with
     | zero =>
       exfalso
       lia
-    | succ m =>
-      show Even m ↔ Even (m + 1 + 1)
+    | succ n =>
+      show Even n ↔ Even (n + 1 + 1)
       constructor
       · intro h'
         apply Even.addTwo
@@ -2541,7 +2571,7 @@ theorem find_parity_correct' (m : Nat) :
   verify
   · -- loop invariant preserved
     intro st h hle
-    rw [l4]
+    rw [Even.sub_two_iff]
     · exact h
     · exact hle
   · intro st
@@ -2596,8 +2626,8 @@ theorem parity_correct (m : Nat) :
     symm
     apply parity_lt_2
     lia
--- END SOLUTION
 ```
+:::
 :::::
 
 ::::::
@@ -4147,8 +4177,10 @@ decorated-command templates.
 
 ```lean
 namespace SparseAnnotations
+```
 
--- SOLUTION
+:::solution
+```lean
 /- (This solution also allows optional post-condition
 assertions at any point, since these are quite useful in
 practice when debugging the results of automated VC
@@ -4439,7 +4471,10 @@ scoped macro_rules
   | `(tactic| verify) =>
     `(tactic|
       (apply verification_correct;
-       simp +decide [assertImplies_def, assertIff_def,
+       simp +decide [-Bexp.eval_le, -Bexp.eval_gt,
+         Bexp.eval_le_true, Bexp.eval_le_false,
+         Bexp.eval_gt_true, Bexp.eval_gt_false,
+         assertImplies_def, assertIff_def,
          validHoareTriple_def, Assertion.subst_def];
        all_goals and_intros;
        all_goals try lia))
@@ -4753,9 +4788,10 @@ theorem dfib_correct (n : Nat) :
     · apply fib_eqn
       exact hx
     · lia
+```
+:::
 
--- END SOLUTION
-
+```lean
 end SparseAnnotations
 ```
 

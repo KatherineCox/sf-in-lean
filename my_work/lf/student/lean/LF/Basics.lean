@@ -649,15 +649,19 @@ theorem is_weekend_test2 : is_weekend Day.friday = false := by rfl
 --  As before, write the right-hand sides of the `example` blocks to ensure
 --  they pass with no `sorry`.
 
-def isInversion (c1 c2 : Color) : Bool
-  := sorry
+def isInversion (c1 c2 : Color) : Bool :=
+  match c1, c2 with
+  | Color.black, Color.white => Bool.true
+  | Color.white, Color.black => Bool.true
+  | Color.primary RGB.red, Color.primary RGB.blue => Bool.true
+  | Color.primary RGB.blue, Color.primary RGB.red => Bool.true
+  | _, _ => Bool.false
 
-theorem isInversion_test1 : isInversion Color.black Color.white = true := sorry
-theorem isInversion_test2 : isInversion Color.white Color.black = Bool.true := sorry
-theorem isInversion_test3 : isInversion (Color.primary RGB.red) (Color.primary RGB.blue) = Bool.true :=
-  sorry
-theorem isInversion_test4 : isInversion (Color.primary RGB.green) (Color.primary RGB.red) = Bool.false :=
-  sorry
+
+theorem isInversion_test1 : isInversion Color.black Color.white = true := by rfl
+theorem isInversion_test2 : isInversion Color.white Color.black = Bool.true := by rfl
+theorem isInversion_test3 : isInversion (Color.primary RGB.red) (Color.primary RGB.blue) = Bool.true := by rfl
+theorem isInversion_test4 : isInversion (Color.primary RGB.green) (Color.primary RGB.red) = Bool.false := by rfl
 
 --  ### Namespaces
 

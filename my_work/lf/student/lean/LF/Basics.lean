@@ -1444,19 +1444,27 @@ theorem zero_add_one : (zero + one : Nat) = one := by
 
 theorem one_add_one : (one + one : Nat) = two := by
   rewrite [one_eq_succ_zero]
-  sorry
+  rewrite [add_succ, add_zero]
+  rfl
 
 theorem zero_mul_two : (zero * two : Nat) = zero := by
   rewrite [two_eq_succ_one, one_eq_succ_zero]
-  sorry
+  rewrite [mul_succ, mul_succ]
+  rewrite [mul_zero, add_zero, add_zero]
+  rfl
 
 theorem one_mul_two : (one * two : Nat) = two := by
   rewrite [two_eq_succ_one, one_eq_succ_zero]
-  sorry
+  rewrite [mul_succ, mul_succ, mul_zero]
+  rewrite [add_succ, add_succ, add_zero, add_zero]
+  rfl
 
 theorem two_mul_two : (two * two : Nat) = four := by
   rewrite [two_eq_succ_one, one_eq_succ_zero]
-  sorry
+  rewrite [mul_succ, mul_succ, mul_zero]
+  rewrite [add_succ, add_succ, add_succ, add_succ]
+  rewrite [add_zero, add_zero]
+  rfl
 
 --  #### Equality and Ordering
 

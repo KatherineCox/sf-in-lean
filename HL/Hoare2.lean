@@ -1772,12 +1772,9 @@ example : decWhile.VerificationConditions := by
 To automate the overall process of verification, we can use
 `verification_conditions_correct` to extract the verification conditions, use the logic of `verify_assertion` to verify them as much as it can, and finally tidy up any remaining bits by hand.
 
-```lean -show
--- Adapted from One An's `hoare2-meluge-pass`.
+We first add some low-level simplification lemmas to make this process feel more smooth.
 
--- These boolean comparisons
--- in guards simplify straight to propositions rather than to
--- `decide (…) = true`, whose `Decidable` instance `simp` leaves behind.
+```lean -show
 theorem Bexp.eval_le_true {st : State} {a₁ a₂ : Aexp} :
     (Bexp.le a₁ a₂).eval st = true ↔ a₁.eval st ≤ a₂.eval st := by
   simp
@@ -4605,8 +4602,7 @@ theorem square_outer_triple_valid (m : Nat) :
   verify
   -- loop invariant preserved
   intro st h hy
-  simp only [X, Y, Z] at h hy ⊢
-  generalize st["Y"] = y at *
+  generalize st[Y] = y at *
   cases y with
   | zero => contradiction
   | succ y =>

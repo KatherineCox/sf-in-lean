@@ -2144,7 +2144,7 @@ observation is captured by two _Rules of Consequence_.
 
 {{P}} c {{Q'}}
    Q' ↠ Q
---------------    (hoare_consequence_post)
+--------------   (hoare_consequence_post)
 {{P}} c {{Q}}
 ```
 
@@ -4320,30 +4320,30 @@ Imp programs.
 The rules of Hoare Logic are:
 
 ```display +centered
-     -------------------------- (hoare_asgn)
+     --------------------------          (hoare_asgn)
      {{Q [X ↦ a]}} X := a {{Q}}
 
-        --------------------  (hoare_skip)
+        --------------------             (hoare_skip)
         {{ P }} skip {{ P }}
 
          {{ P }} c₁ {{ Q }}
          {{ Q }} c₂ {{ R }}
-        ----------------------  (hoare_seq)
+        ----------------------            (hoare_seq)
         {{ P }} c₁; c₂ {{ R }}
 
         {{P ∧   b}} c₁ {{Q}}
         {{P ∧ ¬ b}} c₂ {{Q}}
-------------------------------------  (hoare_if)
+------------------------------------       (hoare_if)
 {{P}} if b then c₁ else c₂ end {{Q}}
 
          {{P ∧ b}} c {{P}}
- -----------------------------------  (hoare_while)
+ -----------------------------------    (hoare_while)
  {{P}} while b do c end {{P ∧ ¬ b}}
 
           {{P'}} c {{Q'}}
              P ↠ P'
              Q' ↠ Q
-   -----------------------------   (hoare_consequence)
+   -----------------------------  (hoare_consequence)
           {{P}} c {{Q}}
 ```
 

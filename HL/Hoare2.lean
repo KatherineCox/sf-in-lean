@@ -108,13 +108,6 @@ hints (or exercises!) about this.  BCP 20: Which ones???
 :::
 
 :::dev PotentialImprovement
-```
-HIDE: to be removed whenever they finally change the default definition
-Ltac intuition_solver ::= auto.
-```
-:::
-
-:::dev PotentialImprovement
 Use informal mathematical notations everywhere we can!
 
 ```
@@ -191,10 +184,16 @@ Pretty trivial, but still not without interest
 
 Write down a Hoare-triple specification for the following program:
 
-```display
+```display +centered
 X := 2;
 Y := X + X
 ```
+
+:::quizSolution
+```display +centered
+{{True}} c {{X = 2 ∧ Y = 4}}
+```
+:::
 ::::
 
 ::::quiz
@@ -205,34 +204,24 @@ opportunity to talk about parameters (m).
 
 Write down a (useful) specification for the following program:
 
-```display
+```display +centered
 X := X + 1;
 Y := X + 1
 ```
 
-:::instructors
-```
+:::quizSolution
+```display +centered
 ∀ m, {{ X=m }} c {{ X = m+1 ∧ Y = m+2 }}
-vs {{ True }} c {{ Y > X }}
 ```
+This is more interesting than `{{ True }} c {{ Y > X }}`.
 :::
 ::::
 
 ::::quiz
-:::instructors
-```
-Much more interesting: one obvious spec is
-{{True}} c {{X≤Y}}, but this loses the fact that the final values
-are either the same as the initial or else swapped, so then a spec
-with parameters seems preferable.  There's also a potential
-confusion about whether to say something about Z in the
-postcondition.
-```
-:::
 
 Write down a (useful) specification for the following program:
 
-```display
+```display +centered
 if X ≤ Y then
   skip
 else
@@ -241,6 +230,15 @@ else
   Y := Z
 end
 ```
+
+:::quizSolution
+One obvious spec is `{{True}} c {{X≤Y}}`, but this loses the fact that
+the final values
+are either the same as the initial or else swapped, so then a spec
+with parameters seems preferable.  There's also a question
+about whether to say something about `Z` in the postcondition.
+:::
+
 ::::
 
 ::::quiz
@@ -250,16 +248,22 @@ Parameters can also appear within programs.
 
 Write down a (useful) specification for the following program:
 
-```display
+```display +centered
 X := m;
 Y := X + X
 ```
+
+:::quizSolution
+```display +centered
+{{True}} c {{X = m ∧ Y = 2 * m}}
+```
+:::
 ::::
 
 ::::quiz
 Write down a (useful) specification for the following program:
 
-```display
+```display +centered
 X := m;
 Z := 0;
 while X ≠ 0 do
@@ -267,6 +271,17 @@ while X ≠ 0 do
   Z := Z + 1
 end
 ```
+
+:::quizSolution
+```display +centered
+{{True}} c {{X = 0 ∧ Z = (m + 1) / 2}}
+```
+
+Here `/` is natural-number division: the loop subtracts 2 from `X`
+each time around, so it runs `⌈m / 2⌉` times whether `m` is even or
+odd, thanks to truncated subtraction turning the odd case's last `1`
+into `0` rather than going negative.
+:::
 ::::
 
 # Decorated Programs
@@ -936,50 +951,32 @@ first likely being the same as the precondition of the second.
 Instead, our formal syntax of decorated commands will omit
 preconditions whenever possible and embed just postconditions.
 
-:::slidebreak
-:::
-
-- The `skip` command, for example, is decorated only with its
-postcondition
+::::full
+The *skip* command `skip` is decorated only with its postcondition.
 
 ```display
 skip {{ q }}
 ```
 
-on the assumption that the precondition will be provided by
-somebody else.
-
+The precondition will be provided by somebody else.
 We carry the same assumption through the other syntactic forms:
 each decorated command is assumed to carry its own postcondition
 within itself but take its precondition from its context in
 which it is used.
 
-:::slidebreak
-:::
-
-- Sequences `d₁ ; d₂` need no additional decorations.
-
-Why?
-
+*Sequences* `d₁ ; d₂` need no additional decorations. Why?
 Because inside `d₂` there will be a postcondition, which also
 serves as the postcondition of `d₁;d₂`.
-
 Similarly, inside `d₁` there will also be a postcondition, which
 additionally serves as the _precondition_ for `d₂`.
 
-:::slidebreak
-:::
-
-- An assignment `X := a` is decorated only with its postcondition:
+An *assignment* `X := a` is decorated only with its postcondition:
 
 ```display
 X := a {{ q }}
 ```
 
-:::slidebreak
-:::
-
-- A conditional `if b then d₁ else d₂` is decorated with a
+A *conditional* `if b then d₁ else d₂` is decorated with a
 postcondition for the entire statement, as well as preconditions
 for each branch:
 
@@ -994,10 +991,7 @@ whole loop. Indeed, we could (and perhaps should, as discussed
 elsewhere), but we are doing something simpler for the moment.
 :::
 
-:::slidebreak
-:::
-
-- A loop `while (b) {d}` is decorated with its final
+A *loop* `while (b) {d}` is decorated with its final
 postcondition plus a precondition for the body:
 
 ```display
@@ -1006,10 +1000,7 @@ while (b) {{ p }} { d } {{ q }}
 
 The postcondition embedded in `d` serves as the loop invariant.
 
-:::slidebreak
-:::
-
-- Implications `↠` can be added as decorations either for a
+*Implications* `↠` can be added as decorations either for a
 precondition...
 
 ```display
@@ -1025,9 +1016,7 @@ d ↠ {{ q }}
 The former is waiting for another precondition to be supplied by
 the context; the latter relies on the postcondition already
 embedded in `d`.
-
-:::slidebreak
-:::
+::::
 
 Putting this all together gives us the formal syntax of decorated
 commands:
@@ -1286,9 +1275,10 @@ example : DCom :=
   }
 ```
 
+::::full
 To inspect the fully elaborated term behind this notation, put
 `set_option pp.all true in` before a `#check` or `#print` command.
-
+::::
 To provide the initial precondition that goes at the very top of a
 decorated program, we introduce a new type `decorated`:
 
@@ -1358,7 +1348,7 @@ example :
 ::::
 
 ::::terse
-We cannot use `dcom { ... }` syntax in pattern matches.
+Note: We cannot use `dcom { ... }` syntax in patterns.
 ::::
 
 ::::full
@@ -1382,11 +1372,13 @@ def Decorated.precondition (dec : Decorated) : Assertion :=
 ```
 
 Notice the `@[simp]` annotation we added here.
+::::full
 This directs Lean to generate an equational lemma of the same form as the
 characterizing lemmas we've been writing by hand, such as
 {name}`validHoareTriple_def` and {name}`Assertion.subst_apply` in the
 {ref "Hoare"}[Hoare] chapter, and add it to the `simp` set. We can
 see the added equation by printing it.
+::::
 
 ```lean (name := Decorated_precondition_eq)
 #print equations Decorated.precondition
@@ -1397,7 +1389,9 @@ equations:
 @[backward_defeq] theorem Decorated.precondition.eq_1 : ∀ (dec : Decorated), dec.precondition = dec.pre
 ```
 
+::::full
 We'll add `@[simp]` annotations on the following definitions, too.
+::::
 
 ```lean
 @[simp]
@@ -1428,11 +1422,11 @@ example : decWhile.postcondition = {{ X = 0 }} := by
 ```
 ::::
 
-:::slidebreak
-:::
+## Extracting Verification Conditions
 
-We can then express what it means for a decorated program to be
-correct as follows:
+Now that we have defined what a decorated program is, we can
+express what it means for a particular decorated program to be
+_correct_, as a valid Hoare Triple:
 
 ```lean
 def Decorated.OuterTripleValid (dec : Decorated) : Prop :=
@@ -1467,8 +1461,6 @@ because they are the facts that must be verified to see that the
 decorations are locally consistent and thus constitute a proof of
 validity of the outer triple.
 
-## Extracting Verification Conditions
-
 The function `DCom.VerificationConditions` takes a decorated command
 `d` together with a precondition `p` and returns a _proposition_
 that, if it can be proved, implies that the triple
@@ -1489,24 +1481,15 @@ that includes
   external precondition; these uses correspond to applications
   of the consequence rule.
 
-:::slidebreak
-:::
+### Local consistency
 
-_Local consistency_ is defined as follows...
-
-- The decorated command
-
-```display
-skip {{q}}
-```
-
-is locally consistent with respect to a precondition `p` if
-`p ↠ q`.
+The *skip* command `skip {{q}}` is locally consistent with respect to a
+precondition `p` if `p ↠ q`.
 
 :::slidebreak
 :::
 
-- The sequential composition of `d₁` and `d₂` is locally
+The *sequential composition* `d₁` and `d₂` is locally
 consistent with respect to `p` if `d₁` is locally consistent with
 respect to `p` and `d₂` is locally consistent with respect to
 the postcondition of `d₁`.
@@ -1514,92 +1497,55 @@ the postcondition of `d₁`.
 :::slidebreak
 :::
 
-- An assignment
-
-```display
-X := a {{q}}
-```
-
-is locally consistent with respect to a precondition `p` if:
-
-```display
-p ↠ q [X ↦ a]
-```
+An *assignment* `X := a {{q}}` is locally consistent with respect to a
+precondition `p` if `p ↠ q [X ↦ a]`.
 
 :::slidebreak
 :::
 
-- A conditional
+A *conditional* `if b then {{p₁}} d₁ else {{p₂}} d₂ end {{q}}` is locally consistent \
+with respect to precondition `p` if
 
-```display
-if b then {{p₁}} d₁ else {{p₂}} d₂ end {{q}}
-```
-
-is locally consistent with respect to precondition `p` if
-
-   (1) `p ∧ b ↠ p₁`
-
-   (2) `p ∧ b ↠ p₂`
-
-   (3) `d₁` is locally consistent with respect to `p₁`
-
-   (4) `d₂` is locally consistent with respect to `p₂`
-
-   (5) `d₁.postcondition ↠ q`
-
-   (6) `d₂.postcondition ↠ q`
+1. `p ∧ b ↠ p₁`
+2. `p ∧ b ↠ p₂`
+3. `d₁` is locally consistent with respect to `p₁`
+4. `d₂` is locally consistent with respect to `p₂`
+5. `d₁.postcondition ↠ q`
+6. `d₂.postcondition ↠ q`
 
 :::slidebreak
 :::
 
-- A loop
+A *loop* `while (b) {{{q}} d} {{r}}` is locally consistent with respect to
+precondition `p` if:
 
-```display
-while (b) {{{q}} d} {{r}}
-```
-
-is locally consistent with respect to precondition `p` if:
-
-   (1) `p ↠ d.postcondition`
-
-   (2) `d.postcondition ∧ b ↠ q`
-
-   (3) `d.postcondition ∧ b ↠ r`
-
-   (4) `d` is locally consistent with respect to `q`
+1. `p ↠ d.postcondition`
+2. `d.postcondition ∧ b ↠ q`
+3. `d.postcondition ∧ b ↠ r`
+4. `d` is locally consistent with respect to `q`
 
 :::slidebreak
 :::
 
-- A command with an extra assertion at the beginning
+A command with an extra *assertion at the beginning*, `↠ {{q}} d` is locally consistent
+with respect to a precondition `p` if:
 
-```display
-↠ {{q}} d
-```
-
-is locally consistent with respect to a precondition `p` if:
-
-  (1) `p ↠ q`
-
-  (2) `d` is locally consistent with respect to `q`
+1. `p ↠ q`
+2. `d` is locally consistent with respect to `q`
 
 :::slidebreak
 :::
 
-- A command with an extra assertion at the end
+A command with an extra *assertion at the end* `d ↠ {{q}}` is locally consistent
+with respect to a precondition `p` if:
 
-```display
-d ↠ {{q}}
-```
-
-is locally consistent with respect to a precondition `p` if:
-
-  (1) `d` is locally consistent with respect to `p`
-
-  (2) `d.postcondition ↠ q`
+1. `d` is locally consistent with respect to `p`
+2. `d.postcondition ↠ q`
 
 :::slidebreak
 :::
+
+### Verification Condition Generation
 
 With all this in mind, we can write a _verification condition
 generator_ that takes a decorated command and reads off a

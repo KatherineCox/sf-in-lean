@@ -2833,18 +2833,6 @@ adds overhead for the reader.
 Now we can formalize the Hoare proof rule for conditionals
 and prove it correct.
 
-The statement of the rule reads: given `htrue : {{ P ∧ b }} c₁ {{Q}}`
-and `hfalse : {{ P ∧ ¬b }} c₂ {{Q}}`, we can conclude
-`{{P}} if (b) { c₁ } else { c₂ } {{Q}}`.  That is (unwrapping the
-notations):
-
-```display
-theorem hoare_if {P Q : Assertion} {b : Bexp} {c₁ c₂ : Com}
-    (htrue : {{ fun st => P st ∧ b.eval st = true }} c₁ {{ Q }})
-    (hfalse : {{ fun st => P st ∧ ¬ (b.eval st = true) }} c₂ {{ Q }}) :
-    {{ P }} if (b) { c₁ } else { c₂ } {{ Q }}
-```
-
 ```lean
 theorem hoare_if {P Q : Assertion} {b : Bexp} {c₁ c₂ : Com}
     (htrue : {{ P ∧ b }} c₁ {{ Q }})

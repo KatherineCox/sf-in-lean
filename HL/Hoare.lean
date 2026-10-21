@@ -2608,7 +2608,7 @@ theorem hoare_asgn_example4 :
 :::
 :::::
 
-:::::exercise (rating := 3) (name := "swap_exercise")
+:::::exercise (rating := 3) (name := "swap_exercise") (manual := true)
 Write an Imp program `c` that swaps the values of `X` and `Y` and
 show that it satisfies the following specification:
 
@@ -2670,9 +2670,10 @@ theorem swap_exercise :
       · assertion_auto
 ```
 
-:::autogradedHole swapProgram
-:::
-:::gradeTheorem 3 swap_exercise
+:::grade
+```
+GRADE_MANUAL 3: swap_exercise
+```
 :::
 :::::
 

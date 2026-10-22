@@ -1850,17 +1850,17 @@ Fill in appropriate assertions for the division program from above.
 def divModDec (a b : Nat) : Decorated where
   pre := ({{ True }})
   body := dcom {
-    ↠ {{ b * 0 + a = a }}
-    X := ~(Aexp.num a) {{ b * 0 + X = a }};
-    Y := 0 {{ b * Y + X = a }};
+    ↠ {{ solution!({{ b * 0 + a = a }}) }}
+    X := ~(Aexp.num a) {{ solution!({{ b * 0 + X = a }}) }};
+    Y := 0 {{ solution!({{ b * Y + X = a }}) }};
     while (~(Aexp.num b) ≤ X) do
-      {{ b * Y + X = a ∧ b ≤ X }}
-      ↠ {{ b * (Y + 1) + (X - b) = a }}
-      X := X - ~(Aexp.num b) {{ b * (Y + 1) + X = a }};
-      Y := Y + 1 {{ b * Y + X = a }}
+      {{ solution!({{ b * Y + X = a ∧ b ≤ X }}) }}
+      ↠ {{ solution!({{ b * (Y + 1) + (X - b) = a }}) }}
+      X := X - ~(Aexp.num b) {{ solution!({{ b * (Y + 1) + X = a }}) }};
+      Y := Y + 1 {{ solution!({{ b * Y + X = a }}) }}
     end
-      {{ b * Y + X = a ∧ ¬ b ≤ X }}
-    ↠ {{ b * Y + X = a ∧ X < b }}
+      {{ solution!({{ b * Y + X = a ∧ ¬ b ≤ X }}) }}
+    ↠ {{ solution!({{ b * Y + X = a ∧ X < b }}) }}
   }
 
 theorem div_mod_outer_triple_valid (a b : Nat) :

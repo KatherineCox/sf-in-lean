@@ -1458,7 +1458,7 @@ A *conditional* `if b then {{p₁}} d₁ else {{p₂}} d₂ end {{q}}` is locall
 with respect to precondition `p` if
 
 1. `p ∧ b ↠ p₁`
-2. `p ∧ b ↠ p₂`
+2. `p ∧ ¬ b ↠ p₂`
 3. `d₁` is locally consistent with respect to `p₁`
 4. `d₂` is locally consistent with respect to `p₂`
 5. `d₁.postcondition ↠ q`
@@ -1472,7 +1472,7 @@ precondition `p` if:
 
 1. `p ↠ d.postcondition`
 2. `d.postcondition ∧ b ↠ q`
-3. `d.postcondition ∧ b ↠ r`
+3. `d.postcondition ∧ ¬ b ↠ r`
 4. `d` is locally consistent with respect to `q`
 
 :::slidebreak

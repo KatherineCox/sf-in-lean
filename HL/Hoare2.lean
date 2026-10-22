@@ -45,29 +45,11 @@ Here are a bunch of improvements I wanted to make but
 didn't have time to get to.  Maybe next time if no one else gets to
 them first.
 
-- 1. This chapter feels largely disconnected from the style of the
-     rest of the series, which is "100% Rocq script".  There's a
-     significant amount of "just comments" here instead.  I think
-     we could make this much better by introducing formal decorated
-     programs right after we informally define them.  Then in the
-     examples that follow do each informal decorated program (to
-     get students to find the right assertions, more or less)
-     followed immediately by a formal version, instead of delaying
-     formal so far to the end. The `parity` exercise is a good
-     example of one that already almost does this already. (BCP 21:
-     Done!)
-- 2. There are several places where we are verifying Imp program
-     schemas, not actual programs.  We're mixing Rocq variables with
-     Imp variables.  That's confusing.  One example is `two_loops`;
-     I've tried to mark others as I come across them.  (BCP: I've
-     added some quizzes and such to try to clarify the relation
-     between programs / triples and program/triple schemas.
-     BCP 25: I think this is a non-issue now.)
-- 3. Weakest preconditions show up in this chapter as completely
+- 1. Weakest preconditions show up in this chapter as completely
      optional, then are revisited (and required) in HoareAsLogic.
      Consider moving the entire treatment to that chapter.  (BCP
      23: Yes, we should do that!)
-- 4. It seems a shame that the SparseAnnotations section is not
+- 2. It seems a shame that the SparseAnnotations section is not
      visible in the full version, but only in a solution.  It's
      fantastic!  It would be great to show it off.  (BCP 25: Yes!
      Indeed, perhaps it should even replace the current treatment!)
@@ -364,32 +346,6 @@ proof of this specification:
 {{ Z = p - m }}
 ```
 
-:::dev
-```
-HIDE: MRC'20: It bothers me a little in the proof above (and
-similarly throughout the whole file really when it comes to guards)
-that when we get to this part:
-[[
- while X ≠ 0 do {{ Z - X = p - m ∧ X ≠ 0 }} ↠
-]]
-we are inconsistent about [X ≠ 0] vs. [~(X=0)].  I admit they
-evaluate the same (er, sort of---the former is a [bexp] whereas the
-latter is an assertion), but they aren't syntactically the same.
-Since what we're teaching here (mechanized Hoare logic) is fussy
-about syntax, it strikes me as something we ought to be precise
-about. But it's an annoying change to propagate through the file,
-so I haven't done it. Is it worth a comment, or do others not get
-bothered by this?  Another way to fix this would be to add the [≠]
-operator to Imp, so that we can write the guard in the nicer way.
-
-BCP 20: I think adding in a few more boolean operators at the
-outside is the way to go...
-
-BCP 21: ... and I've now done this: ≠ is available in formal
-bexps (also >).
-```
-:::
-
 Concretely, a decorated program consists of the program's text
 interleaved with assertions (sometimes multiple assertions
 separated by ↠).
@@ -550,12 +506,6 @@ These decorations can be constructed as follows:
     arbitrary natural numbers `n` and `m` (for example, \[3 - 5 + 5 =
     5\]).
 ::::
-
-:::dev
-NOTATION: LATER: The `~` in that paragraph will typeset wrong if
-the space after it is removed.  Maybe it's better to give up on
-all the unicode hacks in the generated HTML...?
-:::
 
 ::::::full
 :::::exercise (rating := 2) (name := "if_minus_plus_reloaded") (optional := true) (manual := true)
@@ -1490,9 +1440,10 @@ precondition `p` if `p ↠ q`.
 :::
 
 The *sequential composition* `d₁` and `d₂` is locally
-consistent with respect to `p` if `d₁` is locally consistent with
-respect to `p` and `d₂` is locally consistent with respect to
-the postcondition of `d₁`.
+consistent with respect to `p` if
+
+1. `d₁` is locally consistent with respect to `p`
+2. `d₂` is locally consistent with respect to the postcondition of `d₁`.
 
 :::slidebreak
 :::
@@ -1503,7 +1454,7 @@ precondition `p` if `p ↠ q [X ↦ a]`.
 :::slidebreak
 :::
 
-A *conditional* `if b then {{p₁}} d₁ else {{p₂}} d₂ end {{q}}` is locally consistent \
+A *conditional* `if b then {{p₁}} d₁ else {{p₂}} d₂ end {{q}}` is locally consistent
 with respect to precondition `p` if
 
 1. `p ∧ b ↠ p₁`
@@ -1561,10 +1512,6 @@ HIDE: There was some discussion in 2016 about whether the VC
 generator should should use equivalence or implication in a few
 places.  I (BCP) believe Phil (Wadler) changed some instances of
 the former to the latter.
-
-HIDE: MRC'20: a written explanation of each part of this would be
-quite nice.  BCP 21: Agreed!!  (BCP 23: But it's kind of what's
-just above...)
 :::
 
 ```lean
@@ -1720,8 +1667,15 @@ example : decWhile.VerificationConditions := by
 We develop another tactic, `verify`, to automate the overall process of verification.
 It uses {name}`verification_conditions_correct` to extract the verification conditions,
 and the logic of {tactic}`verify_assertion` to verify them as much as it can.
-We enhance this logic with some low-level simplification lemmas, defined next,
-to make the process a little smoother.
+
+We enhance this logic with four low-level simplification lemmas, defined next,
+to make the process a little smoother. In particular, these lemmas translate
+the `Bexp.eval` equations introduced by conditional and loop guards into
+inequalities on the underlying arithmetic expressions. This makes them
+visible to {tactic}`lia` for further simplification. For these lemmas to
+have maximum effect, the tactic removes {name}`Bexp.eval_le` and
+{name}`Bexp.eval_gt`, since these could rewrite `Bexp.eval` expressions in
+a way that would cause the four simplification lemmas not to match.
 
 ```lean
 theorem Bexp.eval_le_true {st : State} {a₁ a₂ : Aexp} :
@@ -1946,7 +1900,7 @@ as usual, and without doing any thinking at all yet.
 This leads to the following skeleton:
 
 ```display
-(1)    {{ X = m ∧ Y = n }}  ↠                   (a)
+(1)    {{ X = m ∧ Y = n }}  ↠                  (a)
 (2)    {{ Inv }}
          while X ≠ 0 do
 (3)              {{ Inv ∧ X ≠ 0 }}  ↠          (c)
@@ -2002,7 +1956,7 @@ instantiating `Inv` with `True` in the skeleton above and
 see what we get...
 
 ```display
-(1)    {{ X = m ∧ Y = n }} ↠                    (a - OK)
+(1)    {{ X = m ∧ Y = n }} ↠                   (a - OK)
 (2)    {{ True }}
          while X ≠ 0 do
 (3)                   {{ True ∧ X ≠ 0 }} ↠     (c - OK)
@@ -2029,7 +1983,7 @@ return to our skeleton, instantiate `Inv` with `Y = n - m`, and
 try checking conditions (a) to (c) again.
 
 ```display
-(1)    {{ X = m ∧ Y = n }} ↠                        (a - WRONG!)
+(1)    {{ X = m ∧ Y = n }} ↠                       (a - WRONG!)
 (2)    {{ Y = n - m }}
          while X ≠ 0 do
 (3)                     {{ Y = n - m ∧ X ≠ 0 }} ↠  (c - WRONG!)
@@ -2071,7 +2025,7 @@ difference is always `n - m`.  So let's try instantiating `Inv` in
 the skeleton above with `Y - X = n - m`.
 
 ```display
-(1)    {{ X = m ∧ Y = n }} ↠                            (a - OK)
+(1)    {{ X = m ∧ Y = n }} ↠                           (a - OK)
 (2)    {{ Y - X = n - m }}
          while X ≠ 0 do
 (3)                    {{ Y - X = n - m ∧ X ≠ 0 }} ↠   (c - OK)
@@ -2204,7 +2158,7 @@ parity of `m`. Using `parity X = parity m` as an invariant we
 obtain the following decorated program:
 
 ```display
-{{ X = m }} ↠                                         (a - OK)
+{{ X = m }} ↠                                       (a - OK)
 {{ parity X = parity m }}
   while 2 ≤ X do
                {{ parity X = parity m ∧ 2 ≤ X }} ↠  (c - OK)
@@ -2226,15 +2180,15 @@ have `parity X = parity (X-2)`.
 ```
 HIDE: A more complexly phrased loop invariant for the same program
 [[
-        {{ X = m }}  ↠                        (a - OK)
+        {{ X = m }} ↠                       (a - OK)
         {{ ev X <-> ev m }}
       while 2 ≤ X do
-          {{ ev X <-> ev m ∧ 2 ≤ X }}  ↠    (c - OK)
+          {{ ev X <-> ev m ∧ 2 ≤ X }} ↠     (c - OK)
           {{ ev (X-2) <-> ev m }}
         X := X - 2
           {{ ev X <-> ev m }}
       end
-        {{ (ev X <-> ev m) ∧ ~(2 ≤ X) }}  ↠     (b - OK)
+        {{ (ev X <-> ev m) ∧ ~(2 ≤ X) }} ↠  (b - OK)
         {{ X=0 <-> ev m }}
 ]]
 ```
@@ -2268,25 +2222,6 @@ lead to good proofs; one that leads to a particularly simple proof
 is `parity X = parity m`. Ordinary Lean functions can be applied
 directly to Imp variables inside assertions, so this can be written
 as `{{ parity X = parity m }}`.
-
-:::dev "Benjamin Pierce (bcpierce00)" BeforeNextRelease (year := 2023)
-```
-Maya: In the parity exercise, I was getting annoyed
-by the verify_assertion tactic unfolding the assumption [(2 ≤?  st
-X) = true] into a match on the first two layers of [st X]. I ended
-up digging out the following incantation from the depths of the Rocq
-manual:
-
-   Arguments leb !n !m.
-
-I'm not sure what level of automated tests you keep for the
-exercises, so I wanted to point this struggle out. Perhaps
-something changed in the Rocq library at some point.
-
-BCP 23: Worth looking into!  (I tried just adding [Arguments leb !n
-!m.] to the script, but that broke things.)
-```
-:::
 
 ```lean
 def parityDec (m : Nat) : Decorated where
@@ -2584,9 +2519,6 @@ theorem parity_correct (m : Nat) :
 
 ## Example: Finding Square Roots
 
-:::suppressPreviousHeaderWhenTerse
-:::
-
 :::instructors
 The main idea introduced here is preserving equalities for
 variables that don't change, and it appears in its purest form here.
@@ -2613,7 +2545,7 @@ As we did before, we can try to use the postcondition as a
 candidate loop invariant, obtaining the following decorated program:
 
 ```display
-(1)  {{ X=m }} ↠                  (a - second conjunct of (2) WRONG!)
+(1)  {{ X=m }} ↠                (a - second conjunct of (2) WRONG!)
 (2)  {{ 0*0 ≤ m ∧ m<(0+1)*(0+1) }}
         Z := 0
 (3)            {{ Z*Z ≤ m ∧ m<(Z+1)*(Z+1) }};
@@ -2624,7 +2556,7 @@ candidate loop invariant, obtaining the following decorated program:
           Z := Z+1
 (6)            {{ Z*Z≤m ∧ m<(Z+1)*(Z+1) }}
         end
-(7)  {{ Z*Z≤m ∧ m<(Z+1)*(Z+1) ∧ ¬((Z+1)*(Z+1)≤X) }} ↠    (b - OK)
+(7)  {{ Z*Z≤m ∧ m<(Z+1)*(Z+1) ∧ ¬((Z+1)*(Z+1)≤X) }} ↠      (b - OK)
 (8)  {{ Z*Z≤m ∧ m<(Z+1)*(Z+1) }}
 ```
 
@@ -2644,7 +2576,7 @@ us to simplify a bit.
 So we now try `X=m ∧ Z*Z ≤ m` as the loop invariant:
 
 ```display
-{{ X=m }} ↠                                           (a - OK)
+{{ X=m }} ↠                                       (a - OK)
 {{ X=m ∧ 0*0 ≤ m }}
   Z := 0
              {{ X=m ∧ Z*Z ≤ m }};
@@ -2708,9 +2640,6 @@ theorem sqrt_correct (m : Nat) :
 
 ## Example: Squaring
 
-:::suppressPreviousHeaderWhenTerse
-:::
-
 :::instructors
 Using an easier version of this: counting up, instead of
 counting down...
@@ -2745,10 +2674,10 @@ change its value. As we saw in the previous example, it can be a good idea
 in such cases to add `X = m` to the loop invariant.  The other thing
 that we know is often useful in the loop invariant is the postcondition,
 so let's add that too, leading to the candidate loop invariant
-`Z = m * m ∧ X = m`.
+`Z = m*m ∧ X = m`.
 
 ```display
-{{ X = m }} ↠                                       (a - WRONG)
+{{ X = m }} ↠                                    (a - WRONG)
 {{ 0 = m*m ∧ X = m }}
   Y := 0
                {{ 0 = m*m ∧ X = m }};
@@ -2775,7 +2704,7 @@ iteration `Z = 2*m`, and at the end `Z = m*m`.  Since the variable
 derive a new loop invariant candidate: `Z = Y*m ∧ X = m`.
 
 ```display
-{{ X = m }} ↠                                        (a - OK)
+{{ X = m }} ↠                                     (a - OK)
 {{ 0 = 0*m ∧ X = m }}
   Y := 0
                 {{ 0 = Y*m ∧ X = m }};
@@ -2999,23 +2928,6 @@ squaring program.  The simplest variant we've found,
 Move this later?  Might be harder than some of the others.
 :::
 
-:::dev
-```
-HIDE: LY: Many are tempted to use division in their propositions here,
-with the loop invariant [Y = m!/X!].
-Informally, such a decorated program can be correct if we assume
-they use real division (in q or r). The issue is that formally in Rocq,
-the notation / is also in scope and means integer division, so a pedantic
-interpretation would mark those answers wrong, even though that is most
-likely *not* what students intended (thus making the grading unfair).
-Should we explicitly forbid use of division for this exercise?
-(I added a note to that effect in the problem statement).
-
-MRC'20: I strengthened your note so that it explicitly advises
-against division (and subtraction).
-```
-:::
-
 ::::::full
 :::::exercise (rating := 4) (name := "factorial_correct") (level := Advanced)
 Recall that `n!` denotes the factorial of `n` (i.e., `n! =
@@ -3125,10 +3037,6 @@ end
 :::
 
 :::dev
-HIDE: MRC'20: That's not really an Imp program though: it is a
-schema for an Imp program.  `m` is not an Imp variable nor a
-constant.  BCP 21: But we do that all over the place, no?
-
 ```
 HIDE: LY: I saw one submission for [factorial_dec] use a program
 like that instead of the one already given by the informal
@@ -3265,18 +3173,6 @@ reasoning involving natural numbers, especially subtraction.
 Lean functions can be applied directly inside assertions.  For
 example, the minimum of `a` and `b` can be written `Nat.min a b`.
 
-:::dev
-HIDE: MRC'20: It bothers me a bit that the `&&` in the guard below
-becomes a `∧` in the assertion.  We've never explained that it's okay
-to do a translation like that.
-:::
-
-:::dev "Benjamin Pierce (bcpierce00)" BeforeNextRelease (year := 2025)
-```
-Maybe we should write ∧ in assertions??
-```
-:::
-
 ```lean
 def minimumDec (a b : Nat) : Decorated where
   pre := ({{ True }})
@@ -3332,10 +3228,6 @@ HIDE:
   and `Y` is zero, so `Nat.min X Y = 0`.
 :::
 
-:::dev
-HIDE: BCP 21: I'm sure there is a more elegant proof of this!!
-:::
-
 ```lean
 theorem minimum_correct (a b : Nat) :
     (minimumDec a b).OuterTripleValid := by
@@ -3344,23 +3236,6 @@ theorem minimum_correct (a b : Nat) :
     verify
 ```
 
-:::dev
-```
-HIDE: LY: in this exercise, many end up writing the following implication
-after the while line:
-
-  {{ Z = min a b - min X Y ∧ ... }} ↠
-  {{ Z+1 = min a b - min (X-1) (Y-1) ∧ ... }}
-
-that is invalid if you interpret [-] pedantically as [sub : nat ->
-nat -> nat], which takes nonnegative values only. But if we are
-more generous and interpret these informal proofs in more intuitive
-domains (Z, q, or r), then these proofs look fine. I made the
-former choice in my grading because I assume at this point they
-should know to be careful around [-] with [nat].  BCP 21: Should be
-fixed now that the proofs are formal! :-)
-```
-:::
 :::autogradedHole minimumDec
 :::
 :::gradeTheorem 3 minimum_correct
@@ -3435,30 +3310,6 @@ theorem two_loops (a b c : Nat) :
     simp only [twoLoopsDec]
     verify
 ```
-
-:::dev "Michael Clarkson (clarksmr)" PotentialImprovement (year := 2020)
-```
-Again, the above isn't an IMP program, but a program
-schema.  What about using the following instead?
-[[
-    {{ X = a ∧ Y = b ∧ Z = c }}
-  I := 0;
-  while I ≠ X do
-    I := I + 1;
-    Z := Z + 1
-  end;
-  I := 0;
-  while I ≠ Y do
-    I := I + 1;
-    Z := Z + 1
-  end
-    {{ Z = a + b + c }}
-]]
-
-BCP 21: I'm not so bothered by using a program schema instead of a
-program, but if the latter makes you happier I don't object.
-```
-:::
 
 :::solution
 ```
@@ -3543,26 +3394,6 @@ additional [ + Y] term through it.
 :::suppressPreviousHeaderWhenTerse
 :::
 
-:::dev "Michael Clarkson (clarksmr)" BeforeNextRelease (year := 2020)
-```
-This is again a program schema rather than a program.  Why not...
-[[
-      {{ True }}
-    X := 0;
-    Y := 1;
-    Z := 1;
-    while X ≠ W do
-      Z := 2 * Z;
-      Y := Y + Z;
-      X := X + 1
-    end
-      {{ Y = 2 ^ (W + 1) - 1 }}
-]]
-   ...?
-
-   BCP 21: Ditto my response above.  IMO this is not a problem.
-```
-:::
 
 ::::::full
 :::::exercise (rating := 4) (name := "dpow2") (optional := true)
@@ -3681,26 +3512,26 @@ that would allow us to annotate the rest of the program. Assume X, Y
 and Z are distinct program variables.
 (a)
 (b)
-    X := ANum n;
-    Y := A1;
-    while (BNot (!X === A0)) do (
-         Y := !Y *** A2;
-         X := !X --- A1
-    )
+    X := n;
+    Y := 1;
+    while (X ≠ 0) do
+         Y := Y * 2;
+         X := X - 1
+    end
 Answer: Y = 2^(n-X)
-    X := ANum x;
-    Y := ANum y;
-    Z := A0
+    X := x;
+    Y := y;
+    Z := 0
 { True }
 { _______________________________________ }
 { Y = 2^n }
 { True }
                                    { _______________________________________ }
-    while (BAnd (BNot (!X === A0)) (BNot (!Y === A0))) do (
-         X := !X --- A1;
-         Y := !Y --- A1;
-         Z := !Z +++ A1
-)
+    while (X ≠ 0 ∧ Y ≠ 0) do
+         X := X - 1;
+         Y := Y - 1;
+         Z := Z + 1
+    end
 (where min is the mathematical "minimum" function)
 Answer: Z = min(x,y) - min(X,Y)
 ```
@@ -3728,7 +3559,7 @@ strongest postcondition of the command skip with respect to the
 precondition Y = 1 is Y = 1. Similarly, the postcondition in...
 
          {{ Y = y }}
-           if !Y === A0 then X := A0 else Y := !Y *** A2
+           if Y = 0 then X := 0 else Y := Y * 2
          {{ (Y = y = X = 0) ∨ (Y = 2*y ∧ y ≠ 0) }}
 
 ...is the strongest one.
@@ -3736,15 +3567,15 @@ precondition Y = 1 is Y = 1. Similarly, the postcondition in...
 Complete each of the following Hoare triples with the strongest
 postcondition for the given command and precondition.
 
-(a) {{Y=1}} X:=!Y+++A1 {{?}}
-(b) {{True}} X:=A5 {{?}}
+(a) {{ Y = 1 }} X := Y + 1 {{ ? }}
+(b) {{ True }} X := 5 {{ ? }}
 (c) {{ True }} skip {{ ? }}
 (d) {{ True }} while true do skip {{ ? }}
 (e) {{ X = x ∧ Y = y }}
-    while BNot (!X === A0) do (
-                    Y := !Y +++ A2;
-                    X := !X --- A1
-                  )
+    while X ≠ 0 do
+      Y := Y + 2;
+      X := X - 1
+    end
     {{ ? }}
 ```
 :::
@@ -4974,12 +4805,6 @@ X := X - 1 end
     {{ ? }}
 if X .> 3 then Z := X else Z := Y end
 {{ Z = W }}
-    {{ ? }}
-while IsCons X do
-  N := N + 1;
-  X := Tail(X)
-end
-{{ X = [ ] ∧ N = length l }}
 
 ---------
 And:

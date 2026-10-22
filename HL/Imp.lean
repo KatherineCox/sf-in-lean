@@ -1383,8 +1383,8 @@ Is the following proposition provable?
 
 (A) Yes    (B) No    (C) Not sure
 
-:::instructors
-Yes, but answer is given later (`quiz2_answer`) as it depends on `ceval_deterministic`.
+:::quizSolution
+Yes. The answer is given later (`quiz2_answer`) as it depends on `ceval_deterministic`.
 :::
 ::::
 
@@ -1529,10 +1529,10 @@ theorem ceval_deterministic {c : Com} {st st1 st2 : State}
           exact ih₂ hl'
 ```
 
-::::hide
+Here is an interesting property that {name}`ceval_deterministic` allows us to prove.
+(It is the answer to the second quiz question, above.)
+
 ```lean
-/- Answer to the second quiz above (deferred because it depends on
-   `ceval_deterministic`). -/
 theorem quiz2_answer (c₁ c₂ : Com) (st st' : State)
     (h₁ : st =[ c₁; c₂ ]=> st') (h₂ : st =[ c₁ ]=> st) :
     st =[ c₂ ]=> st' := by
@@ -1542,7 +1542,6 @@ theorem quiz2_answer (c₁ c₂ : Com) (st st' : State)
     subst hmid
     exact hc₂
 ```
-::::
 
 ::::::full
 :::::exercise (rating := 3) (name := "pupToN") (optional := true)
@@ -1768,9 +1767,8 @@ theorem no_whiles_eqv (c : Com) :
 
 ::::::full
 :::::exercise (rating := 4) (name := "no_whiles_terminating")
-Imp programs that don't involve while loops always terminate.  State and
-prove a theorem `no_whiles_terminating` that says this.  Use either
-{name}`Com.no_whiles` or {name}`Com.NoWhilesR`, as you prefer.
+The following theorem states that Imp programs that don't involve `while`
+loops always terminate. Prove it.
 
 ```lean
 theorem no_whiles_terminating {c : Com} (st : State)

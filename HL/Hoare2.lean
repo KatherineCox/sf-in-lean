@@ -551,12 +551,6 @@ These decorations can be constructed as follows:
     5\]).
 ::::
 
-:::dev
-NOTATION: LATER: The `~` in that paragraph will typeset wrong if
-the space after it is removed.  Maybe it's better to give up on
-all the unicode hacks in the generated HTML...?
-:::
-
 ::::::full
 :::::exercise (rating := 2) (name := "if_minus_plus_reloaded") (optional := true) (manual := true)
 N.b.: Although this exercise is marked optional, it is an
@@ -1490,9 +1484,10 @@ precondition `p` if `p ↠ q`.
 :::
 
 The *sequential composition* `d₁` and `d₂` is locally
-consistent with respect to `p` if `d₁` is locally consistent with
-respect to `p` and `d₂` is locally consistent with respect to
-the postcondition of `d₁`.
+consistent with respect to `p` if
+
+1. `d₁` is locally consistent with respect to `p`
+2. `d₂` is locally consistent with respect to the postcondition of `d₁`.
 
 :::slidebreak
 :::
@@ -1503,7 +1498,7 @@ precondition `p` if `p ↠ q [X ↦ a]`.
 :::slidebreak
 :::
 
-A *conditional* `if b then {{p₁}} d₁ else {{p₂}} d₂ end {{q}}` is locally consistent \
+A *conditional* `if b then {{p₁}} d₁ else {{p₂}} d₂ end {{q}}` is locally consistent
 with respect to precondition `p` if
 
 1. `p ∧ b ↠ p₁`
@@ -1720,8 +1715,15 @@ example : decWhile.VerificationConditions := by
 We develop another tactic, `verify`, to automate the overall process of verification.
 It uses {name}`verification_conditions_correct` to extract the verification conditions,
 and the logic of {tactic}`verify_assertion` to verify them as much as it can.
-We enhance this logic with some low-level simplification lemmas, defined next,
-to make the process a little smoother.
+
+We enhance this logic with four low-level simplification lemmas, defined next,
+to make the process a little smoother. In particular, these lemmas translate
+the `Bexp.eval` equations introduced by conditional and loop guards into
+inequalities on the underlying arithmetic expressions. This makes them
+visible to {tactic}`lia` for further simplification. For these lemmas to
+have maximum effect, the tactic removes {name}`Bexp.eval_le` and
+{name}`Bexp.eval_gt`, since these could rewrite `Bexp.eval` expressions in
+a way that would cause the four simplification lemmas not to match.
 
 ```lean
 theorem Bexp.eval_le_true {st : State} {a₁ a₂ : Aexp} :
@@ -1942,7 +1944,7 @@ as usual, and without doing any thinking at all yet.
 This leads to the following skeleton:
 
 ```display
-(1)    {{ X = m ∧ Y = n }}  ↠                   (a)
+(1)    {{ X = m ∧ Y = n }}  ↠                  (a)
 (2)    {{ Inv }}
          while X ≠ 0 do
 (3)              {{ Inv ∧ X ≠ 0 }}  ↠          (c)
@@ -1998,7 +2000,7 @@ instantiating `Inv` with `True` in the skeleton above and
 see what we get...
 
 ```display
-(1)    {{ X = m ∧ Y = n }} ↠                    (a - OK)
+(1)    {{ X = m ∧ Y = n }} ↠                   (a - OK)
 (2)    {{ True }}
          while X ≠ 0 do
 (3)                   {{ True ∧ X ≠ 0 }} ↠     (c - OK)
@@ -2025,7 +2027,7 @@ return to our skeleton, instantiate `Inv` with `Y = n - m`, and
 try checking conditions (a) to (c) again.
 
 ```display
-(1)    {{ X = m ∧ Y = n }} ↠                        (a - WRONG!)
+(1)    {{ X = m ∧ Y = n }} ↠                       (a - WRONG!)
 (2)    {{ Y = n - m }}
          while X ≠ 0 do
 (3)                     {{ Y = n - m ∧ X ≠ 0 }} ↠  (c - WRONG!)
@@ -2067,7 +2069,7 @@ difference is always `n - m`.  So let's try instantiating `Inv` in
 the skeleton above with `Y - X = n - m`.
 
 ```display
-(1)    {{ X = m ∧ Y = n }} ↠                            (a - OK)
+(1)    {{ X = m ∧ Y = n }} ↠                           (a - OK)
 (2)    {{ Y - X = n - m }}
          while X ≠ 0 do
 (3)                    {{ Y - X = n - m ∧ X ≠ 0 }} ↠   (c - OK)
@@ -2196,7 +2198,7 @@ parity of `m`. Using `parity X = parity m` as an invariant we
 obtain the following decorated program:
 
 ```display
-{{ X = m }} ↠                                         (a - OK)
+{{ X = m }} ↠                                       (a - OK)
 {{ parity X = parity m }}
   while 2 ≤ X do
                {{ parity X = parity m ∧ 2 ≤ X }} ↠  (c - OK)
@@ -2218,15 +2220,15 @@ have `parity X = parity (X-2)`.
 ```
 HIDE: A more complexly phrased loop invariant for the same program
 [[
-        {{ X = m }}  ↠                        (a - OK)
+        {{ X = m }} ↠                       (a - OK)
         {{ ev X <-> ev m }}
       while 2 ≤ X do
-          {{ ev X <-> ev m ∧ 2 ≤ X }}  ↠    (c - OK)
+          {{ ev X <-> ev m ∧ 2 ≤ X }} ↠     (c - OK)
           {{ ev (X-2) <-> ev m }}
         X := X - 2
           {{ ev X <-> ev m }}
       end
-        {{ (ev X <-> ev m) ∧ ~(2 ≤ X) }}  ↠     (b - OK)
+        {{ (ev X <-> ev m) ∧ ~(2 ≤ X) }} ↠  (b - OK)
         {{ X=0 <-> ev m }}
 ]]
 ```
@@ -2576,9 +2578,6 @@ theorem parity_correct (m : Nat) :
 
 ## Example: Finding Square Roots
 
-:::suppressPreviousHeaderWhenTerse
-:::
-
 :::instructors
 The main idea introduced here is preserving equalities for
 variables that don't change, and it appears in its purest form here.
@@ -2605,7 +2604,7 @@ As we did before, we can try to use the postcondition as a
 candidate loop invariant, obtaining the following decorated program:
 
 ```display
-(1)  {{ X=m }} ↠                  (a - second conjunct of (2) WRONG!)
+(1)  {{ X=m }} ↠                (a - second conjunct of (2) WRONG!)
 (2)  {{ 0*0 ≤ m ∧ m<(0+1)*(0+1) }}
         Z := 0
 (3)            {{ Z*Z ≤ m ∧ m<(Z+1)*(Z+1) }};
@@ -2616,7 +2615,7 @@ candidate loop invariant, obtaining the following decorated program:
           Z := Z+1
 (6)            {{ Z*Z≤m ∧ m<(Z+1)*(Z+1) }}
         end
-(7)  {{ Z*Z≤m ∧ m<(Z+1)*(Z+1) ∧ ¬((Z+1)*(Z+1)≤X) }} ↠    (b - OK)
+(7)  {{ Z*Z≤m ∧ m<(Z+1)*(Z+1) ∧ ¬((Z+1)*(Z+1)≤X) }} ↠      (b - OK)
 (8)  {{ Z*Z≤m ∧ m<(Z+1)*(Z+1) }}
 ```
 
@@ -2636,7 +2635,7 @@ us to simplify a bit.
 So we now try `X=m ∧ Z*Z ≤ m` as the loop invariant:
 
 ```display
-{{ X=m }} ↠                                           (a - OK)
+{{ X=m }} ↠                                       (a - OK)
 {{ X=m ∧ 0*0 ≤ m }}
   Z := 0
              {{ X=m ∧ Z*Z ≤ m }};
@@ -2700,9 +2699,6 @@ theorem sqrt_correct (m : Nat) :
 
 ## Example: Squaring
 
-:::suppressPreviousHeaderWhenTerse
-:::
-
 :::instructors
 Using an easier version of this: counting up, instead of
 counting down...
@@ -2737,10 +2733,10 @@ change its value. As we saw in the previous example, it can be a good idea
 in such cases to add `X = m` to the loop invariant.  The other thing
 that we know is often useful in the loop invariant is the postcondition,
 so let's add that too, leading to the candidate loop invariant
-`Z = m * m ∧ X = m`.
+`Z = m*m ∧ X = m`.
 
 ```display
-{{ X = m }} ↠                                       (a - WRONG)
+{{ X = m }} ↠                                    (a - WRONG)
 {{ 0 = m*m ∧ X = m }}
   Y := 0
                {{ 0 = m*m ∧ X = m }};
@@ -2767,7 +2763,7 @@ iteration `Z = 2*m`, and at the end `Z = m*m`.  Since the variable
 derive a new loop invariant candidate: `Z = Y*m ∧ X = m`.
 
 ```display
-{{ X = m }} ↠                                        (a - OK)
+{{ X = m }} ↠                                     (a - OK)
 {{ 0 = 0*m ∧ X = m }}
   Y := 0
                 {{ 0 = Y*m ∧ X = m }};

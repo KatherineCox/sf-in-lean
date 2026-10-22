@@ -1811,7 +1811,7 @@ theorem positive_difference_correct :
 :::::exercise (rating := 2) (name := "if_minus_plus_correct")
 Here is a skeleton of the formal decorated version of the
 `if_minus_plus` program that we saw earlier.  Replace all
-occurrences of `FILL_IN_HERE` with appropriate assertions and fill
+occurrences of {tactic}`sorry` with appropriate assertions and fill
 in the proof (which should be just as straightforward as in the
 examples above).
 
@@ -1820,13 +1820,13 @@ def ifMinusPlusDec : Decorated where
   pre := ({{ True }})
   body := dcom {
     if (X ≤ Y) then
-      {{ True ∧ X ≤ Y }}
-      ↠ {{ Y = X + (Y - X) }}
-      Z := Y - X {{ Y = X + Z }}
+      {{ solution!({{ True ∧ X ≤ Y }}) }}
+      ↠ {{ solution!({{ Y = X + (Y - X) }}) }}
+      Z := Y - X {{ solution!({{ Y = X + Z }}) }}
     else
-      {{ True ∧ ¬ X ≤ Y }}
-      ↠ {{ X + Z = X + Z }}
-      Y := X + Z {{ Y = X + Z }}
+      {{ solution!({{ True ∧ ¬ X ≤ Y }}) }}
+      ↠ {{ solution!({{ X + Z = X + Z }}) }}
+      Y := X + Z {{ solution!({{ Y = X + Z }}) }}
     end
       {{ Y = X + Z }}
   }
@@ -1837,6 +1837,10 @@ theorem if_minus_plus_correct :
     simp only [ifMinusPlusDec]
     verify
 ```
+:::autogradedHole ifMinusPlusDec
+:::
+:::gradeTheorem 2 if_minus_plus_correct
+:::
 :::::
 
 :::::exercise (rating := 2) (name := "div_mod_outer_triple_valid") (optional := true)
@@ -1846,17 +1850,17 @@ Fill in appropriate assertions for the division program from above.
 def divModDec (a b : Nat) : Decorated where
   pre := ({{ True }})
   body := dcom {
-    ↠ {{ b * 0 + a = a }}
-    X := ~(Aexp.num a) {{ b * 0 + X = a }};
-    Y := 0 {{ b * Y + X = a }};
+    ↠ {{ solution!({{ b * 0 + a = a }}) }}
+    X := ~(Aexp.num a) {{ solution!({{ b * 0 + X = a }}) }};
+    Y := 0 {{ solution!({{ b * Y + X = a }}) }};
     while (~(Aexp.num b) ≤ X) do
-      {{ b * Y + X = a ∧ b ≤ X }}
-      ↠ {{ b * (Y + 1) + (X - b) = a }}
-      X := X - ~(Aexp.num b) {{ b * (Y + 1) + X = a }};
-      Y := Y + 1 {{ b * Y + X = a }}
+      {{ solution!({{ b * Y + X = a ∧ b ≤ X }}) }}
+      ↠ {{ solution!({{ b * (Y + 1) + (X - b) = a }}) }}
+      X := X - ~(Aexp.num b) {{ solution!({{ b * (Y + 1) + X = a }}) }};
+      Y := Y + 1 {{ solution!({{ b * Y + X = a }}) }}
     end
-      {{ b * Y + X = a ∧ ¬ b ≤ X }}
-    ↠ {{ b * Y + X = a ∧ X < b }}
+      {{ solution!({{ b * Y + X = a ∧ ¬ b ≤ X }}) }}
+    ↠ {{ solution!({{ b * Y + X = a ∧ X < b }}) }}
   }
 
 theorem div_mod_outer_triple_valid (a b : Nat) :
@@ -2146,6 +2150,10 @@ theorem slow_assignment (m : Nat) :
     simp only [slowAssignmentDec]
     verify
 ```
+:::autogradedHole slowAssignmentDec
+:::
+:::gradeTheorem 2 slow_assignment
+:::
 :::::
 
 ::::::
@@ -3131,6 +3139,10 @@ factorial in the same way two_loops_dec "implements" the sum (a + b
 + c).
 ```
 :::
+:::autogradedHole factorialDec
+:::
+:::gradeTheorem 4 factorial_correct
+:::
 :::::
 
 ::::::
@@ -3349,6 +3361,10 @@ should know to be careful around [-] with [nat].  BCP 21: Should be
 fixed now that the proofs are formal! :-)
 ```
 :::
+:::autogradedHole minimumDec
+:::
+:::gradeTheorem 3 minimum_correct
+:::
 :::::
 
 ::::::
@@ -3513,6 +3529,10 @@ additional [ + Y] term through it.
       {{ Z = a + b + c }}
 ]]
 ```
+:::
+:::autogradedHole twoLoopsDec
+:::
+:::gradeTheorem 3 two_loops
 :::
 :::::
 

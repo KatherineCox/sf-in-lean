@@ -3228,10 +3228,6 @@ HIDE:
   and `Y` is zero, so `Nat.min X Y = 0`.
 :::
 
-:::dev
-HIDE: BCP 21: I'm sure there is a more elegant proof of this!!
-:::
-
 ```lean
 theorem minimum_correct (a b : Nat) :
     (minimumDec a b).OuterTripleValid := by
@@ -3240,23 +3236,6 @@ theorem minimum_correct (a b : Nat) :
     verify
 ```
 
-:::dev
-```
-HIDE: LY: in this exercise, many end up writing the following implication
-after the while line:
-
-  {{ Z = min a b - min X Y ∧ ... }} ↠
-  {{ Z+1 = min a b - min (X-1) (Y-1) ∧ ... }}
-
-that is invalid if you interpret [-] pedantically as [sub : nat ->
-nat -> nat], which takes nonnegative values only. But if we are
-more generous and interpret these informal proofs in more intuitive
-domains (Z, q, or r), then these proofs look fine. I made the
-former choice in my grading because I assume at this point they
-should know to be careful around [-] with [nat].  BCP 21: Should be
-fixed now that the proofs are formal! :-)
-```
-:::
 :::autogradedHole minimumDec
 :::
 :::gradeTheorem 3 minimum_correct

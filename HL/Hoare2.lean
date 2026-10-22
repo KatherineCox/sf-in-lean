@@ -45,29 +45,11 @@ Here are a bunch of improvements I wanted to make but
 didn't have time to get to.  Maybe next time if no one else gets to
 them first.
 
-- 1. This chapter feels largely disconnected from the style of the
-     rest of the series, which is "100% Rocq script".  There's a
-     significant amount of "just comments" here instead.  I think
-     we could make this much better by introducing formal decorated
-     programs right after we informally define them.  Then in the
-     examples that follow do each informal decorated program (to
-     get students to find the right assertions, more or less)
-     followed immediately by a formal version, instead of delaying
-     formal so far to the end. The `parity` exercise is a good
-     example of one that already almost does this already. (BCP 21:
-     Done!)
-- 2. There are several places where we are verifying Imp program
-     schemas, not actual programs.  We're mixing Rocq variables with
-     Imp variables.  That's confusing.  One example is `two_loops`;
-     I've tried to mark others as I come across them.  (BCP: I've
-     added some quizzes and such to try to clarify the relation
-     between programs / triples and program/triple schemas.
-     BCP 25: I think this is a non-issue now.)
-- 3. Weakest preconditions show up in this chapter as completely
+- 1. Weakest preconditions show up in this chapter as completely
      optional, then are revisited (and required) in HoareAsLogic.
      Consider moving the entire treatment to that chapter.  (BCP
      23: Yes, we should do that!)
-- 4. It seems a shame that the SparseAnnotations section is not
+- 2. It seems a shame that the SparseAnnotations section is not
      visible in the full version, but only in a solution.  It's
      fantastic!  It would be great to show it off.  (BCP 25: Yes!
      Indeed, perhaps it should even replace the current treatment!)
@@ -363,32 +345,6 @@ proof of this specification:
 {{ Z - X = p - m ∧ ¬ (X ≠ 0) }} ↠
 {{ Z = p - m }}
 ```
-
-:::dev
-```
-HIDE: MRC'20: It bothers me a little in the proof above (and
-similarly throughout the whole file really when it comes to guards)
-that when we get to this part:
-[[
- while X ≠ 0 do {{ Z - X = p - m ∧ X ≠ 0 }} ↠
-]]
-we are inconsistent about [X ≠ 0] vs. [~(X=0)].  I admit they
-evaluate the same (er, sort of---the former is a [bexp] whereas the
-latter is an assertion), but they aren't syntactically the same.
-Since what we're teaching here (mechanized Hoare logic) is fussy
-about syntax, it strikes me as something we ought to be precise
-about. But it's an annoying change to propagate through the file,
-so I haven't done it. Is it worth a comment, or do others not get
-bothered by this?  Another way to fix this would be to add the [≠]
-operator to Imp, so that we can write the guard in the nicer way.
-
-BCP 20: I think adding in a few more boolean operators at the
-outside is the way to go...
-
-BCP 21: ... and I've now done this: ≠ is available in formal
-bexps (also >).
-```
-:::
 
 Concretely, a decorated program consists of the program's text
 interleaved with assertions (sometimes multiple assertions
@@ -1556,10 +1512,6 @@ HIDE: There was some discussion in 2016 about whether the VC
 generator should should use equivalence or implication in a few
 places.  I (BCP) believe Phil (Wadler) changed some instances of
 the former to the latter.
-
-HIDE: MRC'20: a written explanation of each part of this would be
-quite nice.  BCP 21: Agreed!!  (BCP 23: But it's kind of what's
-just above...)
 :::
 
 ```lean
@@ -2262,25 +2214,6 @@ lead to good proofs; one that leads to a particularly simple proof
 is `parity X = parity m`. Ordinary Lean functions can be applied
 directly to Imp variables inside assertions, so this can be written
 as `{{ parity X = parity m }}`.
-
-:::dev "Benjamin Pierce (bcpierce00)" BeforeNextRelease (year := 2023)
-```
-Maya: In the parity exercise, I was getting annoyed
-by the verify_assertion tactic unfolding the assumption [(2 ≤?  st
-X) = true] into a match on the first two layers of [st X]. I ended
-up digging out the following incantation from the depths of the Rocq
-manual:
-
-   Arguments leb !n !m.
-
-I'm not sure what level of automated tests you keep for the
-exercises, so I wanted to point this struggle out. Perhaps
-something changed in the Rocq library at some point.
-
-BCP 23: Worth looking into!  (I tried just adding [Arguments leb !n
-!m.] to the script, but that broke things.)
-```
-:::
 
 ```lean
 def parityDec (m : Nat) : Decorated where
@@ -2987,23 +2920,6 @@ squaring program.  The simplest variant we've found,
 Move this later?  Might be harder than some of the others.
 :::
 
-:::dev
-```
-HIDE: LY: Many are tempted to use division in their propositions here,
-with the loop invariant [Y = m!/X!].
-Informally, such a decorated program can be correct if we assume
-they use real division (in q or r). The issue is that formally in Rocq,
-the notation / is also in scope and means integer division, so a pedantic
-interpretation would mark those answers wrong, even though that is most
-likely *not* what students intended (thus making the grading unfair).
-Should we explicitly forbid use of division for this exercise?
-(I added a note to that effect in the problem statement).
-
-MRC'20: I strengthened your note so that it explicitly advises
-against division (and subtraction).
-```
-:::
-
 ::::::full
 :::::exercise (rating := 4) (name := "factorial_correct") (level := Advanced)
 Recall that `n!` denotes the factorial of `n` (i.e., `n! =
@@ -3113,10 +3029,6 @@ end
 :::
 
 :::dev
-HIDE: MRC'20: That's not really an Imp program though: it is a
-schema for an Imp program.  `m` is not an Imp variable nor a
-constant.  BCP 21: But we do that all over the place, no?
-
 ```
 HIDE: LY: I saw one submission for [factorial_dec] use a program
 like that instead of the one already given by the informal
@@ -3249,18 +3161,6 @@ reasoning involving natural numbers, especially subtraction.
 Lean functions can be applied directly inside assertions.  For
 example, the minimum of `a` and `b` can be written `Nat.min a b`.
 
-:::dev
-HIDE: MRC'20: It bothers me a bit that the `&&` in the guard below
-becomes a `∧` in the assertion.  We've never explained that it's okay
-to do a translation like that.
-:::
-
-:::dev "Benjamin Pierce (bcpierce00)" BeforeNextRelease (year := 2025)
-```
-Maybe we should write ∧ in assertions??
-```
-:::
-
 ```lean
 def minimumDec (a b : Nat) : Decorated where
   pre := ({{ True }})
@@ -3328,23 +3228,6 @@ theorem minimum_correct (a b : Nat) :
     verify
 ```
 
-:::dev
-```
-HIDE: LY: in this exercise, many end up writing the following implication
-after the while line:
-
-  {{ Z = min a b - min X Y ∧ ... }} ↠
-  {{ Z+1 = min a b - min (X-1) (Y-1) ∧ ... }}
-
-that is invalid if you interpret [-] pedantically as [sub : nat ->
-nat -> nat], which takes nonnegative values only. But if we are
-more generous and interpret these informal proofs in more intuitive
-domains (Z, q, or r), then these proofs look fine. I made the
-former choice in my grading because I assume at this point they
-should know to be careful around [-] with [nat].  BCP 21: Should be
-fixed now that the proofs are formal! :-)
-```
-:::
 :::::
 
 ::::::
@@ -3415,30 +3298,6 @@ theorem two_loops (a b c : Nat) :
     simp only [twoLoopsDec]
     verify
 ```
-
-:::dev "Michael Clarkson (clarksmr)" PotentialImprovement (year := 2020)
-```
-Again, the above isn't an IMP program, but a program
-schema.  What about using the following instead?
-[[
-    {{ X = a ∧ Y = b ∧ Z = c }}
-  I := 0;
-  while I ≠ X do
-    I := I + 1;
-    Z := Z + 1
-  end;
-  I := 0;
-  while I ≠ Y do
-    I := I + 1;
-    Z := Z + 1
-  end
-    {{ Z = a + b + c }}
-]]
-
-BCP 21: I'm not so bothered by using a program schema instead of a
-program, but if the latter makes you happier I don't object.
-```
-:::
 
 :::solution
 ```
@@ -3519,26 +3378,6 @@ additional [ + Y] term through it.
 :::suppressPreviousHeaderWhenTerse
 :::
 
-:::dev "Michael Clarkson (clarksmr)" BeforeNextRelease (year := 2020)
-```
-This is again a program schema rather than a program.  Why not...
-[[
-      {{ True }}
-    X := 0;
-    Y := 1;
-    Z := 1;
-    while X ≠ W do
-      Z := 2 * Z;
-      Y := Y + Z;
-      X := X + 1
-    end
-      {{ Y = 2 ^ (W + 1) - 1 }}
-]]
-   ...?
-
-   BCP 21: Ditto my response above.  IMO this is not a problem.
-```
-:::
 
 ::::::full
 :::::exercise (rating := 4) (name := "dpow2") (optional := true)
@@ -3657,26 +3496,26 @@ that would allow us to annotate the rest of the program. Assume X, Y
 and Z are distinct program variables.
 (a)
 (b)
-    X := ANum n;
-    Y := A1;
-    while (BNot (!X === A0)) do (
-         Y := !Y *** A2;
-         X := !X --- A1
-    )
+    X := n;
+    Y := 1;
+    while (X ≠ 0) do
+         Y := Y * 2;
+         X := X - 1
+    end
 Answer: Y = 2^(n-X)
-    X := ANum x;
-    Y := ANum y;
-    Z := A0
+    X := x;
+    Y := y;
+    Z := 0
 { True }
 { _______________________________________ }
 { Y = 2^n }
 { True }
                                    { _______________________________________ }
-    while (BAnd (BNot (!X === A0)) (BNot (!Y === A0))) do (
-         X := !X --- A1;
-         Y := !Y --- A1;
-         Z := !Z +++ A1
-)
+    while (X ≠ 0 ∧ Y ≠ 0) do
+         X := X - 1;
+         Y := Y - 1;
+         Z := Z + 1
+    end
 (where min is the mathematical "minimum" function)
 Answer: Z = min(x,y) - min(X,Y)
 ```
@@ -3704,7 +3543,7 @@ strongest postcondition of the command skip with respect to the
 precondition Y = 1 is Y = 1. Similarly, the postcondition in...
 
          {{ Y = y }}
-           if !Y === A0 then X := A0 else Y := !Y *** A2
+           if Y = 0 then X := 0 else Y := Y * 2
          {{ (Y = y = X = 0) ∨ (Y = 2*y ∧ y ≠ 0) }}
 
 ...is the strongest one.
@@ -3712,15 +3551,15 @@ precondition Y = 1 is Y = 1. Similarly, the postcondition in...
 Complete each of the following Hoare triples with the strongest
 postcondition for the given command and precondition.
 
-(a) {{Y=1}} X:=!Y+++A1 {{?}}
-(b) {{True}} X:=A5 {{?}}
+(a) {{ Y = 1 }} X := Y + 1 {{ ? }}
+(b) {{ True }} X := 5 {{ ? }}
 (c) {{ True }} skip {{ ? }}
 (d) {{ True }} while true do skip {{ ? }}
 (e) {{ X = x ∧ Y = y }}
-    while BNot (!X === A0) do (
-                    Y := !Y +++ A2;
-                    X := !X --- A1
-                  )
+    while X ≠ 0 do
+      Y := Y + 2;
+      X := X - 1
+    end
     {{ ? }}
 ```
 :::
@@ -4950,12 +4789,6 @@ X := X - 1 end
     {{ ? }}
 if X .> 3 then Z := X else Z := Y end
 {{ Z = W }}
-    {{ ? }}
-while IsCons X do
-  N := N + 1;
-  X := Tail(X)
-end
-{{ X = [ ] ∧ N = length l }}
 
 ---------
 And:

@@ -296,11 +296,12 @@ example :
   apply Step.plusLeft; apply Step.plus
 ```
 
+::::::full
 :::::exercise (rating := 1) (name := "test_step_2")
 Right-hand sides step only once the left side is a value.
 
 ```lean
-example :
+theorem test_step_2 :
     (.p
       (.c 0)
       (.p
@@ -317,7 +318,12 @@ example :
   solution!
     apply Step.plusRight; apply Step.plusRight; apply Step.plus
 ```
+
+:::gradeTheorem 1 test_step_2
+:::
 :::::
+
+::::::
 
 ::::quiz
 To what does the following term step?
@@ -532,6 +538,7 @@ inductive Step : Tm → Tm → Prop where
 notation:40 t:41 " ⟶ " t':41 => Step t t'
 ```
 
+::::::full
 :::::exercise (rating := 3) (name := "redo_determinism")
 As a sanity check on this change, let's re-verify determinism.  Here's an
 informal proof:
@@ -582,6 +589,8 @@ theorem step_deterministic : Deterministic Step := by
 :::gradeTheorem 3 step_deterministic
 :::
 :::::
+
+::::::
 
 ## Strong Progress and Normal Forms
 
@@ -766,7 +775,7 @@ Two: `.p (.c 3) (.p (.c 3) (.c 4))` via `plusLeft` and
 :::
 ::::
 
-:::::exercise (rating := 3) (name := "value_not_same_as_normal_form1") (optional := true)
+:::::exercise (rating := 3) (name := "value_not_same_as_normal_form1") (optional := true) (checkVisibility := false)
 ```lean
 theorem value_not_same_as_normal_form :
     ∃ v, IsValue v ∧ ¬ IsNormalForm Step v := by
@@ -782,7 +791,7 @@ theorem value_not_same_as_normal_form :
 end Temp1
 ```
 
-:::::exercise (rating := 2) (name := "value_not_same_as_normal_form2") (optional := true)
+:::::exercise (rating := 2) (name := "value_not_same_as_normal_form2") (optional := true) (checkVisibility := false)
 Or we might (again, wrongly) define `Step` so that it permits something
 designated as a value to reduce further.  We again lose the property that
 values are the same as normal forms.
@@ -835,7 +844,7 @@ end Temp2
 ```
 :::::
 
-:::::exercise (rating := 3) (name := "value_not_same_as_normal_form3") (optional := true)
+:::::exercise (rating := 3) (name := "value_not_same_as_normal_form3") (optional := true) (checkVisibility := false)
 Finally, we might define `IsValue` and `Step` so that there is some term that
 is _not_ a value but that _also_ cannot take a step.  Such terms are said to
 be _stuck_.  In this case, this is caused by a mistake in the semantics, but
@@ -1023,6 +1032,7 @@ example :
   · exact multi_single _ _ _ (.plus (0 + 3) (2 + 4))
 ```
 
+::::::full
 :::::exercise (rating := 1) (name := "test_multistep_2") (optional := true)
 ```lean
 example : (.c 3 : Tm) ⟶* .c 3 := solution!(.refl _)
@@ -1037,7 +1047,7 @@ example : (.p (.c 0) (.c 3)) ⟶* .p (.c 0) (.c 3) := solution!(.refl _)
 
 :::::exercise (rating := 2) (name := "test_multistep_4")
 ```lean
-example :
+theorem test_multistep_4 :
     (.p (.c 0) (.p (.c 2) (.p (.c 0) (.c 3))))
       ⟶* (.p (.c 0) (.c (2 + (0 + 3)))) := by
   solution!
@@ -1045,6 +1055,9 @@ example :
     · exact .plusRight _ _ _ (.const 0) (.plusRight _ _ _ (.const 2) (.plus 0 3))
     · exact multi_single _ _ _ (.plusRight _ _ _ (.const 0) (.plus 2 (0 + 3)))
 ```
+
+:::gradeTheorem 2 test_multistep_4
+:::
 :::::
 
 :::::exercise (rating := 2) (name := "test_multistep_rfl")
@@ -1052,7 +1065,8 @@ Prove the following reduction, ending the chain with `rfl` instead of
 `multi_single`.
 
 ```lean
-example : (.p (.p (.c 1) (.c 2)) (.c 4)) ⟶* .c ((1 + 2) + 4) := by
+theorem test_multistep_rfl :
+    (.p (.p (.c 1) (.c 2)) (.c 4)) ⟶* .c ((1 + 2) + 4) := by
   solution!
     apply Multi.step (y := .p (.c (1 + 2)) (.c 4))
     · exact .plusLeft _ _ _ (.plus 1 2)
@@ -1060,7 +1074,12 @@ example : (.p (.p (.c 1) (.c 2)) (.c 4)) ⟶* .c ((1 + 2) + 4) := by
     · exact .plus (1 + 2) 4
     · rfl
 ```
+
+:::gradeTheorem 2 test_multistep_rfl
+:::
 :::::
+
+::::::
 
 ## Normal Forms Again
 
@@ -1092,7 +1111,7 @@ YOTAM: The proof can be given for the general case, i.e. that
    induced counterpart.  BCP 23: That would be a nice improvement.
 :::
 
-:::::exercise (rating := 3) (name := "normal_forms_unique") (optional := true)
+:::::exercise (rating := 3) (name := "normal_forms_unique") (optional := true) (checkVisibility := false)
 ```lean
 theorem normal_forms_unique :
     Deterministic (IsNormalFormOf Step) := by
@@ -1141,7 +1160,7 @@ theorem multistep_congr_1 (t₁ t₁' t₂ : Tm) (h : t₁ ⟶* t₁') :
   | step x y z h₁ h₂ ih => exact .step _ (.p y t₂) _ (.plusLeft x y t₂ h₁) ih
 ```
 
-:::::exercise (rating := 2) (name := "multistep_congr_2")
+:::::exercise (rating := 2) (name := "multistep_congr_2") (checkVisibility := false)
 ```lean
 theorem multistep_congr_2 (v₁ t₂ t₂' : Tm) (hv : IsValue v₁)
     (h : t₂ ⟶* t₂') :
@@ -1151,6 +1170,9 @@ theorem multistep_congr_2 (v₁ t₂ t₂' : Tm) (hv : IsValue v₁)
     | refl x => exact .refl _
     | step x y z h₁ h₂ ih => exact .step _ (.p v₁ y) _ (.plusRight v₁ x y hv h₁) ih
 ```
+
+:::gradeTheorem 2 multistep_congr_2
+:::
 :::::
 
 ::::full
@@ -1208,7 +1230,7 @@ a little work to show it.  The details are left as an exercise.  We consider
 the two implications separately.  First, big-step evaluation implies
 multi-step reduction to a value.
 
-:::::exercise (rating := 3) (name := "multistep_of_eval")
+:::::exercise (rating := 3) (name := "multistep_of_eval") (checkVisibility := false)
 ```lean
 theorem multistep_of_eval (t : Tm) (n : Nat) (h : t ⇓ n) :
     t ⟶* .c n := by
@@ -1250,8 +1272,12 @@ three phases:
 To formalize this intuition, you'll need the congruence lemmas from above,
 plus some basic properties of `⟶*` (that it is reflexive, transitive, and
 includes `⟶`).
+
+:::gradeTheorem 3 multistep_of_eval
+:::
 :::::
 
+::::::full
 :::::exercise (rating := 3) (name := "multistep_of_eval_inf") (optional := true) (manual := true)
 Write a detailed informal version of the proof of `multistep_of_eval`.  (A
 paper exercise — there is no Lean proof to fill in here.)
@@ -1288,11 +1314,13 @@ GRADE_MANUAL 3: multistep_of_eval_inf
 :::
 :::::
 
+::::::
+
 For the converse, we need one lemma, which establishes a relation between
    single-step reduction and big-step evaluation.  A single step preserves the
    big-step value.
 
-:::::exercise (rating := 3) (name := "eval_of_step")
+:::::exercise (rating := 3) (name := "eval_of_step") (checkVisibility := false)
 ```lean
 theorem eval_of_step (t t' : Tm) (n : Nat) (hs : t ⟶ t')
     (he : t' ⇓ n) : t ⇓ n := by
@@ -1308,6 +1336,9 @@ theorem eval_of_step (t t' : Tm) (n : Nat) (hs : t ⟶ t')
         cases he with
         | plus _ _ m₁ m₂ he₁ he₂ => exact .plus v₁ t₂ m₁ m₂ he₁ (ih m₂ he₂)
 ```
+
+:::gradeTheorem 3 eval_of_step
+:::
 :::::
 
 The fact that small-step reduction implies big-step evaluation is now
@@ -1317,7 +1348,7 @@ multi-step reduction sequence that is buried in the hypothesis
 `IsNormalFormOf t t'`.  (Make sure you understand the statement before you
 start to work on the proof.)
 
-:::::exercise (rating := 3) (name := "eval_of_multistep")
+:::::exercise (rating := 3) (name := "eval_of_multistep") (checkVisibility := false)
 ```lean
 theorem eval_of_multistep (t t' : Tm) (h : IsNormalFormOf Step t t') :
     ∃ n, t' = .c n ∧ t ⇓ n := by
@@ -1331,6 +1362,9 @@ theorem eval_of_multistep (t t' : Tm) (h : IsNormalFormOf Step t t') :
       | step b c d h₁ h₂ ih => intro heq; exact eval_of_step b c n h₁ (ih heq)
     exact ⟨n, rfl, H t (.c n) hs rfl⟩
 ```
+
+:::gradeTheorem 3 eval_of_multistep
+:::
 :::::
 
 :::dev "Michael Clarkson (clarksmr)" PotentialImprovement
@@ -1354,6 +1388,7 @@ earlier (`nf_is_value`), but that point seems too subtle to make for this
 course.
 :::
 
+::::::full
 :::::exercise (rating := 3) (name := "interp_tm") (optional := true)
 Remember that we also defined big-step evaluation of terms as a function
 `evalF`.  Prove that it is equivalent to the relational semantics.  (Hint: we
@@ -1375,6 +1410,8 @@ theorem evalF_eval (t : Tm) (n : Nat) : evalF t = n ↔ t ⇓ n := by
       | plus t₁ t₂ n₁ n₂ h₁ h₂ ih₁ ih₂ => simp only [evalF]; rw [ih₁, ih₂]
 ```
 :::::
+
+::::::
 
 # Small-Step Slang
 
@@ -1489,6 +1526,7 @@ example :
   exact .plusRight _ _ _ (.num 3) (.plus 2 1)
 ```
 
+::::::full
 :::::exercise (rating := 2) (name := "strong_progress_arith")
 Every arithmetic expression is either a value or can take a step — the same
 _strong progress_ property we proved for the toy language, now for the richer
@@ -1531,7 +1569,12 @@ theorem strong_progress_arith (a : Aexp) :
             | inl hv₂ => cases hv₂ with
               | num n₂ => exact ⟨_, .mult n₁ n₂⟩
 ```
+
+:::gradeTheorem 2 strong_progress_arith
+:::
 :::::
+
+::::::
 
 ## Boolean Expressions
 
@@ -1659,6 +1702,7 @@ _deterministic_: the value guards on the "step the right operand" rules mean
 that at most one rule ever applies to a given term.
 ::::
 
+::::::full
 :::::exercise (rating := 3) (name := "astep_deterministic")
 The arithmetic step relation is deterministic.  (Structurally this is the
 value-based determinism proof from the toy language, repeated for `+`, `−`,
@@ -1675,6 +1719,9 @@ theorem astep_deterministic : Deterministic AStep := by
         | (cases ‹IsAValue _›; cases ‹AStep (Aexp.num _) _›)
         | (congr 1 <;> first | rfl | (apply ‹∀ _, AStep _ _ → _ = _› <;> assumption))
 ```
+
+:::gradeTheorem 3 astep_deterministic
+:::
 :::::
 
 :::::exercise (rating := 3) (name := "bstep_deterministic")
@@ -1695,7 +1742,12 @@ theorem bstep_deterministic : Deterministic BStep := by
         | cases ‹BStep (Bexp.bool _) _›
         | (congr 1 <;> first | rfl | (apply astep_deterministic <;> assumption) | (apply ‹∀ _, BStep _ _ → _ = _› <;> assumption))
 ```
+
+:::gradeTheorem 3 bstep_deterministic
+:::
 :::::
+
+::::::
 
 ## Nondeterministic Evaluation
 
@@ -1769,7 +1821,7 @@ observation is that a single step never changes the big-step _value_ of an
 expression — whichever operand we advance, `eval` is preserved.
 ::::
 
-:::::exercise (rating := 2) (name := "anstep_preserves_eval")
+:::::exercise (rating := 2) (name := "anstep_preserves_eval") (checkVisibility := false)
 Prove that one nondeterministic step leaves the big-step value unchanged.
 _Hint:_ induction on the step derivation; each case is immediate from `eval`
 and, where present, the induction hypothesis.
@@ -1780,6 +1832,9 @@ theorem anstep_preserves_eval (a a' : Aexp) (h : a ⟶n a') :
   solution!
     induction h <;> simp only [Aexp.eval, *]
 ```
+
+:::gradeTheorem 2 anstep_preserves_eval
+:::
 :::::
 
 This lifts to any number of steps by a routine induction on the multi-step
@@ -1819,6 +1874,7 @@ theorem multi_astep_imp_anstep (a a' : Aexp)
   | step x y z h₁ _ ih => exact .step x y z (astep_imp_anstep x y h₁) ih
 ```
 
+::::::full
 :::::exercise (rating := 3) (name := "astep_anstep_agree")
 Now put the pieces together: prove that the deterministic and nondeterministic
 semantics always compute the _same_ final result.  That is, if `a` fully
@@ -1838,7 +1894,12 @@ theorem astep_anstep_agree (a : Aexp) (n₁ n₂ : Nat)
     simp only [Aexp.eval] at e₁ e₂
     lia
 ```
+
+:::gradeTheorem 3 astep_anstep_agree
+:::
 :::::
+
+::::::
 
 ::::full
 So even though `⟶n` is genuinely nondeterministic, the value it eventually
@@ -1906,6 +1967,7 @@ theorem stack_step_deterministic : Deterministic StackStep := by
   cases h₁ <;> cases h₂ <;> rfl
 ```
 
+::::::full
 :::::exercise (rating := 3) (name := "compiler_is_correct") (level := Advanced)
 Prove the compiler correct: running the compiled program from the empty stack
 reduces, in some number of steps, to a stack holding exactly the value of the
@@ -1951,7 +2013,12 @@ theorem compiler_is_correct (a : Aexp) :
     simp only [List.append_nil] at hfin
     exact hfin
 ```
+
+:::gradeTheorem 3 compiler_is_correct
+:::
 :::::
+
+::::::
 
 ```lean
 end Slang

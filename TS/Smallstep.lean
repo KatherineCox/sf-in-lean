@@ -1541,33 +1541,54 @@ theorem strong_progress_arith (a : Aexp) :
     | plus a₁ a₂ ih₁ ih₂ =>
         right
         cases ih₁ with
-        | inr h₁ => obtain ⟨a₁', ha₁⟩ := h₁; exact ⟨_, .plusLeft ha₁⟩
+        | inr h₁ =>
+            obtain ⟨a₁', ha₁⟩ := h₁
+            exists .plus a₁' a₂
+            exact .plusLeft ha₁
         | inl hv₁ => cases hv₁ with
           | num n₁ => cases ih₂ with
-            | inr h₂ => obtain ⟨a₂', ha₂⟩ := h₂
-                        exact ⟨_, .plusRight (.num n₁) ha₂⟩
+            | inr h₂ =>
+              obtain ⟨a₂', ha₂⟩ := h₂
+              exists .plus (.num n₁) a₂'
+              exact .plusRight (.num n₁) ha₂
             | inl hv₂ => cases hv₂ with
-              | num n₂ => exact ⟨_, .plus n₁ n₂⟩
+              | num n₂ =>
+                exists .num (n₁ + n₂)
+                constructor
     | minus a₁ a₂ ih₁ ih₂ =>
         right
         cases ih₁ with
-        | inr h₁ => obtain ⟨a₁', ha₁⟩ := h₁; exact ⟨_, .minusLeft ha₁⟩
+        | inr h₁ =>
+          obtain ⟨a₁', ha₁⟩ := h₁
+          exists .minus a₁' a₂
+          exact .minusLeft ha₁
         | inl hv₁ => cases hv₁ with
           | num n₁ => cases ih₂ with
-            | inr h₂ => obtain ⟨a₂', ha₂⟩ := h₂
-                        exact ⟨_, .minusRight (.num n₁) ha₂⟩
+            | inr h₂ =>
+              obtain ⟨a₂', ha₂⟩ := h₂
+              exists .minus (.num n₁) a₂'
+              exact .minusRight (.num n₁) ha₂
             | inl hv₂ => cases hv₂ with
-              | num n₂ => exact ⟨_, .minus n₁ n₂⟩
+              | num n₂ =>
+                exists .num (n₁ - n₂)
+                exact .minus n₁ n₂
     | mult a₁ a₂ ih₁ ih₂ =>
         right
         cases ih₁ with
-        | inr h₁ => obtain ⟨a₁', ha₁⟩ := h₁; exact ⟨_, .multLeft ha₁⟩
+        | inr h₁ =>
+          obtain ⟨a₁', ha₁⟩ := h₁;
+          exists .mult a₁' a₂
+          exact .multLeft ha₁
         | inl hv₁ => cases hv₁ with
           | num n₁ => cases ih₂ with
-            | inr h₂ => obtain ⟨a₂', ha₂⟩ := h₂
-                        exact ⟨_, .multRight (.num n₁) ha₂⟩
+            | inr h₂ =>
+              obtain ⟨a₂', ha₂⟩ := h₂
+              exists .mult (.num n₁) a₂'
+              exact .multRight (.num n₁) ha₂
             | inl hv₂ => cases hv₂ with
-              | num n₂ => exact ⟨_, .mult n₁ n₂⟩
+              | num n₂ =>
+                exists .num (n₁ * n₂)
+                exact .mult n₁ n₂
 ```
 
 :::gradeTheorem 2 strong_progress_arith

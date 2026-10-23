@@ -232,17 +232,17 @@ notation:50 t " ⇓ " n => Eval t n
 ::::full
 Now, here is the corresponding _small-step_ relation, written `t ⟶ t'`:
 
-```
-                -------------------------------      (plus)
-                p (c n₁) (c n₂) ⟶ c (n₁ + n₂)
+```display +centered
+-----------------------------   (plus)
+p (c n₁) (c n₂) ⟶ c (n₁ + n₂)
 
-                         t₁ ⟶ t₁'
-                    --------------------             (plusLeft)
-                    p t₁ t₂ ⟶ p t₁' t₂
+             t₁ ⟶ t₁'
+        ------------------      (plusLeft)
+        p t₁ t₂ ⟶ p t₁' t₂
 
-                         t₂ ⟶ t₂'
-                 ----------------------------        (plusRight)
-                 p (c n₁) t₂ ⟶ p (c n₁) t₂'
+             t₂ ⟶ t₂'
+    --------------------------  (plusRight)
+    p (c n₁) t₂ ⟶ p (c n₁) t₂'
 ```
 ::::
 
@@ -490,18 +490,18 @@ inductive IsValue : Tm → Prop where
 Having introduced the idea of values, we can use it in the definition of
 the `⟶` relation to write the `plusRight` rule in a slightly more elegant way.
 
-```
-                ------------------------------      (plus)
-                p (c n₁) (c n₂) ⟶ c (n₁ + n₂)
+```display +centered
+-----------------------------  (plus)
+p (c n₁) (c n₂) ⟶ c (n₁ + n₂)
 
-                         t₁ ⟶ t₁'
-                    -------------------             (plusLeft)
-                    p t₁ t₂ ⟶ p t₁' t₂
+             t₁ ⟶ t₁'
+        ------------------     (plusLeft)
+        p t₁ t₂ ⟶ p t₁' t₂
 
-                         IsValue v₁
-                         t₂ ⟶ t₂'
-                    -------------------             (plusRight)
-                    p v₁ t₂ ⟶ p v₁ t₂'
+            IsValue v₁
+             t₂ ⟶ t₂'
+        ------------------     (plusRight)
+        p v₁ t₂ ⟶ p v₁ t₂'
 ```
 
 Again, the variable names in the informal presentation carry important
@@ -1125,8 +1125,9 @@ it, we need a couple of congruence lemmas.
 :::
 
 :::terse
-The `Step` relation is _normalizing_ it is deterministic and always reaches a normal form
-in a finite number of steps.
+The `Step` relation is _normalizing_: every term reaches a normal form in
+a finite number of steps. Combined with determinism, that normal form is
+unique.
 :::
 
 ```lean
@@ -1419,17 +1420,18 @@ its right operand; once both are values, it computes the result.  (We show
 the rules for `+` in full; those for `−` and `×` have exactly the same
 shape.)
 
-```
-                        a₁ ⟶a a₁'
-                   --------------------             (plusLeft)
-                   a₁ + a₂ ⟶a a₁' + a₂
+```display +centered
+     a₁ ⟶a a₁'
+-------------------       (plusLeft)
+a₁ + a₂ ⟶a a₁' + a₂
 
-                 IsAValue v₁      a₂ ⟶a a₂'
-                 ---------------------------        (plusRight)
-                   v₁ + a₂ ⟶a v₁ + a₂'
+    IsAValue v₁
+     a₂ ⟶a a₂'
+-------------------       (plusRight)
+v₁ + a₂ ⟶a v₁ + a₂'
 
-                 -------------------------          (plus)
-                 n₁ + n₂ ⟶a num (n₁ + n₂)
+------------------------  (plus)
+n₁ + n₂ ⟶a num (n₁ + n₂)
 ```
 ::::
 
@@ -1545,27 +1547,28 @@ our language were a bit more complicated (why?).
 Again we show a
 representative sample; `neq`, `le`, and `gt` follow the same pattern as `eq`.
 
-```
-                        a₁ ⟶a a₁'
-                  --------------------             (eqLeft)
-                  a₁ = a₂ ⟶b a₁' = a₂
+```display +centered
+        a₁ ⟶a a₁'
+   -------------------   (eqLeft)
+   a₁ = a₂ ⟶b a₁' = a₂
 
-                IsAValue v₁      a₂ ⟶a a₂'
-                ---------------------------        (eqRight)
-                  v₁ = a₂ ⟶b v₁ = a₂'
+       IsAValue v₁
+        a₂ ⟶a a₂'
+   -------------------   (eqRight)
+   v₁ = a₂ ⟶b v₁ = a₂'
 
-                  ---------------------            (eq)
-                  n₁ = n₂ ⟶b (n₁ = n₂)
+   --------------------  (eq)
+   n₁ = n₂ ⟶b (n₁ = n₂)
 
-                        b₁ ⟶b b₁'
-                      --------------               (notStep)
-                      ¬ b₁ ⟶b ¬ b₁'
+        b₁ ⟶b b₁'
+      -------------      (notStep)
+      ¬ b₁ ⟶b ¬ b₁'
 
-                    ----------------               (notTrue)
-                    ¬ true ⟶b false
+    ---------------      (notTrue)
+    ¬ true ⟶b false
 
-                  ---------------------            (andFalse)
-                  false ∧ b₂ ⟶b false
+-------------------      (andFalse)
+false ∧ b₂ ⟶b false
 ```
 
 Here are the formal rules.

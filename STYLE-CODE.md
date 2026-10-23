@@ -603,6 +603,50 @@ they are rendered in the HTML as typeset math using KaTeX,
 and in the extracted Lean as verbatim indented comments.
 Each line is a separate equation.
 
+#### Inference-rule figures
+
+A block of hand-drawn inference rules (premises over a bar, over a
+conclusion, with a rule name) is a ```` ```display +centered ```` block, not a
+bare ```` ``` ```` block — `+centered` centers the figure in the rendered HTML,
+so the source itself should sit at a minimal left margin rather than using
+leading spaces to pseudo-center it.
+
+Within such a block:
+
+* **One premise per line.** Don't pack two premises onto one source line
+  (`IsAValue v₁      a₂ ⟶a a₂'`); give each its own line, even if that means a
+  rule has more lines than the minimum.
+* **Align the relation symbol.** Find the chapter's step/evaluation relation
+  (`⟶`, `⟶a`, `⟶b`, `⟶n`, `⟶*`, `⇓`, …) in every premise and conclusion line in
+  the block, and indent each line so that symbol sits at one shared column —
+  the column needed by whichever line's relation symbol sits furthest right.
+  A premise with no such symbol (a bare side condition like `IsAValue v₁`) is
+  instead centered under its own rule's bar.
+* **Each rule's bar spans its own widest line** (after the lines of that rule
+  are positioned by the rule above) — not the whole block's widest line.
+* **Rule labels share one column across the block**: the target column is two
+  spaces past whichever rule's bar ends furthest to the right; every other
+  rule's label is padded out to that same column.
+
+For example:
+
+```display +centered
+     a₁ ⟶a a₁'
+-------------------       (plusLeft)
+a₁ + a₂ ⟶a a₁' + a₂
+
+    IsAValue v₁
+     a₂ ⟶a a₂'
+-------------------       (plusRight)
+v₁ + a₂ ⟶a v₁ + a₂'
+
+------------------------  (plus)
+n₁ + n₂ ⟶a num (n₁ + n₂)
+```
+
+This applies going forward (new material, and chapters as they come up for
+proofreading); it is not a mandate to retrofit every existing rule figure.
+
 ### Inline roles
 
 Inline roles of the form `{<role>}[<text>]` provide intertext linking and

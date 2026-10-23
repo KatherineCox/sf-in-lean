@@ -1792,26 +1792,26 @@ rules removed, so the evaluation order is nondeterministic.
 
 ```lean
 inductive ANStep : Aexp → Aexp → Prop where
-  | plusLeft (a₁ a₁' a₂ : Aexp)
+  | plusLeft {a₁ a₁' a₂ : Aexp}
       (h : ANStep a₁ a₁') :
       ANStep (.plus a₁ a₂) (.plus a₁' a₂)
-  | plusRight (a₁ a₂ a₂' : Aexp)
+  | plusRight {a₁ a₂ a₂' : Aexp}
       (h : ANStep a₂ a₂') :
       ANStep (.plus a₁ a₂) (.plus a₁ a₂')
   | plus (n₁ n₂ : Nat) :
       ANStep (.plus (.num n₁) (.num n₂)) (.num (n₁ + n₂))
-  | minusLeft (a₁ a₁' a₂ : Aexp)
+  | minusLeft {a₁ a₁' a₂ : Aexp}
       (h : ANStep a₁ a₁') :
       ANStep (.minus a₁ a₂) (.minus a₁' a₂)
-  | minusRight (a₁ a₂ a₂' : Aexp)
+  | minusRight {a₁ a₂ a₂' : Aexp}
       (h : ANStep a₂ a₂') :
       ANStep (.minus a₁ a₂) (.minus a₁ a₂')
   | minus (n₁ n₂ : Nat) :
       ANStep (.minus (.num n₁) (.num n₂)) (.num (n₁ - n₂))
-  | multLeft (a₁ a₁' a₂ : Aexp)
+  | multLeft {a₁ a₁' a₂ : Aexp}
       (h : ANStep a₁ a₁') :
       ANStep (.mult a₁ a₂) (.mult a₁' a₂)
-  | multRight (a₁ a₂ a₂' : Aexp)
+  | multRight {a₁ a₂ a₂' : Aexp}
       (h : ANStep a₂ a₂') :
       ANStep (.mult a₁ a₂) (.mult a₁ a₂')
   | mult (n₁ n₂ : Nat) :
@@ -1828,10 +1828,10 @@ theorem anstep_not_deterministic : ¬ Deterministic ANStep := by
   intro hd
   have s₁ : ANStep (.plus (.plus (.num 1) (.num 1)) (.plus (.num 2) (.num 2)))
       (.plus (.num 2) (.plus (.num 2) (.num 2))) :=
-    .plusLeft _ _ _ (.plus 1 1)
+    .plusLeft (.plus 1 1)
   have s₂ : ANStep (.plus (.plus (.num 1) (.num 1)) (.plus (.num 2) (.num 2)))
       (.plus (.plus (.num 1) (.num 1)) (.num 4)) :=
-    .plusRight _ _ _ (.plus 2 2)
+    .plusRight (.plus 2 2)
   have heq := hd _ _ _ s₁ s₂
   simp at heq
 ```
@@ -1878,14 +1878,14 @@ happens, in addition, to respect the `IsAValue` guard).
 ```lean
 theorem astep_imp_anstep (a a' : Aexp) (h : a ⟶a a') : a ⟶n a' := by
   induction h with
-  | plusLeft _ ih => exact .plusLeft _ _ _ ih
-  | plusRight _ _ ih => exact .plusRight _ _ _ ih
+  | plusLeft _ ih => exact .plusLeft ih
+  | plusRight _ _ ih => exact .plusRight ih
   | plus n₁ n₂ => exact .plus n₁ n₂
-  | minusLeft _ ih => exact .minusLeft _ _ _ ih
-  | minusRight _ _ ih => exact .minusRight _ _ _ ih
+  | minusLeft _ ih => exact .minusLeft ih
+  | minusRight _ _ ih => exact .minusRight ih
   | minus n₁ n₂ => exact .minus n₁ n₂
-  | multLeft _ ih => exact .multLeft _ _ _ ih
-  | multRight _ _ ih => exact .multRight _ _ _ ih
+  | multLeft _ ih => exact .multLeft ih
+  | multRight _ _ ih => exact .multRight ih
   | mult n₁ n₂ => exact .mult n₁ n₂
 
 theorem multi_astep_imp_anstep (a a' : Aexp)

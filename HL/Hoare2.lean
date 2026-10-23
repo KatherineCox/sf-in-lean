@@ -1458,7 +1458,7 @@ A *conditional* `if b then {{p₁}} d₁ else {{p₂}} d₂ end {{q}}` is locall
 with respect to precondition `p` if
 
 1. `p ∧ b ↠ p₁`
-2. `p ∧ b ↠ p₂`
+2. `p ∧ ¬ b ↠ p₂`
 3. `d₁` is locally consistent with respect to `p₁`
 4. `d₂` is locally consistent with respect to `p₂`
 5. `d₁.postcondition ↠ q`
@@ -1472,7 +1472,7 @@ precondition `p` if:
 
 1. `p ↠ d.postcondition`
 2. `d.postcondition ∧ b ↠ q`
-3. `d.postcondition ∧ b ↠ r`
+3. `d.postcondition ∧ ¬ b ↠ r`
 4. `d` is locally consistent with respect to `q`
 
 :::slidebreak
@@ -4648,7 +4648,7 @@ end SparseAnnotations
 
 ::::::
 
-# Weakest Preconditions (Optional)
+# Weakest Preconditions
 
 :::dev
 HIDE: BCP 21: We talked about moving this stuff to the HoareAsLogic
@@ -4751,45 +4751,41 @@ theorem isWp_def {p : Assertion} {c : Com} {q : Assertion} :
 :::slidebreak
 :::
 
-:::dev PotentialImprovement
-Make a quiz based on this!
-:::
-
-:::::exercise (rating := 1) (name := "wp") (optional := true) (checkVisibility := false)
+::::quiz
 What are weakest preconditions of the following commands
 for the following postconditions?
 
-```display
-1) {{ ? }}  skip  {{ X = 5 }}
+1. `{{ ? }}  skip  {{ X = 5 }}`
 
-2) {{ ? }}  X := Y + Z {{ X = 5 }}
+2. `{{ ? }}  X := Y + Z  {{ X = 5 }}`
 
-3) {{ ? }}  X := Y  {{ X = Y }}
+3. `{{ ? }}  X := Y  {{ X = Y }}`
 
-4) {{ ? }}
- if X = 0 then Y := Z + 1 else Y := W + 2 end
- {{ Y = 5 }}
+4.
+   ```display
+   {{ ? }}
+   if X = 0 then Y := Z + 1 else Y := W + 2 end
+   {{ Y = 5 }}
+   ```
 
-5) {{ ? }}
- X := 5
- {{ X = 0 }}
+5. `{{ ? }}  X := 5  {{ X = 0 }}`
 
-6) {{ ? }}
- while (true) {X := 0}
- {{ X = 0 }}
-```
+6.
+   ```display
+   {{ ? }}
+   while (true) {X := 0}
+   {{ X = 0 }}
+   ```
 
-:::solution
-```display
-1) X = 5
-2) Y + Z = 5
-3) True
-4) (X = 0 ∧ Z = 4) ∨ (X ≠ 0 ∧ W = 3)
-5) False
-6) True
-```
+:::quizSolution
+1. `X = 5`
+2. `Y + Z = 5`
+3. `True`
+4. `(X = 0 ∧ Z = 4) ∨ (X ≠ 0 ∧ W = 3)`
+5. `False`
+6. `True`
 :::
-:::::
+::::
 
 :::dev PotentialImprovement
 ```

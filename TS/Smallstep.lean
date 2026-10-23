@@ -1,5 +1,6 @@
 import SFLMeta
 
+import LF.CustomTactics
 import TS.Slang
 import TS.AttributeDecls
 
@@ -1733,12 +1734,52 @@ and `×`; the impossible cross-cases close because a value `num n` cannot step.)
 theorem astep_deterministic : Deterministic AStep := by
   solution!
     intro x y₁ y₂ h₁
-    induction h₁ generalizing y₂ <;> intro h₂ <;> cases h₂ <;>
-      first
-        | rfl
-        | cases ‹AStep (Aexp.num _) _›
-        | (cases ‹IsAValue _›; cases ‹AStep (Aexp.num _) _›)
-        | (congr 1 <;> first | rfl | (apply ‹∀ _, AStep _ _ → _ = _› <;> assumption))
+    induction h₁ generalizing y₂ with intro h₂
+    | plusLeft h ih =>
+        inversion h₂ with
+        | plusLeft => congr; apply ih; assumption
+        | plus => inversion h
+        | plusRight _ hv _ => inversion hv; inversion h
+    | plusRight hv h ih =>
+      inversion h₂ with
+        | plusRight => congr; apply ih; assumption
+        | plus => inversion h
+        | plusLeft h => inversion hv; inversion h
+    | plus n₁ n₂ =>
+        inversion h₂ with
+        | plusLeft h => inversion h
+        | plus => rfl
+        | plusRight _ h => inversion h
+    | minusLeft h ih =>
+        inversion h₂ with
+        | minusLeft => congr; apply ih; assumption
+        | minus => inversion h
+        | minusRight _ hv _ => inversion hv; inversion h
+    | minusRight hv h ih =>
+        inversion h₂ with
+        | minusRight => congr; apply ih; assumption
+        | minus => inversion h
+        | minusLeft h => inversion hv; inversion h
+    | minus n₁ n₂ =>
+        inversion h₂ with
+        | minusLeft h => inversion h
+        | minus => rfl
+        | minusRight _ h => inversion h
+    | multLeft h ih =>
+        inversion h₂ with
+        | multLeft => congr; apply ih; assumption
+        | mult => inversion h
+        | multRight _ hv _ => inversion hv; inversion h
+    | multRight  hv h ih =>
+        inversion h₂ with
+        | multRight => congr; apply ih; assumption
+        | mult => inversion h
+        | multLeft h => inversion hv; inversion h
+    | mult n₁ n₂ =>
+        inversion h₂ with
+        | multLeft h => inversion h
+        | mult => rfl
+        | multRight _ h => inversion h
 ```
 
 :::gradeTheorem 3 astep_deterministic
@@ -1755,13 +1796,103 @@ base cases.
 theorem bstep_deterministic : Deterministic BStep := by
   solution!
     intro x y₁ y₂ h₁
-    induction h₁ generalizing y₂ <;> intro h₂ <;> cases h₂ <;>
-      first
-        | rfl
-        | cases ‹AStep (Aexp.num _) _›
-        | (cases ‹IsAValue _›; cases ‹AStep (Aexp.num _) _›)
-        | cases ‹BStep (Bexp.bool _) _›
-        | (congr 1 <;> first | rfl | (apply astep_deterministic <;> assumption) | (apply ‹∀ _, BStep _ _ → _ = _› <;> assumption))
+    induction h₁ generalizing y₂ with intro h₂
+    | eqLeft h =>
+        inversion h₂ with
+        | eqLeft => congr; apply astep_deterministic <;> assumption
+        | eq => inversion h
+        | eqRight _ hv _ => inversion hv; inversion h
+    | eqRight hv h =>
+        inversion h₂ with
+        | eqRight => congr; apply astep_deterministic <;> assumption
+        | eq => inversion h
+        | eqLeft h => inversion hv; inversion h
+    | eq n₁ n₂ =>
+        inversion h₂ with
+        | eqLeft h => inversion h
+        | eq => rfl
+        | eqRight _ h => inversion h
+    | neqLeft h =>
+        inversion h₂ with
+        | neqLeft => congr; apply astep_deterministic <;> assumption
+        | neq => inversion h
+        | neqRight _ hv _ => inversion hv; inversion h
+    | neqRight hv h =>
+        inversion h₂ with
+        | neqRight => congr; apply astep_deterministic <;> assumption
+        | neq => inversion h
+        | neqLeft h => inversion hv; inversion h
+    | neq n₁ n₂ =>
+        inversion h₂ with
+        | neqLeft h => inversion h
+        | neq => rfl
+        | neqRight _ h => inversion h
+    | leLeft h =>
+        inversion h₂ with
+        | leLeft => congr; apply astep_deterministic <;> assumption
+        | le => inversion h
+        | leRight _ hv _ => inversion hv; inversion h
+    | leRight hv h =>
+        inversion h₂ with
+        | leRight => congr; apply astep_deterministic <;> assumption
+        | le => inversion h
+        | leLeft h => inversion hv; inversion h
+    | le n₁ n₂ =>
+        inversion h₂ with
+        | leLeft h => inversion h
+        | le => rfl
+        | leRight _ h => inversion h
+    | gtLeft h =>
+        inversion h₂ with
+        | gtLeft => congr; apply astep_deterministic <;> assumption
+        | gt => inversion h
+        | gtRight _ hv _ => inversion hv; inversion h
+    | gtRight hv h =>
+        inversion h₂ with
+        | gtRight => congr; apply astep_deterministic <;> assumption
+        | gt => inversion h
+        | gtLeft h => inversion hv; inversion h
+    | gt n₁ n₂ =>
+        inversion h₂ with
+        | gtLeft h => inversion h
+        | gt => rfl
+        | gtRight _ h => inversion h
+    | notStep h ih =>
+        inversion h₂ with first
+        | congr; apply ih; assumption
+        | inversion h
+    | notTrue =>
+        inversion h₂ with
+        | notStep h => inversion h
+        | notTrue => rfl
+    | notFalse =>
+        inversion h₂ with
+        | notStep h => inversion h
+        | notFalse => rfl
+    | andStep h ih =>
+        inversion h₂ with first
+        | congr; apply ih; assumption
+        | inversion h
+    | andTrueStep h ih =>
+        inversion h₂ with
+        | andStep h => inversion h
+        | andTrueStep => congr; apply ih; assumption
+        | andTrueTrue => inversion h
+        | andTrueFalse => inversion h
+    | andFalse b₂ =>
+        inversion h₂ with
+        | andStep h => inversion h
+        | andFalse => rfl
+    | andTrueTrue =>
+        inversion h₂ with
+        | andStep h => inversion h
+        | andTrueStep h => inversion h
+        | andTrueTrue => rfl
+    | andTrueFalse =>
+        inversion h₂ with
+        | andStep h => inversion h
+        | andTrueStep h => inversion h
+        | andTrueFalse => rfl
 ```
 
 :::gradeTheorem 3 bstep_deterministic

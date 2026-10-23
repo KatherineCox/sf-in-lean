@@ -616,12 +616,24 @@ Within such a block:
 * **One premise per line.** Don't pack two premises onto one source line
   (`IsAValue v₁      a₂ ⟶a a₂'`); give each its own line, even if that means a
   rule has more lines than the minimum.
-* **Align the relation symbol.** Find the chapter's step/evaluation relation
-  (`⟶`, `⟶a`, `⟶b`, `⟶n`, `⟶*`, `⇓`, …) in every premise and conclusion line in
-  the block, and indent each line so that symbol sits at one shared column —
-  the column needed by whichever line's relation symbol sits furthest right.
-  A premise with no such symbol (a bare side condition like `IsAValue v₁`) is
-  instead centered under its own rule's bar.
+* **Align the relation symbol — except for a rule whose sides are very
+  unbalanced.** For each rule in the block, find the chapter's step/typing
+  relation (`⟶`, `⟶a`, `⟶b`, `⟶n`, `⟶*`, `⇓`, `⦂`, …) in its conclusion and
+  compare the lengths of the text before and after it. When the shorter side
+  is at least 30% of the longer side, the rule is "balanced": indent every
+  premise and conclusion line of every balanced rule in the block so the
+  relation symbol sits at one shared column — the column needed by whichever
+  balanced line's symbol sits furthest right. (A side condition with no
+  symbol, like `IsAValue v₁`, is centered under its own rule's bar as usual.)
+  When the shorter side is under 30% (e.g. `if true then t₁ else t₂ ⟶ t₁`,
+  where the conclusion is almost all left-hand side), symbol-aligning that
+  one rule against the others drags it to a cramped indent near the left
+  margin — skip the shared column for it and instead center that rule's own
+  premises/bar/conclusion as a block within the width of the block's widest
+  line, the same way a block with no balanced rules at all would be centered.
+  A block can mix the two: aligned rules share one column, centered rules
+  each sit independently, and the result still reads as one figure because
+  the label column (below) still spans all of them.
 * **Each rule's bar spans its own widest line** (after the lines of that rule
   are positioned by the rule above) — not the whole block's widest line.
 * **Rule labels share one column across the block**: the target column is two
@@ -642,6 +654,22 @@ v₁ + a₂ ⟶a v₁ + a₂'
 
 ------------------------  (plus)
 n₁ + n₂ ⟶a num (n₁ + n₂)
+```
+
+And here `ifTrue`/`ifFalse` are unbalanced (a long condition stepping to a bare
+variable) and so are centered, while `ifStep` is balanced and aligned on `⟶`
+as usual:
+
+```display +centered
+         ----------------------------              (ifTrue)
+         if true then t₁ else t₂ ⟶ t₁
+
+        -----------------------------              (ifFalse)
+        if false then t₁ else t₂ ⟶ t₂
+
+                      t₁ ⟶ t₁'
+   ----------------------------------------------  (ifStep)
+   if t₁ then t₂ else t₃ ⟶ if t₁' then t₂ else t₃
 ```
 
 This applies going forward (new material, and chapters as they come up for

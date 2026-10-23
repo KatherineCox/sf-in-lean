@@ -1146,7 +1146,7 @@ it, we need a couple of congruence lemmas.
 
 :::terse
 The `Step` relation is _normalizing_: every term reaches a normal form in
-a finite number of steps. Combined with determinism, that normal form is
+a finite number of steps. Determinism guarantees that normal form is unique.
 unique.
 :::
 

@@ -411,6 +411,7 @@ def Tm.IsNormalForm (t : Tm) : Prop := _root_.IsNormalForm Tm.Step t
 def Tm.IsStuck (t : Tm) : Prop := Tm.IsNormalForm t ∧ ¬ Tm.IsValue t
 ```
 
+::::::full
 :::::exercise (rating := 2) (name := "some_term_is_stuck")
 ```lean
 theorem some_term_is_stuck : ∃ t, Tm.IsStuck t := by
@@ -424,7 +425,12 @@ theorem some_term_is_stuck : ∃ t, Tm.IsStuck t := by
       | inl hb => cases hb
       | inr hn => cases hn with | succ _ h => cases h
 ```
+
+:::gradeTheorem 2 some_term_is_stuck
+:::
 :::::
+
+::::::
 
 :::slidebreak
 :::
@@ -451,7 +457,7 @@ theorem nvalue_is_nf (t : Tm)
       | succStep _ t₁' h => exact ih ⟨t₁', h⟩
 ```
 
-:::::exercise (rating := 3) (name := "value_is_nf")
+:::::exercise (rating := 3) (name := "value_is_nf") (checkVisibility := false)
 (Hint: You will reach a point in this proof where you need to use an
 induction to reason about a term that is known to be a numeric value.
 This induction can be performed either over the term itself or over the
@@ -507,8 +513,12 @@ theorem value_is_nf' (t : Tm)
         | inl hb => cases hb
         | inr hn => cases hn
 ```
+
+:::gradeTheorem 3 value_is_nf
+:::
 :::::
 
+::::::full
 :::::exercise (rating := 3) (name := "step_deterministic") (optional := true)
 Use `value_is_nf` (here, `nvalue_is_nf`) to show that the `Tm.Step` relation
 is also deterministic.
@@ -562,6 +572,8 @@ theorem step_deterministic : Deterministic Tm.Step := by
         | isZeroStep _ _ hs₂ => rw [ih _ hs₂]
 ```
 :::::
+
+::::::
 
 ::::quiz
 Is the following term stuck?
@@ -907,6 +919,7 @@ example :
   intro hc; cases hc with | ite _ _ _ _ h₁ h₂ h₃ => cases h₂
 ```
 
+::::::full
 :::::exercise (rating := 1) (name := "succ_hastype_nat__hastype_nat") (optional := true)
 ```lean
 example (t : Tm) (h : <{ ⊢ succ t ⦂ Nat }>) : <{ ⊢ t ⦂ Nat }> := by
@@ -914,6 +927,8 @@ example (t : Tm) (h : <{ ⊢ succ t ⦂ Nat }>) : <{ ⊢ t ⦂ Nat }> := by
     cases h with | succ _ hh => exact hh
 ```
 :::::
+
+::::::
 
 ## Canonical forms
 
@@ -946,7 +961,7 @@ The first is that well-typed normal forms are not stuck — or conversely,
 if a term is well typed, then either it is a value or it can take at
 least one step.  We call this _progress_.
 
-:::::exercise (rating := 3) (name := "finish_progress")
+:::::exercise (rating := 3) (name := "finish_progress") (checkVisibility := false)
 Complete the formal proof of the `progress` property.  (Make sure you
 understand the parts we've given of the informal proof in the following
 exercise before starting — this will save you a lot of time.)
@@ -1013,7 +1028,8 @@ _strong progress_ from the {ref "Smallstep"}[Smallstep] chapter?
 (C) Strong progress implies progress
 :::
 
-:::::exercise (rating := 3) (name := "finish_progress_informal") (optional := true) (manual := true)
+::::::full
+:::::exercise (rating := 3) (name := "finish_progress_informal") (level := Advanced) (optional := true) (manual := true)
 Complete the corresponding informal proof.
 
 :::dev "Benjamin Pierce (bcpierce00)"
@@ -1092,6 +1108,8 @@ GRADE_MANUAL 3: finish_progress_informal
 :::
 :::::
 
+::::::
+
 ::::full
 This theorem is more interesting than the strong progress theorem that we
 saw in the {ref "Smallstep"}[Smallstep] chapter, where _all_ normal forms were values.  Here
@@ -1152,7 +1170,7 @@ FALSE: normal forms do not reduce to anything.
 The second critical property of typing is that, when a well-typed term
 takes a step, the result is a well-typed term (of the same type).
 
-:::::exercise (rating := 2) (name := "finish_preservation")
+:::::exercise (rating := 2) (name := "finish_preservation") (checkVisibility := false)
 Complete the formal proof of the `preservation` property.  (Again, make
 sure you understand the informal proof fragment in the following exercise
 first.)
@@ -1189,7 +1207,8 @@ theorem preservation (t t' : Tm) (τ : Ty) (hT : <{ ⊢ t ⦂ τ }>)
 :::
 :::::
 
-:::::exercise (rating := 3) (name := "finish_preservation_informal") (optional := true) (manual := true)
+::::::full
+:::::exercise (rating := 3) (name := "finish_preservation_informal") (level := Advanced) (optional := true) (manual := true)
 Complete the following informal proof.
 
 _Theorem_: If `⊢ t ⦂ T` and `t ⟶ t'`, then `⊢ t' ⦂ T`.
@@ -1266,6 +1285,9 @@ GRADE_MANUAL 3: finish_preservation_informal
 :::
 :::::
 
+::::::
+
+::::::full
 :::::exercise (rating := 3) (name := "preservation_alternate_proof")
 Now prove the same property again by induction on the _evaluation_
 derivation instead of on the typing derivation.  Begin by carefully
@@ -1294,6 +1316,8 @@ theorem preservation' (t t' : Tm) (τ : Ty) (hT : <{ ⊢ t ⦂ τ }>)
 :::gradeTheorem 3 preservation'
 :::
 :::::
+
+::::::
 
 ::::full
 The preservation theorem is often called _subject reduction_, because it
@@ -1360,6 +1384,7 @@ All three remain true.
 
 # Additional Exercises
 
+::::::full
 :::::exercise (rating := 3) (name := "subject_expansion")
 Having seen the subject reduction property, one might wonder whether the
 opposite property — subject _expansion_ — also holds.  That is, is it
@@ -1388,7 +1413,12 @@ theorem subject_expansion :
 
 end TM
 ```
+
+:::gradeTheorem 3 TM.subject_expansion
+:::
 :::::
+
+::::::
 
 The following are _thought exercises_: for each modification, say which
 of determinism / progress / preservation still hold, with a
@@ -1411,6 +1441,7 @@ variation1b (EX2M?): add the typing rule
 ```
 :::
 
+::::::full
 :::::exercise (rating := 2) (name := "variation1") (manual := true)
 Suppose that we add this new rule to the typing relation:
 ```
@@ -1534,10 +1565,13 @@ of changing the definitions that break just one of the properties and
 leave the others alone.
 :::::
 
+::::::
+
 :::dev PotentialImprovement
 How about turning this into variation9?
 :::
 
+::::::full
 :::::exercise (rating := 1) (name := "remove_pred0") (manual := true)
 The reduction rule `predZero` is a bit counter-intuitive: we might feel
 that it makes more sense for the predecessor of `0` to be undefined,
@@ -1608,3 +1642,5 @@ GRADE_MANUAL 6: prog_pres_bigstep
 ```
 :::
 :::::
+
+::::::

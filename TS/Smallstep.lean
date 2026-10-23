@@ -1478,28 +1478,28 @@ Warn students about the notational confusion with the rules plus, etc.
 
 ```lean
 inductive AStep : Aexp → Aexp → Prop where
-  | plusLeft (a₁ a₁' a₂ : Aexp)
+  | plusLeft {a₁ a₁' a₂ : Aexp}
       (h : AStep a₁ a₁') :
       AStep (.plus a₁ a₂) (.plus a₁' a₂)
-  | plusRight (v₁ a₂ a₂' : Aexp)
+  | plusRight {v₁ a₂ a₂' : Aexp}
       (hv : IsAValue v₁)
       (h : AStep a₂ a₂') :
       AStep (.plus v₁ a₂) (.plus v₁ a₂')
   | plus (n₁ n₂ : Nat) :
       AStep (.plus (.num n₁) (.num n₂)) (.num (n₁ + n₂))
-  | minusLeft (a₁ a₁' a₂ : Aexp)
+  | minusLeft {a₁ a₁' a₂ : Aexp}
       (h : AStep a₁ a₁') :
       AStep (.minus a₁ a₂) (.minus a₁' a₂)
-  | minusRight (v₁ a₂ a₂' : Aexp)
+  | minusRight {v₁ a₂ a₂' : Aexp}
       (hv : IsAValue v₁)
       (h : AStep a₂ a₂') :
       AStep (.minus v₁ a₂) (.minus v₁ a₂')
   | minus (n₁ n₂ : Nat) :
       AStep (.minus (.num n₁) (.num n₂)) (.num (n₁ - n₂))
-  | multLeft (a₁ a₁' a₂ : Aexp)
+  | multLeft {a₁ a₁' a₂ : Aexp}
       (h : AStep a₁ a₁') :
       AStep (.mult a₁ a₂) (.mult a₁' a₂)
-  | multRight (v₁ a₂ a₂' : Aexp)
+  | multRight {v₁ a₂ a₂' : Aexp}
       (hv : IsAValue v₁)
       (h : AStep a₂ a₂') :
       AStep (.mult v₁ a₂) (.mult v₁ a₂')
@@ -1523,7 +1523,7 @@ the right operand is the one that takes a step.
 example :
     (Aexp.plus (.num 3) (.plus (.num 2) (.num 1)))
       ⟶a (.plus (.num 3) (.num 3)) := by
-  exact .plusRight _ _ _ (.num 3) (.plus 2 1)
+  exact .plusRight (.num 3) (.plus 2 1)
 ```
 
 ::::::full
@@ -1541,31 +1541,31 @@ theorem strong_progress_arith (a : Aexp) :
     | plus a₁ a₂ ih₁ ih₂ =>
         right
         cases ih₁ with
-        | inr h₁ => obtain ⟨a₁', ha₁⟩ := h₁; exact ⟨_, .plusLeft _ _ _ ha₁⟩
+        | inr h₁ => obtain ⟨a₁', ha₁⟩ := h₁; exact ⟨_, .plusLeft ha₁⟩
         | inl hv₁ => cases hv₁ with
           | num n₁ => cases ih₂ with
             | inr h₂ => obtain ⟨a₂', ha₂⟩ := h₂
-                        exact ⟨_, .plusRight _ _ _ (.num n₁) ha₂⟩
+                        exact ⟨_, .plusRight (.num n₁) ha₂⟩
             | inl hv₂ => cases hv₂ with
               | num n₂ => exact ⟨_, .plus n₁ n₂⟩
     | minus a₁ a₂ ih₁ ih₂ =>
         right
         cases ih₁ with
-        | inr h₁ => obtain ⟨a₁', ha₁⟩ := h₁; exact ⟨_, .minusLeft _ _ _ ha₁⟩
+        | inr h₁ => obtain ⟨a₁', ha₁⟩ := h₁; exact ⟨_, .minusLeft ha₁⟩
         | inl hv₁ => cases hv₁ with
           | num n₁ => cases ih₂ with
             | inr h₂ => obtain ⟨a₂', ha₂⟩ := h₂
-                        exact ⟨_, .minusRight _ _ _ (.num n₁) ha₂⟩
+                        exact ⟨_, .minusRight (.num n₁) ha₂⟩
             | inl hv₂ => cases hv₂ with
               | num n₂ => exact ⟨_, .minus n₁ n₂⟩
     | mult a₁ a₂ ih₁ ih₂ =>
         right
         cases ih₁ with
-        | inr h₁ => obtain ⟨a₁', ha₁⟩ := h₁; exact ⟨_, .multLeft _ _ _ ha₁⟩
+        | inr h₁ => obtain ⟨a₁', ha₁⟩ := h₁; exact ⟨_, .multLeft ha₁⟩
         | inl hv₁ => cases hv₁ with
           | num n₁ => cases ih₂ with
             | inr h₂ => obtain ⟨a₂', ha₂⟩ := h₂
-                        exact ⟨_, .multRight _ _ _ (.num n₁) ha₂⟩
+                        exact ⟨_, .multRight (.num n₁) ha₂⟩
             | inl hv₂ => cases hv₂ with
               | num n₂ => exact ⟨_, .mult n₁ n₂⟩
 ```
@@ -1619,51 +1619,51 @@ Here are the formal rules.
 
 ```lean
 inductive BStep : Bexp → Bexp → Prop where
-  | eqLeft (a₁ a₁' a₂ : Aexp)
+  | eqLeft {a₁ a₁' a₂ : Aexp}
       (h : AStep a₁ a₁') :
       BStep (.eq a₁ a₂) (.eq a₁' a₂)
-  | eqRight (v₁ a₂ a₂' : Aexp)
+  | eqRight {v₁ a₂ a₂' : Aexp}
       (hv : IsAValue v₁)
       (h : AStep a₂ a₂') :
       BStep (.eq v₁ a₂) (.eq v₁ a₂')
   | eq (n₁ n₂ : Nat) :
       BStep (.eq (.num n₁) (.num n₂)) (.bool (decide (n₁ = n₂)))
-  | neqLeft (a₁ a₁' a₂ : Aexp)
+  | neqLeft {a₁ a₁' a₂ : Aexp}
       (h : AStep a₁ a₁') :
       BStep (.neq a₁ a₂) (.neq a₁' a₂)
-  | neqRight (v₁ a₂ a₂' : Aexp)
+  | neqRight {v₁ a₂ a₂' : Aexp}
       (hv : IsAValue v₁)
       (h : AStep a₂ a₂') :
       BStep (.neq v₁ a₂) (.neq v₁ a₂')
   | neq (n₁ n₂ : Nat) :
       BStep (.neq (.num n₁) (.num n₂)) (.bool (decide (n₁ ≠ n₂)))
-  | leLeft (a₁ a₁' a₂ : Aexp)
+  | leLeft {a₁ a₁' a₂ : Aexp}
       (h : AStep a₁ a₁') :
       BStep (.le a₁ a₂) (.le a₁' a₂)
-  | leRight (v₁ a₂ a₂' : Aexp)
+  | leRight {v₁ a₂ a₂' : Aexp}
       (hv : IsAValue v₁)
       (h : AStep a₂ a₂') :
       BStep (.le v₁ a₂) (.le v₁ a₂')
   | le (n₁ n₂ : Nat) :
       BStep (.le (.num n₁) (.num n₂)) (.bool (decide (n₁ ≤ n₂)))
-  | gtLeft (a₁ a₁' a₂ : Aexp)
+  | gtLeft {a₁ a₁' a₂ : Aexp}
       (h : AStep a₁ a₁') :
       BStep (.gt a₁ a₂) (.gt a₁' a₂)
-  | gtRight (v₁ a₂ a₂' : Aexp)
+  | gtRight {v₁ a₂ a₂' : Aexp}
       (hv : IsAValue v₁)
       (h : AStep a₂ a₂') :
       BStep (.gt v₁ a₂) (.gt v₁ a₂')
   | gt (n₁ n₂ : Nat) :
       BStep (.gt (.num n₁) (.num n₂)) (.bool (decide (n₁ > n₂)))
-  | notStep (b₁ b₁' : Bexp)
+  | notStep {b₁ b₁' : Bexp}
       (h : BStep b₁ b₁') :
       BStep (.not b₁) (.not b₁')
   | notTrue : BStep (.not (.bool true)) (.bool false)
   | notFalse : BStep (.not (.bool false)) (.bool true)
-  | andStep (b₁ b₁' b₂ : Bexp)
+  | andStep {b₁ b₁' b₂ : Bexp}
       (h : BStep b₁ b₁') :
       BStep (.and b₁ b₂) (.and b₁' b₂)
-  | andTrueStep (b₂ b₂' : Bexp) (h : BStep b₂ b₂') :
+  | andTrueStep {b₂ b₂' : Bexp} (h : BStep b₂ b₂') :
       BStep (.and (.bool true) b₂) (.and (.bool true) b₂')
   | andFalse (b₂ : Bexp) : BStep (.and (.bool false) b₂) (.bool false)
   | andTrueTrue : BStep (.and (.bool true) (.bool true)) (.bool true)
@@ -1679,7 +1679,7 @@ A boolean example — the left comparison operand reduces first:
 example :
     (Bexp.le (.plus (.num 1) (.num 1)) (.num 3))
       ⟶b (.le (.num 2) (.num 3)) := by
-  exact .leLeft _ _ _ (.plus 1 1)
+  exact .leLeft (.plus 1 1)
 ```
 
 ::::quiz
@@ -1857,14 +1857,14 @@ happens, in addition, to respect the `IsAValue` guard).
 ```lean
 theorem astep_imp_anstep (a a' : Aexp) (h : a ⟶a a') : a ⟶n a' := by
   induction h with
-  | plusLeft a₁ a₁' a₂ _ ih => exact .plusLeft a₁ a₁' a₂ ih
-  | plusRight v₁ a₂ a₂' _ _ ih => exact .plusRight v₁ a₂ a₂' ih
+  | plusLeft _ ih => exact .plusLeft _ _ _ ih
+  | plusRight _ _ ih => exact .plusRight _ _ _ ih
   | plus n₁ n₂ => exact .plus n₁ n₂
-  | minusLeft a₁ a₁' a₂ _ ih => exact .minusLeft a₁ a₁' a₂ ih
-  | minusRight v₁ a₂ a₂' _ _ ih => exact .minusRight v₁ a₂ a₂' ih
+  | minusLeft _ ih => exact .minusLeft _ _ _ ih
+  | minusRight _ _ ih => exact .minusRight _ _ _ ih
   | minus n₁ n₂ => exact .minus n₁ n₂
-  | multLeft a₁ a₁' a₂ _ ih => exact .multLeft a₁ a₁' a₂ ih
-  | multRight v₁ a₂ a₂' _ _ ih => exact .multRight v₁ a₂ a₂' ih
+  | multLeft _ ih => exact .multLeft _ _ _ ih
+  | multRight _ _ ih => exact .multRight _ _ _ ih
   | mult n₁ n₂ => exact .mult n₁ n₂
 
 theorem multi_astep_imp_anstep (a a' : Aexp)

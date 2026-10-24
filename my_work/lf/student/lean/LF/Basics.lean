@@ -2111,7 +2111,8 @@ attribute [irreducible] checkIn
 
 theorem buyTicket_then_checkIn (bagContent : BagContent) :
     checkIn (buyTicket (.noTicket bagContent)) = .checkedIn bagContent .notScreened := by
-  sorry
+  rewrite [buyTicket_noTicket, checkIn_ticketed]
+  rfl
 
 --  (End of exercise)
 

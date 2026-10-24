@@ -1597,7 +1597,12 @@ theorem add_id_example : ∀ n m : Nat,
 
 theorem add_id_exercise : ∀ n m o : Nat,
     n = m → m = o → n + m = m + o := by
-  sorry
+  intro n m o
+  intro hnm hmo
+  rewrite[hnm, hmo]
+  rfl
+
+
 
 --  #### Displaying Theorem Statements
 

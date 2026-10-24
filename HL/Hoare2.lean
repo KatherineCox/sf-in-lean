@@ -15,7 +15,7 @@ file := some "Hoare2"
 %%%
 
 ```lean -show
-open scoped Com MyGetElem Assertion HasTriple
+open scoped Com MyGetElem Assertion HasTriple HasEval
 ```
 
 :::dev BeforeNextRelease
@@ -45,29 +45,11 @@ Here are a bunch of improvements I wanted to make but
 didn't have time to get to.  Maybe next time if no one else gets to
 them first.
 
-- 1. This chapter feels largely disconnected from the style of the
-     rest of the series, which is "100% Rocq script".  There's a
-     significant amount of "just comments" here instead.  I think
-     we could make this much better by introducing formal decorated
-     programs right after we informally define them.  Then in the
-     examples that follow do each informal decorated program (to
-     get students to find the right assertions, more or less)
-     followed immediately by a formal version, instead of delaying
-     formal so far to the end. The `parity` exercise is a good
-     example of one that already almost does this already. (BCP 21:
-     Done!)
-- 2. There are several places where we are verifying Imp program
-     schemas, not actual programs.  We're mixing Rocq variables with
-     Imp variables.  That's confusing.  One example is `two_loops`;
-     I've tried to mark others as I come across them.  (BCP: I've
-     added some quizzes and such to try to clarify the relation
-     between programs / triples and program/triple schemas.
-     BCP 25: I think this is a non-issue now.)
-- 3. Weakest preconditions show up in this chapter as completely
+- 1. Weakest preconditions show up in this chapter as completely
      optional, then are revisited (and required) in HoareAsLogic.
      Consider moving the entire treatment to that chapter.  (BCP
      23: Yes, we should do that!)
-- 4. It seems a shame that the SparseAnnotations section is not
+- 2. It seems a shame that the SparseAnnotations section is not
      visible in the full version, but only in a solution.  It's
      fantastic!  It would be great to show it off.  (BCP 25: Yes!
      Indeed, perhaps it should even replace the current treatment!)
@@ -105,13 +87,6 @@ priority -- we have a lot of exercises)
 HIDE: Some useful theorems about Imp are not being redefined for
 the modified versions of Imp. We should either re-prove them or add
 hints (or exercises!) about this.  BCP 20: Which ones???
-:::
-
-:::dev PotentialImprovement
-```
-HIDE: to be removed whenever they finally change the default definition
-Ltac intuition_solver ::= auto.
-```
 :::
 
 :::dev PotentialImprovement
@@ -168,18 +143,39 @@ exercise -- nice because it has nested loops...
 ```
 :::
 
+::::full
+In {ref "Hoare"}[Hoare], we defined Hoare Logic's proof rules and
+proved them sound. In this chapter, we put those rules to work:
+verifying Imp programs by formalizing the informal proof sketches we
+call _decorated programs_.
+
+Such proofs require _specifications_, i.e., the pre- and post-conditions
+that explain what programs are supposed to do. Let's play with
+writing specifications.
+::::
+
+::::terse
+In this chapter, we put Hoare Logic's rules to work, verifying Imp
+programs via formal _decorated programs_.
+::::
+
 ::::quiz
 :::instructors
 Pretty trivial, but still not without interest
 :::
 
-On a piece of paper (or whatever), write down a Hoare-triple
-specification for the following program:
+Write down a Hoare-triple specification for the following program:
 
-```display
+```display +centered
 X := 2;
 Y := X + X
 ```
+
+:::quizSolution
+```display +centered
+{{True}} c {{X = 2 ∧ Y = 4}}
+```
+:::
 ::::
 
 ::::quiz
@@ -190,33 +186,24 @@ opportunity to talk about parameters (m).
 
 Write down a (useful) specification for the following program:
 
-```display
-X := X + 1; Y := X + 1
+```display +centered
+X := X + 1;
+Y := X + 1
 ```
 
-:::instructors
-```
+:::quizSolution
+```display +centered
 ∀ m, {{ X=m }} c {{ X = m+1 ∧ Y = m+2 }}
-vs {{ True }} c {{ Y > X }}
 ```
+This is more interesting than `{{ True }} c {{ Y > X }}`.
 :::
 ::::
 
 ::::quiz
-:::instructors
-```
-Much more interesting: one obvious spec is
-{{True}} c {{X≤Y}}, but this loses the fact that the final values
-are either the same as the initial or else swapped, so then a spec
-with parameters seems preferable.  There's also a potential
-confusion about whether to say something about Z in the
-postcondition.
-```
-:::
 
 Write down a (useful) specification for the following program:
 
-```display
+```display +centered
 if X ≤ Y then
   skip
 else
@@ -225,6 +212,15 @@ else
   Y := Z
 end
 ```
+
+:::quizSolution
+One obvious spec is `{{True}} c {{X≤Y}}`, but this loses the fact that
+the final values
+are either the same as the initial or else swapped, so then a spec
+with parameters seems preferable.  There's also a question
+about whether to say something about `Z` in the postcondition.
+:::
+
 ::::
 
 ::::quiz
@@ -234,16 +230,22 @@ Parameters can also appear within programs.
 
 Write down a (useful) specification for the following program:
 
-```display
+```display +centered
 X := m;
 Y := X + X
 ```
+
+:::quizSolution
+```display +centered
+{{True}} c {{X = m ∧ Y = 2 * m}}
+```
+:::
 ::::
 
 ::::quiz
 Write down a (useful) specification for the following program:
 
-```display
+```display +centered
 X := m;
 Z := 0;
 while X ≠ 0 do
@@ -251,6 +253,17 @@ while X ≠ 0 do
   Z := Z + 1
 end
 ```
+
+:::quizSolution
+```display +centered
+{{True}} c {{X = 0 ∧ Z = (m + 1) / 2}}
+```
+
+Here `/` is natural-number division: the loop subtracts 2 from `X`
+each time around, so it runs `⌈m / 2⌉` times whether `m` is even or
+odd, thanks to truncated subtraction turning the odd case's last `1`
+into `0` rather than going negative.
+:::
 ::::
 
 # Decorated Programs
@@ -332,32 +345,6 @@ proof of this specification:
 {{ Z - X = p - m ∧ ¬ (X ≠ 0) }} ↠
 {{ Z = p - m }}
 ```
-
-:::dev
-```
-HIDE: MRC'20: It bothers me a little in the proof above (and
-similarly throughout the whole file really when it comes to guards)
-that when we get to this part:
-[[
- while X ≠ 0 do {{ Z - X = p - m ∧ X ≠ 0 }} ↠
-]]
-we are inconsistent about [X ≠ 0] vs. [~(X=0)].  I admit they
-evaluate the same (er, sort of---the former is a [bexp] whereas the
-latter is an assertion), but they aren't syntactically the same.
-Since what we're teaching here (mechanized Hoare logic) is fussy
-about syntax, it strikes me as something we ought to be precise
-about. But it's an annoying change to propagate through the file,
-so I haven't done it. Is it worth a comment, or do others not get
-bothered by this?  Another way to fix this would be to add the [≠]
-operator to Imp, so that we can write the guard in the nicer way.
-
-BCP 20: I think adding in a few more boolean operators at the
-outside is the way to go...
-
-BCP 21: ... and I've now done this: ≠ is available in formal
-bexps (also >).
-```
-:::
 
 Concretely, a decorated program consists of the program's text
 interleaved with assertions (sometimes multiple assertions
@@ -519,12 +506,6 @@ These decorations can be constructed as follows:
     arbitrary natural numbers `n` and `m` (for example, \[3 - 5 + 5 =
     5\]).
 ::::
-
-:::dev
-NOTATION: LATER: The `~` in that paragraph will typeset wrong if
-the space after it is removed.  Maybe it's better to give up on
-all the unicode hacks in the generated HTML...?
-:::
 
 ::::::full
 :::::exercise (rating := 2) (name := "if_minus_plus_reloaded") (optional := true) (manual := true)
@@ -768,7 +749,16 @@ theorem reduce_to_zero_correct' :
     {{ True }} reduceToZero {{ X = 0 }} := by
   -- First put the postcondition into the form expected by
   -- the while rule.
-  sorry
+  apply hoare_consequence_post
+  -- We use the fact that after the `while` loop,
+  -- the loops condition must not hold.
+  · apply hoare_while
+    -- Trivial postcondition: we just need to prove `True`
+    · apply hoare_post_true; simp
+    -- Our precondition that `X ≠ 0` cannot hold is
+    -- exactly what we need to prove `X = 0`.
+  · simp
+    intros _ h; assumption
 ```
 
 :::slidebreak
@@ -785,11 +775,11 @@ it introduces the available hypotheses, simplifies assertions,
 maps, and arithmetic expressions, and then asks `lia` to solve
 linear arithmetic goals. What's left after `verify_assertion` does
 its work should be just the "interesting parts" of the proof
-(which, if we're lucky, might be nothing at all!).
+(which, if we're lucky, will be nothing at all!).
 ::::
 
 ::::terse
-A little more (OK, quite a bit more) tactic fanciness for
+A little more tactic fanciness for
 helping deal with the boring parts of the process of proving
 assertions:
 ::::
@@ -811,7 +801,9 @@ This makes it pretty easy to verify `reduce_to_zero`:
 ```lean
 theorem reduce_to_zero_correct''' :
     {{ True }} reduceToZero {{ X = 0 }} := by
-  sorry
+  apply hoare_consequence_post
+  apply hoare_while
+  all_goals verify_assertion
 ```
 
 :::slidebreak
@@ -909,50 +901,32 @@ first likely being the same as the precondition of the second.
 Instead, our formal syntax of decorated commands will omit
 preconditions whenever possible and embed just postconditions.
 
-:::slidebreak
-:::
-
-- The `skip` command, for example, is decorated only with its
-postcondition
+::::full
+The *skip* command `skip` is decorated only with its postcondition.
 
 ```display
 skip {{ q }}
 ```
 
-on the assumption that the precondition will be provided by
-somebody else.
-
+The precondition will be provided by somebody else.
 We carry the same assumption through the other syntactic forms:
 each decorated command is assumed to carry its own postcondition
 within itself but take its precondition from its context in
 which it is used.
 
-:::slidebreak
-:::
-
-- Sequences `d₁ ; d₂` need no additional decorations.
-
-Why?
-
+*Sequences* `d₁ ; d₂` need no additional decorations. Why?
 Because inside `d₂` there will be a postcondition, which also
 serves as the postcondition of `d₁;d₂`.
-
 Similarly, inside `d₁` there will also be a postcondition, which
 additionally serves as the _precondition_ for `d₂`.
 
-:::slidebreak
-:::
-
-- An assignment `X := a` is decorated only with its postcondition:
+An *assignment* `X := a` is decorated only with its postcondition:
 
 ```display
 X := a {{ q }}
 ```
 
-:::slidebreak
-:::
-
-- A conditional `if b then d₁ else d₂` is decorated with a
+A *conditional* `if b then d₁ else d₂` is decorated with a
 postcondition for the entire statement, as well as preconditions
 for each branch:
 
@@ -967,10 +941,7 @@ whole loop. Indeed, we could (and perhaps should, as discussed
 elsewhere), but we are doing something simpler for the moment.
 :::
 
-:::slidebreak
-:::
-
-- A loop `while (b) {d}` is decorated with its final
+A *loop* `while (b) {d}` is decorated with its final
 postcondition plus a precondition for the body:
 
 ```display
@@ -979,10 +950,7 @@ while (b) {{ p }} { d } {{ q }}
 
 The postcondition embedded in `d` serves as the loop invariant.
 
-:::slidebreak
-:::
-
-- Implications `↠` can be added as decorations either for a
+*Implications* `↠` can be added as decorations either for a
 precondition...
 
 ```display
@@ -998,9 +966,7 @@ d ↠ {{ q }}
 The former is waiting for another precondition to be supplied by
 the context; the latter relies on the postcondition already
 embedded in `d`.
-
-:::slidebreak
-:::
+::::
 
 Putting this all together gives us the formal syntax of decorated
 commands:
@@ -1083,7 +1049,8 @@ macro_rules
 
 namespace DCom.Delab
 
-open Lean PrettyPrinter Delaborator SubExpr Parenthesizer Imp.Elab Imp.Delab
+open Lean PrettyPrinter Delaborator SubExpr Parenthesizer
+  Imp.Elab Imp.Delab
 
 @[category_parenthesizer «dcom»]
 def dcom.parenthesizer : CategoryParenthesizer := fun prec => do
@@ -1104,7 +1071,8 @@ def getAssnBody (stx : Term) : Term :=
 
 private def getDCom? (stx : Term) : Option (TSyntax `dcom) :=
   match stx with
-  | `(dcom { $d:dcom }) => some <| withSourceInfoOf (canonical := false) stx d
+  | `(dcom { $d:dcom }) =>
+      some <| withSourceInfoOf (canonical := false) stx d
   | _ => none
 
 @[app_unexpander DCom.skip]
@@ -1240,14 +1208,27 @@ end DCom.Delab
 ```
 :::
 
-::::terse
-(We then need to redefine all our Notations to get nice
-concrete syntax for `dcom`.)
-::::
-
 :::slidebreak
 :::
 
+```lean
+example : DCom :=
+  dcom { skip {{ True }} }
+
+example : DCom :=
+  dcom {
+    while (true) do
+      {{ True }}
+      skip {{ True }}
+    end
+      {{ True }}
+  }
+```
+
+::::full
+To inspect the fully elaborated term behind this notation, put
+`set_option pp.all true in` before a `#check` or `#print` command.
+::::
 To provide the initial precondition that goes at the very top of a
 decorated program, we introduce a new type `decorated`:
 
@@ -1258,34 +1239,6 @@ structure Decorated where
 ```
 
 :::slidebreak
-:::
-
-:::dev
-HIDE: Add FOLD here
-:::
-
-:::dev "Benjamin Pierce (bcpierce00)" PotentialImprovement (year := 2021)
-The above FOLD seems not to work, at least in the
-terse version. :-(
-:::
-
-```lean
-example : DCom :=
-  .skip ({{ True }})
-
-example : DCom :=
-  .whileDo (bexp {true}) ({{ True }})
-    (.skip ({{ True }})) ({{ True }})
-```
-
-To inspect the fully elaborated term behind this notation, put
-`set_option pp.all true in` before a `#check` or `#print` command.
-
-The formal definitions can use either constructors directly or the
-decorated-command notation introduced above.
-
-:::dev
-HIDE: Add /FOLD here
 :::
 
 An example `decorated` program that decrements `X` to `0`:
@@ -1314,8 +1267,7 @@ Print dec_while.
 :::slidebreak
 :::
 
-It is easy to go from a `dcom` to a `com` by erasing all
-annotations.
+It is easy to go from a `dcom` to a `com` by erasing all annotations.
 
 ```lean
 def DCom.erase (d : DCom) : Com :=
@@ -1332,11 +1284,6 @@ def Decorated.erase (dec : Decorated) : Com :=
   dec.body.erase
 ```
 
-:::instructors
-the `unfold` isn't needed, but it lets us recall
-what `dec_while` is without having to print it.
-:::
-
 ::::full
 ```lean
 example :
@@ -1350,6 +1297,18 @@ example :
 ```
 ::::
 
+::::terse
+Note: We cannot use `dcom { ... }` syntax in patterns.
+::::
+
+::::full
+Aside: In the {name}`DCom.erase` function we do not use `dcom { ... }` syntax in the
+pattern match. This is because `dcom` syntax is implemented with `elab_rules`, which
+provides no way to extend patterns, but provides more helpful error messages than
+does `macro_rules`, which we used to implement the `imp` syntax. In a definition,
+you can use either constructors directly or the decorated-command notation.
+::::
+
 :::slidebreak
 :::
 
@@ -1357,21 +1316,35 @@ It is also straightforward to extract the precondition and
 postcondition from a decorated program.
 
 ```lean
+@[simp]
 def Decorated.precondition (dec : Decorated) : Assertion :=
   dec.pre
 ```
 
-:::dev "Benjamin Pierce (bcpierce00)" BeforeNextRelease (year := 2025)
+Notice the `@[simp]` annotation we added here.
+::::full
+This directs Lean to generate an equational lemma of the same form as the
+characterizing lemmas we've been writing by hand, such as
+{name}`validHoareTriple_def` and {name}`Assertion.subst_apply` in the
+{ref "Hoare"}[Hoare] chapter, and add it to the `simp` set. We can
+see the added equation by printing it.
+::::
+
+```lean (name := Decorated_precondition_eq)
+#print equations Decorated.precondition
 ```
-It would be nice to use <{ ... }> notations
-in this definition and the ones below...
-     | <{ skip {{p}} }>        => p
-     | <{ _; d₂ }>             => post d₂
-     | <{ _ := _ {{q}} }>      => q
+
+```leanOutput Decorated_precondition_eq
+equations:
+@[backward_defeq] theorem Decorated.precondition.eq_1 : ∀ (dec : Decorated), dec.precondition = dec.pre
 ```
-:::
+
+::::full
+We'll add `@[simp]` annotations on the following definitions, too.
+::::
 
 ```lean
+@[simp]
 def DCom.postcondition (d : DCom) : Assertion :=
   match d with
   | .skip q => q
@@ -1382,6 +1355,7 @@ def DCom.postcondition (d : DCom) : Assertion :=
   | .pre _ body => body.postcondition
   | .post _ q => q
 
+@[simp]
 def Decorated.postcondition (dec : Decorated) : Assertion :=
   dec.body.postcondition
 ```
@@ -1398,11 +1372,11 @@ example : decWhile.postcondition = {{ X = 0 }} := by
 ```
 ::::
 
-:::slidebreak
-:::
+## Extracting Verification Conditions
 
-We can then express what it means for a decorated program to be
-correct as follows:
+Now that we have defined what a decorated program is, we can
+express what it means for a particular decorated program to be
+_correct_, as a valid Hoare Triple:
 
 ```lean
 def Decorated.OuterTripleValid (dec : Decorated) : Prop :=
@@ -1410,16 +1384,15 @@ def Decorated.OuterTripleValid (dec : Decorated) : Prop :=
     dec.postcondition
 ```
 
-For example:
+For example, here is this definition unfolded for {name}`decWhile`:
 
 ```lean
-example :
-    decWhile.OuterTripleValid =
-      {{ True }}
-        while (X ≠ 0) {
-          X := X - 1
-        }
-      {{ X = 0 }} := by
+example : decWhile.OuterTripleValid =
+    {{ True }}
+      while (X ≠ 0) {
+        X := X - 1
+      }
+    {{ X = 0 }} := by
   rfl
 ```
 
@@ -1437,8 +1410,6 @@ These obligations are often called _verification conditions_,
 because they are the facts that must be verified to see that the
 decorations are locally consistent and thus constitute a proof of
 validity of the outer triple.
-
-## Extracting Verification Conditions
 
 The function `DCom.VerificationConditions` takes a decorated command
 `d` together with a precondition `p` and returns a _proposition_
@@ -1460,117 +1431,72 @@ that includes
   external precondition; these uses correspond to applications
   of the consequence rule.
 
-:::slidebreak
-:::
+### Local consistency
 
-_Local consistency_ is defined as follows...
-
-- The decorated command
-
-```display
-skip {{q}}
-```
-
-is locally consistent with respect to a precondition `p` if
-`p ↠ q`.
+The *skip* command `skip {{q}}` is locally consistent with respect to a
+precondition `p` if `p ↠ q`.
 
 :::slidebreak
 :::
 
-- The sequential composition of `d₁` and `d₂` is locally
-consistent with respect to `p` if `d₁` is locally consistent with
-respect to `p` and `d₂` is locally consistent with respect to
-the postcondition of `d₁`.
+The *sequential composition* `d₁` and `d₂` is locally
+consistent with respect to `p` if
+
+1. `d₁` is locally consistent with respect to `p`
+2. `d₂` is locally consistent with respect to the postcondition of `d₁`.
 
 :::slidebreak
 :::
 
-- An assignment
-
-```display
-X := a {{q}}
-```
-
-is locally consistent with respect to a precondition `p` if:
-
-```display
-p ↠ q [X ↦ a]
-```
+An *assignment* `X := a {{q}}` is locally consistent with respect to a
+precondition `p` if `p ↠ q [X ↦ a]`.
 
 :::slidebreak
 :::
 
-- A conditional
+A *conditional* `if b then {{p₁}} d₁ else {{p₂}} d₂ end {{q}}` is locally consistent
+with respect to precondition `p` if
 
-```display
-if b then {{p₁}} d₁ else {{p₂}} d₂ end {{q}}
-```
-
-is locally consistent with respect to precondition `p` if
-
-   (1) `p ∧ b ↠ p₁`
-
-   (2) `p ∧ b ↠ p₂`
-
-   (3) `d₁` is locally consistent with respect to `p₁`
-
-   (4) `d₂` is locally consistent with respect to `p₂`
-
-   (5) `d₁.postcondition ↠ q`
-
-   (6) `d₂.postcondition ↠ q`
+1. `p ∧ b ↠ p₁`
+2. `p ∧ ¬ b ↠ p₂`
+3. `d₁` is locally consistent with respect to `p₁`
+4. `d₂` is locally consistent with respect to `p₂`
+5. `d₁.postcondition ↠ q`
+6. `d₂.postcondition ↠ q`
 
 :::slidebreak
 :::
 
-- A loop
+A *loop* `while (b) {{{q}} d} {{r}}` is locally consistent with respect to
+precondition `p` if:
 
-```display
-while (b) {{{q}} d} {{r}}
-```
-
-is locally consistent with respect to precondition `p` if:
-
-   (1) `p ↠ d.postcondition`
-
-   (2) `d.postcondition ∧ b ↠ q`
-
-   (3) `d.postcondition ∧ b ↠ r`
-
-   (4) `d` is locally consistent with respect to `q`
+1. `p ↠ d.postcondition`
+2. `d.postcondition ∧ b ↠ q`
+3. `d.postcondition ∧ ¬ b ↠ r`
+4. `d` is locally consistent with respect to `q`
 
 :::slidebreak
 :::
 
-- A command with an extra assertion at the beginning
+A command with an extra *assertion at the beginning*, `↠ {{q}} d` is locally consistent
+with respect to a precondition `p` if:
 
-```display
-↠ {{q}} d
-```
-
-is locally consistent with respect to a precondition `p` if:
-
-  (1) `p ↠ q`
-
-  (2) `d` is locally consistent with respect to `q`
+1. `p ↠ q`
+2. `d` is locally consistent with respect to `q`
 
 :::slidebreak
 :::
 
-- A command with an extra assertion at the end
+A command with an extra *assertion at the end* `d ↠ {{q}}` is locally consistent
+with respect to a precondition `p` if:
 
-```display
-d ↠ {{q}}
-```
-
-is locally consistent with respect to a precondition `p` if:
-
-  (1) `d` is locally consistent with respect to `p`
-
-  (2) `d.postcondition ↠ q`
+1. `d` is locally consistent with respect to `p`
+2. `d.postcondition ↠ q`
 
 :::slidebreak
 :::
+
+### Verification Condition Generation
 
 With all this in mind, we can write a _verification condition
 generator_ that takes a decorated command and reads off a
@@ -1586,13 +1512,10 @@ HIDE: There was some discussion in 2016 about whether the VC
 generator should should use equivalence or implication in a few
 places.  I (BCP) believe Phil (Wadler) changed some instances of
 the former to the latter.
-
-HIDE: MRC'20: a written explanation of each part of this would be
-quite nice.  BCP 21: Agreed!!  (BCP 23: But it's kind of what's
-just above...)
 :::
 
 ```lean
+@[simp]
 def DCom.VerificationConditions
     (p : Assertion) (d : DCom) : Prop :=
   match d with
@@ -1635,7 +1558,56 @@ rules plays a critical role at some point in the proof.
 theorem verification_correct (d : DCom) (p : Assertion)
     (hvc : d.VerificationConditions p) :
     ValidHoareTriple p d.erase d.postcondition := by
-  sorry
+  induction d generalizing p with
+    simp only [DCom.VerificationConditions, DCom.erase,
+      DCom.postcondition] at hvc ⊢
+  -- Note that we need to escape `skip` as `«skip»`,
+  -- as it is a reserved word under Hoare2's `dcom` syntax.
+  | «skip» q =>
+    apply hoare_consequence_pre
+    · apply hoare_skip
+    · exact hvc
+  | seq d₁ d₂ ih₁ ih₂ =>
+    obtain ⟨h₁, h₂⟩ := hvc
+    apply hoare_seq
+    · apply ih₂; exact h₂
+    · apply ih₁; exact h₁
+  | asgn x a q =>
+    apply hoare_consequence_pre
+    · apply hoare_asgn
+    · exact hvc
+  | cond b p₁ d₁ p₂ d₂ q ih₁ ih₂ =>
+    obtain ⟨hpre₁, hpre₂, hd₁, hd₂, hthen, helse⟩ := hvc
+    specialize ih₁ p₁ hthen
+    specialize ih₂ p₂ helse
+    apply hoare_if
+    · apply hoare_consequence
+      · exact ih₁
+      · exact hpre₁
+      · exact hd₁
+    · apply hoare_consequence
+      · exact ih₂
+      · exact hpre₂
+      · exact hd₂
+  | whileDo b bodyPre body q ih =>
+    obtain ⟨hpre, hbody, hpost, hd⟩ := hvc
+    apply hoare_consequence
+    · apply hoare_while
+      apply hoare_consequence_pre
+      · apply ih; exact hd
+      · exact hbody
+    · exact hpre
+    · exact hpost
+  | pre p' body ih =>
+    obtain ⟨hp, hd⟩ := hvc
+    apply hoare_consequence_pre
+    · apply ih; exact hd
+    · exact hp
+  | post body q ih =>
+    obtain ⟨hd, hq⟩ := hvc
+    apply hoare_consequence_post
+    · apply ih; exact hd
+    · exact hq
 ```
 
 :::instructors
@@ -1650,6 +1622,7 @@ Now that all the pieces are in place, we can define what it means
 to verify an entire program.
 
 ```lean
+@[simp]
 def Decorated.VerificationConditions
     (dec : Decorated) : Prop :=
   dec.body.VerificationConditions dec.pre
@@ -1669,49 +1642,68 @@ theorem verification_conditions_correct (dec : Decorated)
 The propositions generated by `DCom.VerificationConditions` are fairly
 big and contain many conjuncts that are essentially trivial.
 
-:::dev
-```
-HIDE: MRC'20: The conditions here used to be just [Eval]ed instead
-of being duplicated in a comment.  They were actually incorrect
-because of changes to notation.  Putting them in as an [Example]
-will force us to keep them up-to-date. APT20: Yes, but but stating
-this an equality completely misses the point about verify_assertion! So I
-changed things back.
-```
-:::
-
-```lean
+```lean +error
 example : decWhile.VerificationConditions := by
   rw [Decorated.VerificationConditions, decWhile]
   simp only [DCom.VerificationConditions,
     DCom.postcondition]
-  sorry
 ```
 
 :::slidebreak
 :::
 
-Fortunately, our `verify_assertion` tactic can generally take care of
-most (or sometimes all) of them.
+Fortunately, our {tactic}`verify_assertion` tactic can generally take care of
+most (or sometimes, all) of them.
 
 ```lean
 example : decWhile.VerificationConditions := by
-  sorry
+  simp only [decWhile]
+  verify_assertion
 ```
 
 :::slidebreak
 :::
 
-To automate the overall process of verification, we can use
-`verification_correct` to extract the verification conditions, use
-`verify_assertion` to verify them as much as it can, and finally tidy
-up any remaining bits by hand.
+We develop another tactic, `verify`, to automate the overall process of verification.
+It uses {name}`verification_conditions_correct` to extract the verification conditions,
+and the logic of {tactic}`verify_assertion` to verify them as much as it can.
+
+We enhance this logic with four low-level simplification lemmas, defined next,
+to make the process a little smoother. In particular, these lemmas translate
+the `Bexp.eval` equations introduced by conditional and loop guards into
+inequalities on the underlying arithmetic expressions. This makes them
+visible to {tactic}`lia` for further simplification. For these lemmas to
+have maximum effect, the tactic removes {name}`Bexp.eval_le` and
+{name}`Bexp.eval_gt`, since these could rewrite `Bexp.eval` expressions in
+a way that would cause the four simplification lemmas not to match.
 
 ```lean
+theorem Bexp.eval_le_true {st : State} {a₁ a₂ : Aexp} :
+    (Bexp.le a₁ a₂).eval st = true ↔ a₁.eval st ≤ a₂.eval st := by
+  simp
+
+theorem Bexp.eval_le_false {st : State} {a₁ a₂ : Aexp} :
+    (Bexp.le a₁ a₂).eval st = false ↔ ¬ a₁.eval st ≤ a₂.eval st := by
+  simp
+
+theorem Bexp.eval_gt_true {st : State} {a₁ a₂ : Aexp} :
+    (Bexp.gt a₁ a₂).eval st = true ↔ a₁.eval st > a₂.eval st := by
+  simp
+
+theorem Bexp.eval_gt_false {st : State} {a₁ a₂ : Aexp} :
+    (Bexp.gt a₁ a₂).eval st = false ↔ ¬ a₁.eval st > a₂.eval st := by
+  simp
+
 macro "verify" : tactic =>
   `(tactic|
     (apply verification_conditions_correct;
-     verify_assertion))
+     simp +decide [-Bexp.eval_le, -Bexp.eval_gt,
+       Bexp.eval_le_true, Bexp.eval_le_false,
+       Bexp.eval_gt_true, Bexp.eval_gt_false,
+       assertImplies_def, assertIff_def,
+       validHoareTriple_def, Assertion.subst_def];
+     all_goals and_intros;
+     all_goals try lia))
 ```
 
 :::slidebreak
@@ -1720,9 +1712,9 @@ macro "verify" : tactic =>
 Here's the final, formal proof that `decWhile` is correct.
 
 ```lean
-theorem dec_while_correct :
-    decWhile.OuterTripleValid := by
-  sorry
+theorem dec_while_correct : decWhile.OuterTripleValid := by
+  simp only [decWhile]
+  verify
 ```
 
 ::::::full
@@ -1741,7 +1733,8 @@ def swapDec (m n : Nat) : Decorated where
 
 theorem swap_correct (m n : Nat) :
     (swapDec m n).OuterTripleValid := by
-  sorry
+  simp only [swapDec]
+  verify
 ```
 
 And here is the formal decorated version of the "positive
@@ -1765,13 +1758,14 @@ def positiveDifferenceDec : Decorated where
 
 theorem positive_difference_correct :
     positiveDifferenceDec.OuterTripleValid := by
-  sorry
+  simp only [positiveDifferenceDec]
+  verify
 ```
 
 :::::exercise (rating := 2) (name := "if_minus_plus_correct")
 Here is a skeleton of the formal decorated version of the
 `if_minus_plus` program that we saw earlier.  Replace all
-occurrences of `FILL_IN_HERE` with appropriate assertions and fill
+occurrences of {tactic}`sorry` with appropriate assertions and fill
 in the proof (which should be just as straightforward as in the
 examples above).
 
@@ -1780,13 +1774,13 @@ def ifMinusPlusDec : Decorated where
   pre := ({{ True }})
   body := dcom {
     if (X ≤ Y) then
-      {{ True ∧ X ≤ Y }}
-      ↠ {{ Y = X + (Y - X) }}
-      Z := Y - X {{ Y = X + Z }}
+      {{ solution!({{ True ∧ X ≤ Y }}) }}
+      ↠ {{ solution!({{ Y = X + (Y - X) }}) }}
+      Z := Y - X {{ solution!({{ Y = X + Z }}) }}
     else
-      {{ True ∧ ¬ X ≤ Y }}
-      ↠ {{ X + Z = X + Z }}
-      Y := X + Z {{ Y = X + Z }}
+      {{ solution!({{ True ∧ ¬ X ≤ Y }}) }}
+      ↠ {{ solution!({{ X + Z = X + Z }}) }}
+      Y := X + Z {{ solution!({{ Y = X + Z }}) }}
     end
       {{ Y = X + Z }}
   }
@@ -1794,8 +1788,13 @@ def ifMinusPlusDec : Decorated where
 theorem if_minus_plus_correct :
     ifMinusPlusDec.OuterTripleValid := by
   solution!
-    sorry
+    simp only [ifMinusPlusDec]
+    verify
 ```
+:::autogradedHole ifMinusPlusDec
+:::
+:::gradeTheorem 2 if_minus_plus_correct
+:::
 :::::
 
 :::::exercise (rating := 2) (name := "div_mod_outer_triple_valid") (optional := true)
@@ -1805,23 +1804,24 @@ Fill in appropriate assertions for the division program from above.
 def divModDec (a b : Nat) : Decorated where
   pre := ({{ True }})
   body := dcom {
-    ↠ {{ b * 0 + a = a }}
-    X := ~(Aexp.num a) {{ b * 0 + X = a }};
-    Y := 0 {{ b * Y + X = a }};
+    ↠ {{ solution!({{ b * 0 + a = a }}) }}
+    X := ~(Aexp.num a) {{ solution!({{ b * 0 + X = a }}) }};
+    Y := 0 {{ solution!({{ b * Y + X = a }}) }};
     while (~(Aexp.num b) ≤ X) do
-      {{ b * Y + X = a ∧ b ≤ X }}
-      ↠ {{ b * (Y + 1) + (X - b) = a }}
-      X := X - ~(Aexp.num b) {{ b * (Y + 1) + X = a }};
-      Y := Y + 1 {{ b * Y + X = a }}
+      {{ solution!({{ b * Y + X = a ∧ b ≤ X }}) }}
+      ↠ {{ solution!({{ b * (Y + 1) + (X - b) = a }}) }}
+      X := X - ~(Aexp.num b) {{ solution!({{ b * (Y + 1) + X = a }}) }};
+      Y := Y + 1 {{ solution!({{ b * Y + X = a }}) }}
     end
-      {{ b * Y + X = a ∧ ¬ b ≤ X }}
-    ↠ {{ b * Y + X = a ∧ X < b }}
+      {{ solution!({{ b * Y + X = a ∧ ¬ b ≤ X }}) }}
+    ↠ {{ solution!({{ b * Y + X = a ∧ X < b }}) }}
   }
 
 theorem div_mod_outer_triple_valid (a b : Nat) :
     (divModDec a b).OuterTripleValid := by
   solution!
-    sorry
+    simp only [divModDec]
+    verify
 ```
 :::::
 
@@ -1900,7 +1900,7 @@ as usual, and without doing any thinking at all yet.
 This leads to the following skeleton:
 
 ```display
-(1)    {{ X = m ∧ Y = n }}  ↠                   (a)
+(1)    {{ X = m ∧ Y = n }}  ↠                  (a)
 (2)    {{ Inv }}
          while X ≠ 0 do
 (3)              {{ Inv ∧ X ≠ 0 }}  ↠          (c)
@@ -1956,7 +1956,7 @@ instantiating `Inv` with `True` in the skeleton above and
 see what we get...
 
 ```display
-(1)    {{ X = m ∧ Y = n }} ↠                    (a - OK)
+(1)    {{ X = m ∧ Y = n }} ↠                   (a - OK)
 (2)    {{ True }}
          while X ≠ 0 do
 (3)                   {{ True ∧ X ≠ 0 }} ↠     (c - OK)
@@ -1983,7 +1983,7 @@ return to our skeleton, instantiate `Inv` with `Y = n - m`, and
 try checking conditions (a) to (c) again.
 
 ```display
-(1)    {{ X = m ∧ Y = n }} ↠                        (a - WRONG!)
+(1)    {{ X = m ∧ Y = n }} ↠                       (a - WRONG!)
 (2)    {{ Y = n - m }}
          while X ≠ 0 do
 (3)                     {{ Y = n - m ∧ X ≠ 0 }} ↠  (c - WRONG!)
@@ -2025,7 +2025,7 @@ difference is always `n - m`.  So let's try instantiating `Inv` in
 the skeleton above with `Y - X = n - m`.
 
 ```display
-(1)    {{ X = m ∧ Y = n }} ↠                            (a - OK)
+(1)    {{ X = m ∧ Y = n }} ↠                           (a - OK)
 (2)    {{ Y - X = n - m }}
          while X ≠ 0 do
 (3)                    {{ Y - X = n - m ∧ X ≠ 0 }} ↠   (c - OK)
@@ -2063,7 +2063,8 @@ def subtractSlowlyDec (m n : Nat) : Decorated where
 
 theorem subtract_slowly_outer_triple_valid (m n : Nat) :
     (subtractSlowlyDec m n).OuterTripleValid := by
-  sorry
+  simp only [subtractSlowlyDec]
+  verify
 ```
 ::::
 
@@ -2100,8 +2101,13 @@ def slowAssignmentDec (m : Nat) : Decorated where
 theorem slow_assignment (m : Nat) :
     (slowAssignmentDec m).OuterTripleValid := by
   solution!
-    sorry
+    simp only [slowAssignmentDec]
+    verify
 ```
+:::autogradedHole slowAssignmentDec
+:::
+:::gradeTheorem 2 slow_assignment
+:::
 :::::
 
 ::::::
@@ -2152,7 +2158,7 @@ parity of `m`. Using `parity X = parity m` as an invariant we
 obtain the following decorated program:
 
 ```display
-{{ X = m }} ↠                                         (a - OK)
+{{ X = m }} ↠                                       (a - OK)
 {{ parity X = parity m }}
   while 2 ≤ X do
                {{ parity X = parity m ∧ 2 ≤ X }} ↠  (c - OK)
@@ -2174,15 +2180,15 @@ have `parity X = parity (X-2)`.
 ```
 HIDE: A more complexly phrased loop invariant for the same program
 [[
-        {{ X = m }}  ↠                        (a - OK)
+        {{ X = m }} ↠                       (a - OK)
         {{ ev X <-> ev m }}
       while 2 ≤ X do
-          {{ ev X <-> ev m ∧ 2 ≤ X }}  ↠    (c - OK)
+          {{ ev X <-> ev m ∧ 2 ≤ X }} ↠     (c - OK)
           {{ ev (X-2) <-> ev m }}
         X := X - 2
           {{ ev X <-> ev m }}
       end
-        {{ (ev X <-> ev m) ∧ ~(2 ≤ X) }}  ↠     (b - OK)
+        {{ (ev X <-> ev m) ∧ ~(2 ≤ X) }} ↠  (b - OK)
         {{ X=0 <-> ev m }}
 ]]
 ```
@@ -2216,25 +2222,6 @@ lead to good proofs; one that leads to a particularly simple proof
 is `parity X = parity m`. Ordinary Lean functions can be applied
 directly to Imp variables inside assertions, so this can be written
 as `{{ parity X = parity m }}`.
-
-:::dev "Benjamin Pierce (bcpierce00)" BeforeNextRelease (year := 2023)
-```
-Maya: In the parity exercise, I was getting annoyed
-by the verify_assertion tactic unfolding the assumption [(2 ≤?  st
-X) = true] into a match on the first two layers of [st X]. I ended
-up digging out the following incantation from the depths of the Rocq
-manual:
-
-   Arguments leb !n !m.
-
-I'm not sure what level of automated tests you keep for the
-exercises, so I wanted to point this struggle out. Perhaps
-something changed in the Rocq library at some point.
-
-BCP 23: Worth looking into!  (I tried just adding [Arguments leb !n
-!m.] to the script, but that broke things.)
-```
-:::
 
 ```lean
 def parityDec (m : Nat) : Decorated where
@@ -2270,20 +2257,44 @@ two lemmas helpful.
 ```lean
 theorem parity_ge_2 (x : Nat) (h : 2 ≤ x) :
     parity (x - 2) = parity x := by
-  sorry
+  cases x with
+  | zero => rfl
+  | succ x =>
+    cases x with
+    | zero => lia
+    | succ x =>
+      -- Both sides compute to `parity x`.
+      rfl
 
 theorem parity_lt_2 (x : Nat) (h : ¬ 2 ≤ x) :
     parity x = x := by
-  sorry
+  cases x with
+  | zero => rfl
+  | succ x =>
+    cases x with
+    | zero => rfl
+    | succ x => lia
 
 theorem parity_outer_triple_valid (m : Nat) :
     (parityDec m).OuterTripleValid := by
   solution!
-    -- Simplification is too aggressive here; recover the
-    -- folded guard before proving preservation and exit.
-    sorry
+    simp only [parityDec]
+    verify
+    · -- loop invariant preserved
+      intro st h hle
+      rw [← h]
+      apply parity_ge_2
+      exact hle
+    · -- loop invariant strong enough
+      intro st h hlt
+      rw [← h]
+      symm
+      apply parity_lt_2
+      lia
+```
 
--- SOLUTION
+:::solution
+```lean
 /- Here is another loop invariant — arguably a more natural
 one —
 which sadly leads to a rather long proof. -/
@@ -2314,12 +2325,82 @@ def findParityDec (m : Nat) : Decorated where
     ↠ {{ post }}
   }
 
+-- The proof will want a few useful (but not terribly interesting)
+-- helper lemmas:
+
+theorem l1 (m n p : Nat) (h₁ : p ≤ n) (h₂ : n ≤ m) :
+    m - (n - p) = m - n + p := by
+  lia
+
+theorem l2 (m : Nat) (h : Even m) : Even (m + 2) := by
+  apply Even.addTwo
+  exact h
+
+theorem Even.not_add_one {n : Nat} (h : Even n) :
+    ¬ Even (n + 1) := by
+  induction n with
+  | zero =>
+    intro h₂
+    inversion h₂
+  | succ n ih =>
+    intro h₂
+    apply ih
+    · inversion h₂ with
+      | addTwo h' => exact h'
+    · exact h
+
+theorem l3 (m : Nat) (h : 1 ≤ m) (h₁ : Even m)
+    (h₂ : Even (m - 1)) : False := by
+  apply l2 at h₂
+  have g : m - 1 + 2 = m + 1 := by lia
+  rw [g] at h₂
+  apply Even.not_add_one at h₁
+  apply h₁
+  exact h₂
+
 theorem find_parity_correct (m : Nat) :
     (findParityDec m).OuterTripleValid := by
-  -- Simplification is too aggressive here; recover the
-  -- folded guard before proving preservation and exit.
-  -- At loop exit, X can only be 0 or 1.
-  sorry
+  simp only [findParityDec]
+  verify
+  · -- loop invariant holds initially
+    intro st h
+    rw [h, Nat.sub_self]
+    constructor
+    · lia
+    · apply Even.zero
+  · -- loop invariant preserved
+    intro st hle heven hge
+    constructor
+    · lia
+    · rw [l1]
+      · apply l2
+        exact heven
+      · exact hge
+      · exact hle
+  · intro st
+    generalize st[X] = x
+    intro hle heven hlt
+    constructor
+    · -- loop invariant strong enough to imply conclusion
+      -- (→ direction)
+      intro hx
+      rw [hx, Nat.sub_zero] at heven
+      exact heven
+    · -- loop invariant strong enough to imply conclusion
+      -- (← direction)
+      intro hm
+      -- At loop exit, X can only be 0 or 1.
+      cases x with
+      | zero => rfl
+      | succ x =>
+        cases x with
+        | zero =>
+          exfalso
+          apply l3 m
+          · lia
+          · exact hm
+          · exact heven
+        | succ x => lia
 
 /- Here is a more intuitive way of writing the loop
 invariant. -/
@@ -2345,12 +2426,61 @@ def findParityDec' (m : Nat) : Decorated where
     ↠ {{ post }}
   }
 
+theorem Even.sub_two_iff {n : Nat} (h : 2 ≤ n) :
+    Even (n - 2) ↔ Even n := by
+  cases n with
+  | zero =>
+    constructor
+    · intro _
+      apply Even.zero
+    · intro _
+      apply Even.zero
+  | succ n =>
+    cases n with
+    | zero =>
+      exfalso
+      lia
+    | succ n =>
+      show Even n ↔ Even (n + 1 + 1)
+      constructor
+      · intro h'
+        apply Even.addTwo
+        exact h'
+      · intro h'
+        inversion h' with
+        | addTwo h'' => exact h''
+
 theorem find_parity_correct' (m : Nat) :
     (findParityDec' m).OuterTripleValid := by
-  -- Simplification is too aggressive here; recover the
-  -- folded guard before proving preservation and exit.
-  -- At loop exit, X can only be 0 or 1.
-  sorry
+  simp only [findParityDec']
+  verify
+  · -- loop invariant preserved
+    intro st h hle
+    rw [Even.sub_two_iff]
+    · exact h
+    · exact hle
+  · intro st
+    generalize st[X] = x
+    intro h hlt
+    constructor
+    · -- loop invariant strong enough to imply conclusion
+      -- (→ direction)
+      intro hx
+      rw [hx] at h
+      apply h.mp
+      apply Even.zero
+    · -- loop invariant strong enough to imply conclusion
+      -- (← direction)
+      intro hm
+      -- At loop exit, X can only be 0 or 1.
+      cases x with
+      | zero => rfl
+      | succ x =>
+        cases x with
+        | zero =>
+          apply h.mpr at hm
+          inversion hm
+        | succ x => lia
 
 /- Finally, just for fun, here is an old-style
 non-decorated-program proof. -/
@@ -2360,24 +2490,40 @@ theorem parity_correct (m : Nat) :
           X := X - 2
         }
     {{ fun st => st[X] = parity m }} := by
-  sorry
--- END SOLUTION
+  apply hoare_consequence
+  · -- loop invariant preserved by loop
+    apply hoare_while (P := {{ parity X = parity m }})
+    apply hoare_consequence_pre
+    · apply hoare_asgn
+    · simp [assertImplies_def, Assertion.subst_def]
+      intro st h hle
+      rw [← h]
+      apply parity_ge_2
+      exact hle
+  · -- loop invariant holds initially
+    simp [assertImplies_def]
+    intro st h
+    rw [h]
+  · -- loop invariant holds at the end
+    simp [assertImplies_def]
+    intro st h hlt
+    rw [← h]
+    symm
+    apply parity_lt_2
+    lia
 ```
+:::
 :::::
 
 ::::::
 
 ## Example: Finding Square Roots
 
-:::suppressPreviousHeaderWhenTerse
-:::
-
 :::instructors
-the main idea introduced here is preserving equalities for
+The main idea introduced here is preserving equalities for
 variables that don't change, and it appears in its purest form here.
 :::
 
-::::::full
 The following program computes the integer square root of `X`
 by naive iteration:
 
@@ -2390,13 +2536,16 @@ by naive iteration:
 {{ Z*Z≤m ∧ m<(Z+1)*(Z+1) }}
 ```
 
+::::terse
 WORK IN CLASS
+::::
 
+::::::full
 As we did before, we can try to use the postcondition as a
 candidate loop invariant, obtaining the following decorated program:
 
 ```display
-(1)  {{ X=m }} ↠                  (a - second conjunct of (2) WRONG!)
+(1)  {{ X=m }} ↠                (a - second conjunct of (2) WRONG!)
 (2)  {{ 0*0 ≤ m ∧ m<(0+1)*(0+1) }}
         Z := 0
 (3)            {{ Z*Z ≤ m ∧ m<(Z+1)*(Z+1) }};
@@ -2407,7 +2556,7 @@ candidate loop invariant, obtaining the following decorated program:
           Z := Z+1
 (6)            {{ Z*Z≤m ∧ m<(Z+1)*(Z+1) }}
         end
-(7)  {{ Z*Z≤m ∧ m<(Z+1)*(Z+1) ∧ ¬((Z+1)*(Z+1)≤X) }} ↠    (b - OK)
+(7)  {{ Z*Z≤m ∧ m<(Z+1)*(Z+1) ∧ ¬((Z+1)*(Z+1)≤X) }} ↠      (b - OK)
 (8)  {{ Z*Z≤m ∧ m<(Z+1)*(Z+1) }}
 ```
 
@@ -2427,7 +2576,7 @@ us to simplify a bit.
 So we now try `X=m ∧ Z*Z ≤ m` as the loop invariant:
 
 ```display
-{{ X=m }} ↠                                           (a - OK)
+{{ X=m }} ↠                                       (a - OK)
 {{ X=m ∧ 0*0 ≤ m }}
   Z := 0
              {{ X=m ∧ Z*Z ≤ m }};
@@ -2482,7 +2631,8 @@ def sqrtDec (m : Nat) : Decorated where
 theorem sqrt_correct (m : Nat) :
     (sqrtDec m).OuterTripleValid := by
   solution!
-    sorry
+    simp only [sqrtDec]
+    verify
 ```
 :::::
 
@@ -2490,11 +2640,8 @@ theorem sqrt_correct (m : Nat) :
 
 ## Example: Squaring
 
-:::suppressPreviousHeaderWhenTerse
-:::
-
 :::instructors
-using easier version of this: counting up, instead of
+Using an easier version of this: counting up, instead of
 counting down...
 :::
 
@@ -2504,7 +2651,6 @@ for future exercise builders, together with some hints on how to
 write programs that are easier to verify
 :::
 
-::::full
 Here is a program that squares `X` by repeated addition:
 
 ```display
@@ -2518,17 +2664,20 @@ Here is a program that squares `X` by repeated addition:
 {{ Z = m*m }}
 ```
 
+::::terse
 WORK IN CLASS
+::::
 
+::::full
 The first thing to note is that the loop reads `X` but doesn't
 change its value. As we saw in the previous example, it can be a good idea
 in such cases to add `X = m` to the loop invariant.  The other thing
 that we know is often useful in the loop invariant is the postcondition,
 so let's add that too, leading to the candidate loop invariant
-`Z = m * m ∧ X = m`.
+`Z = m*m ∧ X = m`.
 
 ```display
-{{ X = m }} ↠                                       (a - WRONG)
+{{ X = m }} ↠                                    (a - WRONG)
 {{ 0 = m*m ∧ X = m }}
   Y := 0
                {{ 0 = m*m ∧ X = m }};
@@ -2555,7 +2704,7 @@ iteration `Z = 2*m`, and at the end `Z = m*m`.  Since the variable
 derive a new loop invariant candidate: `Z = Y*m ∧ X = m`.
 
 ```display
-{{ X = m }} ↠                                        (a - OK)
+{{ X = m }} ↠                                     (a - OK)
 {{ 0 = 0*m ∧ X = m }}
   Y := 0
                 {{ 0 = Y*m ∧ X = m }};
@@ -2779,23 +2928,6 @@ squaring program.  The simplest variant we've found,
 Move this later?  Might be harder than some of the others.
 :::
 
-:::dev
-```
-HIDE: LY: Many are tempted to use division in their propositions here,
-with the loop invariant [Y = m!/X!].
-Informally, such a decorated program can be correct if we assume
-they use real division (in q or r). The issue is that formally in Rocq,
-the notation / is also in scope and means integer division, so a pedantic
-interpretation would mark those answers wrong, even though that is most
-likely *not* what students intended (thus making the grading unfair).
-Should we explicitly forbid use of division for this exercise?
-(I added a note to that effect in the problem statement).
-
-MRC'20: I strengthened your note so that it explicitly advises
-against division (and subtraction).
-```
-:::
-
 ::::::full
 :::::exercise (rating := 4) (name := "factorial_correct") (level := Advanced)
 Recall that `n!` denotes the factorial of `n` (i.e., `n! =
@@ -2856,12 +2988,25 @@ def factorialDec (m : Nat) : Decorated := solution!({
 theorem fact_sub_one (m : Nat) (h : m ≠ 0) :
     m * fact (m - 1) = fact m := by
   solution!
-    sorry
+    cases m with
+    | zero => contradiction
+    | succ m =>
+      -- Both sides compute to `(m + 1) * fact m`.
+      rfl
 
 theorem factorial_correct (m : Nat) :
     (factorialDec m).OuterTripleValid := by
   solution!
-    sorry
+    simp only [factorialDec]
+    verify
+    · intro st h hne
+      rw [Nat.mul_assoc, fact_sub_one]
+      · exact h
+      · exact hne
+    · intro st h hx
+      rw [hx] at h
+      simp only [fact] at h
+      lia
 ```
 
 :::dev PotentialImprovement
@@ -2892,10 +3037,6 @@ end
 :::
 
 :::dev
-HIDE: MRC'20: That's not really an Imp program though: it is a
-schema for an Imp program.  `m` is not an Imp variable nor a
-constant.  BCP 21: But we do that all over the place, no?
-
 ```
 HIDE: LY: I saw one submission for [factorial_dec] use a program
 like that instead of the one already given by the informal
@@ -2905,6 +3046,10 @@ means to "implement" factorial in Imp.  This other one "implements"
 factorial in the same way two_loops_dec "implements" the sum (a + b
 + c).
 ```
+:::
+:::autogradedHole factorialDec
+:::
+:::gradeTheorem 4 factorial_correct
 :::
 :::::
 
@@ -3028,18 +3173,6 @@ reasoning involving natural numbers, especially subtraction.
 Lean functions can be applied directly inside assertions.  For
 example, the minimum of `a` and `b` can be written `Nat.min a b`.
 
-:::dev
-HIDE: MRC'20: It bothers me a bit that the `&&` in the guard below
-becomes a `∧` in the assertion.  We've never explained that it's okay
-to do a translation like that.
-:::
-
-:::dev "Benjamin Pierce (bcpierce00)" BeforeNextRelease (year := 2025)
-```
-Maybe we should write ∧ in assertions??
-```
-:::
-
 ```lean
 def minimumDec (a b : Nat) : Decorated where
   pre := ({{ True }})
@@ -3095,33 +3228,17 @@ HIDE:
   and `Y` is zero, so `Nat.min X Y = 0`.
 :::
 
-:::dev
-HIDE: BCP 21: I'm sure there is a more elegant proof of this!!
-:::
-
 ```lean
 theorem minimum_correct (a b : Nat) :
     (minimumDec a b).OuterTripleValid := by
   solution!
-    sorry
+    simp only [minimumDec]
+    verify
 ```
 
-:::dev
-```
-HIDE: LY: in this exercise, many end up writing the following implication
-after the while line:
-
-  {{ Z = min a b - min X Y ∧ ... }} ↠
-  {{ Z+1 = min a b - min (X-1) (Y-1) ∧ ... }}
-
-that is invalid if you interpret [-] pedantically as [sub : nat ->
-nat -> nat], which takes nonnegative values only. But if we are
-more generous and interpret these informal proofs in more intuitive
-domains (Z, q, or r), then these proofs look fine. I made the
-former choice in my grading because I assume at this point they
-should know to be careful around [-] with [nat].  BCP 21: Should be
-fixed now that the proofs are formal! :-)
-```
+:::autogradedHole minimumDec
+:::
+:::gradeTheorem 3 minimum_correct
 :::
 :::::
 
@@ -3190,32 +3307,9 @@ def twoLoopsDec (a b c : Nat) : Decorated where
 theorem two_loops (a b c : Nat) :
     (twoLoopsDec a b c).OuterTripleValid := by
   solution!
-    sorry
+    simp only [twoLoopsDec]
+    verify
 ```
-
-:::dev "Michael Clarkson (clarksmr)" PotentialImprovement (year := 2020)
-```
-Again, the above isn't an IMP program, but a program
-schema.  What about using the following instead?
-[[
-    {{ X = a ∧ Y = b ∧ Z = c }}
-  I := 0;
-  while I ≠ X do
-    I := I + 1;
-    Z := Z + 1
-  end;
-  I := 0;
-  while I ≠ Y do
-    I := I + 1;
-    Z := Z + 1
-  end
-    {{ Z = a + b + c }}
-]]
-
-BCP 21: I'm not so bothered by using a program schema instead of a
-program, but if the latter makes you happier I don't object.
-```
-:::
 
 :::solution
 ```
@@ -3287,6 +3381,10 @@ additional [ + Y] term through it.
 ]]
 ```
 :::
+:::autogradedHole twoLoopsDec
+:::
+:::gradeTheorem 3 two_loops
+:::
 :::::
 
 ::::::
@@ -3296,26 +3394,6 @@ additional [ + Y] term through it.
 :::suppressPreviousHeaderWhenTerse
 :::
 
-:::dev "Michael Clarkson (clarksmr)" BeforeNextRelease (year := 2020)
-```
-This is again a program schema rather than a program.  Why not...
-[[
-      {{ True }}
-    X := 0;
-    Y := 1;
-    Z := 1;
-    while X ≠ W do
-      Z := 2 * Z;
-      Y := Y + Z;
-      X := X + 1
-    end
-      {{ Y = 2 ^ (W + 1) - 1 }}
-]]
-   ...?
-
-   BCP 21: Ditto my response above.  IMO this is not a problem.
-```
-:::
 
 ::::::full
 :::::exercise (rating := 4) (name := "dpow2") (optional := true)
@@ -3391,10 +3469,15 @@ Some lemmas that you may find useful...
 ```lean
 theorem pow2_add_one (n : Nat) :
     pow2 (n + 1) = pow2 n + pow2 n := by
-  sorry
+  simp only [pow2]
+  lia
 
 theorem one_le_pow2 (n : Nat) : 1 ≤ pow2 n := by
-  sorry
+  induction n with
+  | zero => constructor
+  | succ n ih =>
+    simp only [pow2]
+    lia
 ```
 
 The main correctness theorem:
@@ -3403,7 +3486,19 @@ The main correctness theorem:
 theorem dpow2_down_correct (n : Nat) :
     (dpow2Dec n).OuterTripleValid := by
   solution!
-    sorry
+    have add_2_1 (n : Nat) : n + 2 = n + 1 + 1 := by lia
+    simp only [dpow2Dec]
+    verify
+    · intro st hy hz _
+      rw [hy, hz]
+      constructor
+      · -- 1
+        rw [add_2_1]
+        repeat rw [pow2_add_one]
+        lia
+      · -- 2
+        rw [pow2_add_one]
+        lia
 ```
 :::::
 
@@ -3417,26 +3512,26 @@ that would allow us to annotate the rest of the program. Assume X, Y
 and Z are distinct program variables.
 (a)
 (b)
-    X := ANum n;
-    Y := A1;
-    while (BNot (!X === A0)) do (
-         Y := !Y *** A2;
-         X := !X --- A1
-    )
+    X := n;
+    Y := 1;
+    while (X ≠ 0) do
+         Y := Y * 2;
+         X := X - 1
+    end
 Answer: Y = 2^(n-X)
-    X := ANum x;
-    Y := ANum y;
-    Z := A0
+    X := x;
+    Y := y;
+    Z := 0
 { True }
 { _______________________________________ }
 { Y = 2^n }
 { True }
                                    { _______________________________________ }
-    while (BAnd (BNot (!X === A0)) (BNot (!Y === A0))) do (
-         X := !X --- A1;
-         Y := !Y --- A1;
-         Z := !Z +++ A1
-)
+    while (X ≠ 0 ∧ Y ≠ 0) do
+         X := X - 1;
+         Y := Y - 1;
+         Z := Z + 1
+    end
 (where min is the mathematical "minimum" function)
 Answer: Z = min(x,y) - min(X,Y)
 ```
@@ -3464,7 +3559,7 @@ strongest postcondition of the command skip with respect to the
 precondition Y = 1 is Y = 1. Similarly, the postcondition in...
 
          {{ Y = y }}
-           if !Y === A0 then X := A0 else Y := !Y *** A2
+           if Y = 0 then X := 0 else Y := Y * 2
          {{ (Y = y = X = 0) ∨ (Y = 2*y ∧ y ≠ 0) }}
 
 ...is the strongest one.
@@ -3472,15 +3567,15 @@ precondition Y = 1 is Y = 1. Similarly, the postcondition in...
 Complete each of the following Hoare triples with the strongest
 postcondition for the given command and precondition.
 
-(a) {{Y=1}} X:=!Y+++A1 {{?}}
-(b) {{True}} X:=A5 {{?}}
+(a) {{ Y = 1 }} X := Y + 1 {{ ? }}
+(b) {{ True }} X := 5 {{ ? }}
 (c) {{ True }} skip {{ ? }}
 (d) {{ True }} while true do skip {{ ? }}
 (e) {{ X = x ∧ Y = y }}
-    while BNot (!X === A0) do (
-                    Y := !Y +++ A2;
-                    X := !X --- A1
-                  )
+    while X ≠ 0 do
+      Y := Y + 2;
+      X := X - 1
+    end
     {{ ? }}
 ```
 :::
@@ -3510,7 +3605,12 @@ as a lemma in the next exercise.
 theorem fib_eqn (n : Nat) (h : n > 0) :
     fib n + fib (Nat.pred n) = fib (1 + n) := by
   solution!
-    sorry
+    cases n with
+    | zero => lia
+    | succ k =>
+      rw [Nat.add_comm 1]
+      -- Both sides compute to `fib (k + 1) + fib k`.
+      rfl
 ```
 :::::
 
@@ -3605,7 +3705,17 @@ def dfib (n : Nat) : Decorated where
 theorem dfib_correct (n : Nat) :
     (dfib n).OuterTripleValid := by
   solution!
-    sorry
+    simp only [dfib, T]
+    verify
+    · intro st hz hy hx _
+      rw [hz, hy]
+      constructor
+      · apply fib_eqn
+        exact hx
+      · lia
+    · intro st _ hy _ hx
+      rw [hy, hx]
+      lia
 ```
 :::::
 
@@ -3860,8 +3970,10 @@ decorated-command templates.
 
 ```lean
 namespace SparseAnnotations
+```
 
--- SOLUTION
+:::solution
+```lean
 /- (This solution also allows optional post-condition
 assertions at any point, since these are quite useful in
 practice when debugging the results of automated VC
@@ -3929,10 +4041,12 @@ macro_rules
 
 namespace DCom.Delab
 
-open Lean PrettyPrinter Delaborator SubExpr Parenthesizer Imp.Elab Imp.Delab
+open Lean PrettyPrinter Delaborator SubExpr Parenthesizer
+  Imp.Elab Imp.Delab
 
 @[category_parenthesizer «sparse_dcom»]
-def sparse_dcom.parenthesizer : CategoryParenthesizer := fun prec => do
+def sparse_dcom.parenthesizer : CategoryParenthesizer :=
+  fun prec => do
   maybeParenthesize `sparse_dcom false wrapParens prec <|
     parenthesizeCategoryCore `sparse_dcom prec
 where
@@ -3944,7 +4058,8 @@ where
 
 private def getDCom? (stx : Term) : Option (TSyntax `sparse_dcom) :=
   match stx with
-  | `(sdcom { $d:sparse_dcom }) => some <| withSourceInfoOf (canonical := false) stx d
+  | `(sdcom { $d:sparse_dcom }) =>
+      some <| withSourceInfoOf (canonical := false) stx d
   | _ => none
 
 @[app_delab SparseAnnotations.DCom.skip]
@@ -3993,7 +4108,9 @@ def unexpandWhileDo : Unexpander
 @[app_unexpander SparseAnnotations.DCom.assert]
 def unexpandAssert : Unexpander
   | `($_ $assertion) =>
-      `(sdcom { assert {{ $(_root_.DCom.Delab.getAssnBody assertion) }} })
+      `(sdcom {
+        assert {{ $(_root_.DCom.Delab.getAssnBody assertion) }}
+      })
   | _ => throw ()
 
 end DCom.Delab
@@ -4028,10 +4145,16 @@ be correct as follows: -/
 def Decorated.OuterTripleValid (dec : Decorated) : Prop :=
   ValidHoareTriple dec.pre dec.body.erase dec.post
 
+theorem Decorated.outerTripleValid_def {dec : Decorated} :
+    dec.OuterTripleValid ↔
+      ValidHoareTriple dec.pre dec.body.erase dec.post := by
+  rfl
+
 /- This VC generator is derived from Mike Gordon,
 "Background reading on Hoare Logic,"
 https://www.cl.cam.ac.uk/archive/mjcg/HL/Notes/Notes.pdf -/
 
+@[simp]
 def DCom.awp (post : Assertion) (d : DCom) : Assertion :=
   match d with
   | .skip => post
@@ -4044,6 +4167,7 @@ def DCom.awp (post : Assertion) (d : DCom) : Assertion :=
   | .whileDo _ invariant _ => invariant
   | .assert assertion => fun st => assertion st ∧ post st
 
+@[simp]
 def DCom.VerificationConditions
     (post : Assertion) (d : DCom) : Prop :=
   match d with
@@ -4060,11 +4184,65 @@ def DCom.VerificationConditions
       body.VerificationConditions invariant
   | _ => True
 
+-- `validHoareTriple_def` for `ValidHoareTriple` written
+-- directly rather than with `{{ P }} c {{ Q }}` notation.
+theorem validHoareTriple_def' {P : Assertion} {c : Com}
+    {Q : Assertion} :
+    ValidHoareTriple P c Q ↔ ∀ {st st' : State},
+      (st =[ c ]=> st') →
+      P st →
+      Q st' := by
+  exact validHoareTriple_def
+
 theorem vc_correct (d : DCom) (post : Assertion)
     (hvc : d.VerificationConditions post) :
     ValidHoareTriple (d.awp post) d.erase post := by
-  sorry
+  induction d generalizing post with
+    simp only [DCom.VerificationConditions, DCom.awp,
+      DCom.erase] at hvc ⊢
+  | «skip» =>
+    apply hoare_skip
+  | seq d₁ d₂ ih₁ ih₂ =>
+    obtain ⟨h₁, h₂⟩ := hvc
+    apply hoare_seq
+    · apply ih₂; exact h₂
+    · apply ih₁; exact h₁
+  | asgn x a =>
+    apply hoare_asgn
+  | cond b d₁ d₂ ih₁ ih₂ =>
+    obtain ⟨hthen, helse⟩ := hvc
+    specialize ih₁ post hthen
+    specialize ih₂ post helse
+    apply hoare_if
+    · apply hoare_consequence_pre
+      · exact ih₁
+      · verify_assertion
+    · apply hoare_consequence_pre
+      · exact ih₂
+      · verify_assertion
+  | whileDo b inv body ih =>
+    obtain ⟨h₁, h₂, h₃⟩ := hvc
+    specialize ih inv h₃
+    apply hoare_consequence_post
+    · apply hoare_while
+      apply hoare_consequence_pre
+      · exact ih
+      · rw [assertImplies_def]
+        intro st h
+        apply h₂
+        exact h
+    · rw [assertImplies_def]
+      intro st h
+      apply h₁
+      exact h
+  | «assert» a =>
+    rw [validHoareTriple_def']
+    intro st st' heval hpre
+    inversion heval
+    obtain ⟨_, hq⟩ := hpre
+    exact hq
 
+@[simp]
 def Decorated.VerificationConditions
     (dec : Decorated) : Prop :=
   (dec.pre ↠ dec.body.awp dec.post) ∧
@@ -4073,13 +4251,32 @@ def Decorated.VerificationConditions
 theorem verification_correct (dec : Decorated)
     (hvc : dec.VerificationConditions) :
     dec.OuterTripleValid := by
-  sorry
+  obtain ⟨hpre, hd⟩ := hvc
+  rw [Decorated.outerTripleValid_def]
+  apply hoare_consequence_pre
+  · apply vc_correct
+    exact hd
+  · exact hpre
+
+-- We redefine `verify` for this section's `verification_correct`,
+-- again leaving any conjunct `lia` cannot prove open as a separate goal.
+scoped macro_rules
+  | `(tactic| verify) =>
+    `(tactic|
+      (apply verification_correct;
+       simp +decide [-Bexp.eval_le, -Bexp.eval_gt,
+         Bexp.eval_le_true, Bexp.eval_le_false,
+         Bexp.eval_gt_true, Bexp.eval_gt_false,
+         assertImplies_def, assertIff_def,
+         validHoareTriple_def, Assertion.subst_def];
+       all_goals and_intros;
+       all_goals try lia))
 
 /- Let's redo all the examples to date. -/
-/- LATER: Fix indentation. -/
 theorem dec_while_correct :
     decWhile.OuterTripleValid := by
-  sorry
+  simp only [decWhile]
+  verify
 
 def swapDec (m n : Nat) : Decorated where
   pre := ({{ X = m ∧ Y = n }})
@@ -4092,7 +4289,8 @@ def swapDec (m n : Nat) : Decorated where
 
 theorem swap_correct (m n : Nat) :
     (swapDec m n).OuterTripleValid := by
-  sorry
+  simp only [swapDec]
+  verify
 
 def ifMinusDec : Decorated where
   pre := ({{ True }})
@@ -4107,7 +4305,8 @@ def ifMinusDec : Decorated where
 
 theorem if_minus_correct :
     ifMinusDec.OuterTripleValid := by
-  sorry
+  simp only [ifMinusDec]
+  verify
 
 def ifMinusPlusDec : Decorated where
   pre := ({{ True }})
@@ -4122,7 +4321,8 @@ def ifMinusPlusDec : Decorated where
 
 theorem if_minus_plus_correct :
     ifMinusPlusDec.OuterTripleValid := by
-  sorry
+  simp only [ifMinusPlusDec]
+  verify
 
 def divModDec (a b : Nat) : Decorated where
   pre := ({{ True }})
@@ -4139,7 +4339,8 @@ def divModDec (a b : Nat) : Decorated where
 
 theorem div_mod_outer_triple_valid (a b : Nat) :
     (divModDec a b).OuterTripleValid := by
-  sorry
+  simp only [divModDec]
+  verify
 
 def parityDec (m : Nat) : Decorated where
   pre := ({{ X = m }})
@@ -4153,7 +4354,14 @@ def parityDec (m : Nat) : Decorated where
 
 theorem parity_outer_triple_valid (m : Nat) :
     (parityDec m).OuterTripleValid := by
-  sorry
+  simp only [parityDec]
+  verify
+  · intro st h hlt
+    rw [← h, parity_lt_2]
+    lia
+  · intro st h hle
+    rw [← h, parity_ge_2]
+    exact hle
 
 def sqrtDec (m : Nat) : Decorated where
   pre := ({{ X = m }})
@@ -4168,7 +4376,8 @@ def sqrtDec (m : Nat) : Decorated where
 
 theorem sqrt_correct (m : Nat) :
     (sqrtDec m).OuterTripleValid := by
-  sorry
+  simp only [sqrtDec]
+  verify
 
 def squareDec (m : Nat) : Decorated where
   pre := ({{ X = m }})
@@ -4185,7 +4394,17 @@ def squareDec (m : Nat) : Decorated where
 
 theorem square_outer_triple_valid (m : Nat) :
     (squareDec m).OuterTripleValid := by
-  sorry
+  simp only [squareDec]
+  verify
+  -- loop invariant preserved
+  intro st h hy
+  generalize st[Y] = y at *
+  cases y with
+  | zero => contradiction
+  | succ y =>
+    rw [Nat.add_sub_cancel]
+    rw [Nat.mul_succ] at h
+    lia
 
 def squareDec' (n : Nat) : Decorated where
   pre := ({{ True }})
@@ -4203,7 +4422,22 @@ def squareDec' (n : Nat) : Decorated where
 
 theorem square_dec'_correct (n : Nat) :
     (squareDec' n).OuterTripleValid := by
-  sorry
+  simp only [squareDec']
+  verify
+  · intro st hz hx _ hy
+    rw [hz, hy, Nat.sub_zero, hx]
+  · -- loop invariant preserved
+    intro st hz hx hle hy
+    constructor
+    · rw [hz, Nat.mul_sub, Nat.mul_sub, Nat.mul_sub, Nat.mul_one]
+      have hxy : st[X] * st[Y] ≤ st[X] * st[X] := by
+        apply Nat.mul_le_mul_left
+        exact hle
+      have hx' : st[X] ≤ st[X] * st[Y] := by
+        apply Nat.le_mul_of_pos_right
+        lia
+      lia
+    · lia
 
 def squareSimplerDec (m : Nat) : Decorated where
   pre := ({{ X = m }})
@@ -4220,7 +4454,8 @@ def squareSimplerDec (m : Nat) : Decorated where
 
 theorem square_simpler_outer_triple_valid (m : Nat) :
     (squareSimplerDec m).OuterTripleValid := by
-  sorry
+  simp only [squareSimplerDec]
+  verify
 
 def twoLoopsDec (a b c : Nat) : Decorated where
   pre := ({{ True }})
@@ -4243,7 +4478,8 @@ def twoLoopsDec (a b c : Nat) : Decorated where
 
 theorem two_loops_correct (a b c : Nat) :
     (twoLoopsDec a b c).OuterTripleValid := by
-  sorry
+  simp only [twoLoopsDec]
+  verify
 
 def subtractSlowlyDec (m p : Nat) : Decorated where
   pre := ({{ X = m ∧ Z = p }})
@@ -4258,7 +4494,8 @@ def subtractSlowlyDec (m p : Nat) : Decorated where
 
 theorem subtract_slowly_correct (m p : Nat) :
     (subtractSlowlyDec m p).OuterTripleValid := by
-  sorry
+  simp only [subtractSlowlyDec]
+  verify
 
 def dpow2Down (n : Nat) : Decorated where
   pre := ({{ True }})
@@ -4277,7 +4514,15 @@ def dpow2Down (n : Nat) : Decorated where
 
 theorem dpow2_down_correct (n : Nat) :
     (dpow2Down n).OuterTripleValid := by
-  sorry
+  simp only [dpow2Down]
+  verify
+  intro st hy hz _
+  rw [hy, hz]
+  constructor
+  · rw [pow2_add_one, pow2_add_one, pow2_add_one]
+    lia
+  · rw [pow2_add_one]
+    lia
 
 def factorialDec (m : Nat) : Decorated where
   pre := ({{ X = m }})
@@ -4293,7 +4538,16 @@ def factorialDec (m : Nat) : Decorated where
 
 theorem factorial_outer_triple_valid (m : Nat) :
     (factorialDec m).OuterTripleValid := by
-  sorry
+  simp only [factorialDec]
+  verify
+  · intro st h hx
+    rw [hx] at h
+    simp only [fact] at h
+    lia
+  · intro st h hne
+    rw [Nat.mul_assoc, fact_sub_one]
+    · exact h
+    · exact hne
 
 def T : Ident := "T"
 
@@ -4315,10 +4569,21 @@ def dfib (n : Nat) : Decorated where
 
 theorem dfib_correct (n : Nat) :
     (dfib n).OuterTripleValid := by
-  sorry
+  simp only [dfib, T]
+  verify
+  · intro st _ hy _ hx
+    rw [hy, hx]
+    lia
+  · intro st hz hy hx _
+    rw [hz, hy]
+    constructor
+    · apply fib_eqn
+      exact hx
+    · lia
+```
+:::
 
--- END SOLUTION
-
+```lean
 end SparseAnnotations
 ```
 
@@ -4383,7 +4648,7 @@ end SparseAnnotations
 
 ::::::
 
-# Weakest Preconditions (Optional)
+# Weakest Preconditions
 
 :::dev
 HIDE: BCP 21: We talked about moving this stuff to the HoareAsLogic
@@ -4475,50 +4740,52 @@ equivalent; that is, `p ↞↠ p'`.
 def IsWp (p : Assertion) (c : Com) (q : Assertion) : Prop :=
   ValidHoareTriple p c q ∧
   ∀ p' : Assertion, {{ p' }} c {{ q }} → p' ↠ p
+
+theorem isWp_def {p : Assertion} {c : Com} {q : Assertion} :
+    IsWp p c q ↔
+      ValidHoareTriple p c q ∧
+      ∀ p' : Assertion, {{ p' }} c {{ q }} → p' ↠ p := by
+  rfl
 ```
 
 :::slidebreak
 :::
 
-:::dev PotentialImprovement
-Make a quiz based on this!
-:::
-
-:::::exercise (rating := 1) (name := "wp") (optional := true)
+::::quiz
 What are weakest preconditions of the following commands
 for the following postconditions?
 
-```display
-1) {{ ? }}  skip  {{ X = 5 }}
+1. `{{ ? }}  skip  {{ X = 5 }}`
 
-2) {{ ? }}  X := Y + Z {{ X = 5 }}
+2. `{{ ? }}  X := Y + Z  {{ X = 5 }}`
 
-3) {{ ? }}  X := Y  {{ X = Y }}
+3. `{{ ? }}  X := Y  {{ X = Y }}`
 
-4) {{ ? }}
- if X = 0 then Y := Z + 1 else Y := W + 2 end
- {{ Y = 5 }}
+4.
+   ```display
+   {{ ? }}
+   if X = 0 then Y := Z + 1 else Y := W + 2 end
+   {{ Y = 5 }}
+   ```
 
-5) {{ ? }}
- X := 5
- {{ X = 0 }}
+5. `{{ ? }}  X := 5  {{ X = 0 }}`
 
-6) {{ ? }}
- while (true) {X := 0}
- {{ X = 0 }}
-```
+6.
+   ```display
+   {{ ? }}
+   while (true) {X := 0}
+   {{ X = 0 }}
+   ```
 
-:::solution
-```display
-1) X = 5
-2) Y + Z = 5
-3) True
-4) (X = 0 ∧ Z = 4) ∨ (X ≠ 0 ∧ W = 3)
-5) False
-6) True
-```
+:::quizSolution
+1. `X = 5`
+2. `Y + Z = 5`
+3. `True`
+4. `(X = 0 ∧ Z = 4) ∨ (X ≠ 0 ∧ W = 3)`
+5. `False`
+6. `True`
 :::
-:::::
+::::
 
 :::dev PotentialImprovement
 ```
@@ -4534,12 +4801,6 @@ X := X - 1 end
     {{ ? }}
 if X .> 3 then Z := X else Z := Y end
 {{ Z = W }}
-    {{ ? }}
-while IsCons X do
-  N := N + 1;
-  X := Tail(X)
-end
-{{ X = [ ] ∧ N = length l }}
 
 ---------
 And:
@@ -4577,7 +4838,23 @@ theorem is_wp_example :
     IsWp ({{ Y ≤ 4 }}) (imp {X := Y + 1})
       ({{ X ≤ 5 }}) := by
   solution!
-    sorry
+    rw [isWp_def]
+    constructor
+    · -- precondition
+      apply hoare_consequence_pre
+      · apply hoare_asgn
+      · verify_assertion
+    · -- weakest precondition
+      intro p' htriple
+      rw [validHoareTriple_def] at htriple
+      rw [assertImplies_def]
+      intro st hp'
+      have hst : st =[ X := Y + 1 ]=> (X →ₜ st[Y] + 1 ; st) := by
+        apply Com.EvalR.asgn
+        rfl
+      specialize htriple (st := st) (st' := X →ₜ st[Y] + 1 ; st) hst hp'
+      · simp at htriple
+        assumption
 ```
 :::::
 
@@ -4590,16 +4867,19 @@ theorem hoare_asgn_weakest
     (q : Assertion) (x : Ident) (a : Aexp) :
     IsWp ({{ q [x ↦ a] }}) (imp {x := a}) q := by
   solution!
-    refine ⟨hoare_asgn, ?_⟩
-    intro p hP
-    rw [validHoareTriple_def] at hP
-    intro st hst
-    rw [Assertion.subst_apply]
-    apply hP _ hst
-    exact Com.EvalR.asgn rfl
+    rw [isWp_def]
+    constructor
+    · apply hoare_asgn
+    · intro p hP
+      rw [validHoareTriple_def] at hP
+      rw [assertImplies_def]
+      intro st hst
+      rw [Assertion.subst_apply]
+      apply hP
+      · apply Com.EvalR.asgn
+        rfl
+      · exact hst
 ```
-:::gradeTheorem 2 hoare_asgn_weakest
-:::
 :::::
 
 :::::exercise (rating := 2) (name := "hoare_havoc_weakest") (level := Advanced) (optional := true)
@@ -4610,11 +4890,27 @@ in the {ref "Hoare"}[Hoare] chapter returns a weakest precondition.
 namespace HimpHoare2
 open HimpHoare
 
+theorem validHoareTriple_def' {P : Assertion} {c : HimpHoare.Com}
+    {Q : Assertion} :
+    HimpHoare.ValidHoareTriple P c Q ↔ ∀ {st st' : State},
+      (st =[ c ]=> st') →
+      P st →
+      Q st' := by
+  exact HimpHoare.validHoareTriple_def
+
 theorem hoare_havoc_weakest (p q : Assertion) (x : Ident)
     (h : ValidHoareTriple p (Com.havoc x) q) :
     p ↠ havoc_pre x q := by
   solution!
-    sorry
+    rw [validHoareTriple_def'] at h
+    rw [assertImplies_def]
+    intro st hp
+    rw [havoc_pre]
+    intro n
+    simp only [Assertion.subst_apply, Aexp.eval_num]
+    apply h
+    · constructor
+    · exact hp
 
 end HimpHoare2
 ```

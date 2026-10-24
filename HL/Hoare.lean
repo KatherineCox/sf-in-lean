@@ -461,9 +461,12 @@ partial def delabBody (stId : FVarId) : DelabM Term := do
     delab
   else
     match_expr e with
-    | MyGetElem.getElem _ _ _ _ st _ =>
+    | MyGetElem.getElem _ _ _ _ st k =>
       guard (st == .fvar stId)
-      withAppArg delab
+      if let .lit (.strVal s) := k then
+        `($(mkIdent (Name.mkSimple s)):ident)
+      else
+        withAppArg delab
     | Aexp.eval st _ =>
       guard (st == .fvar stId)
       withAppArg delab
@@ -1566,7 +1569,7 @@ macro_rules
 end Assertion
 
 namespace Assertion.Delab
-open Lean PrettyPrinter Delaborator SubExpr Imp.Delab
+open Lean PrettyPrinter Delaborator SubExpr Imp.Elab Imp.Delab
 
 /-- Print an `Assertion.subst` back in `P [x ↦ a]` notation.  Emits
 the bare inside-the-braces form: the generic application case of
@@ -1574,7 +1577,11 @@ the bare inside-the-braces form: the generic application case of
 printer supplies the single pair of braces. -/
 @[app_unexpander Assertion.subst]
 def unexpandSubst : Unexpander
-  | `($_ $x:ident $a $P) =>
+  | `($_ $x $a $P) => do
+    let x ← match x with
+      | `($x:ident) => pure x
+      | `($s:str) => pure (mkObjectIdentFrom s.raw s.getString)
+      | _ => throw ()
     match getAssn P with
     | `($P:ident) => `($P:ident [$x:ident ↦ $(getAexp a):imp_aexp])
     | P => `(($P) [$x:ident ↦ $(getAexp a):imp_aexp])
@@ -2137,7 +2144,7 @@ observation is captured by two _Rules of Consequence_.
 
 {{P}} c {{Q'}}
    Q' ↠ Q
---------------    (hoare_consequence_post)
+--------------   (hoare_consequence_post)
 {{P}} c {{Q}}
 ```
 
@@ -2601,7 +2608,7 @@ theorem hoare_asgn_example4 :
 :::
 :::::
 
-:::::exercise (rating := 3) (name := "swap_exercise")
+:::::exercise (rating := 3) (name := "swap_exercise") (manual := true)
 Write an Imp program `c` that swaps the values of `X` and `Y` and
 show that it satisfies the following specification:
 
@@ -2663,9 +2670,10 @@ theorem swap_exercise :
       · assertion_auto
 ```
 
-:::autogradedHole swapProgram
-:::
-:::gradeTheorem 3 swap_exercise
+:::grade
+```
+GRADE_MANUAL 3: swap_exercise
+```
 :::
 :::::
 
@@ -2824,18 +2832,6 @@ adds overhead for the reader.
 
 Now we can formalize the Hoare proof rule for conditionals
 and prove it correct.
-
-The statement of the rule reads: given `htrue : {{ P ∧ b }} c₁ {{Q}}`
-and `hfalse : {{ P ∧ ¬b }} c₂ {{Q}}`, we can conclude
-`{{P}} if (b) { c₁ } else { c₂ } {{Q}}`.  That is (unwrapping the
-notations):
-
-```display
-theorem hoare_if {P Q : Assertion} {b : Bexp} {c₁ c₂ : Com}
-    (htrue : {{ fun st => P st ∧ b.eval st = true }} c₁ {{ Q }})
-    (hfalse : {{ fun st => P st ∧ ¬ (b.eval st = true) }} c₂ {{ Q }}) :
-    {{ P }} if (b) { c₁ } else { c₂ } {{ Q }}
-```
 
 ```lean
 theorem hoare_if {P Q : Assertion} {b : Bexp} {c₁ c₂ : Com}
@@ -4313,30 +4309,30 @@ Imp programs.
 The rules of Hoare Logic are:
 
 ```display +centered
-     -------------------------- (hoare_asgn)
+     --------------------------          (hoare_asgn)
      {{Q [X ↦ a]}} X := a {{Q}}
 
-        --------------------  (hoare_skip)
+        --------------------             (hoare_skip)
         {{ P }} skip {{ P }}
 
          {{ P }} c₁ {{ Q }}
          {{ Q }} c₂ {{ R }}
-        ----------------------  (hoare_seq)
+        ----------------------            (hoare_seq)
         {{ P }} c₁; c₂ {{ R }}
 
         {{P ∧   b}} c₁ {{Q}}
         {{P ∧ ¬ b}} c₂ {{Q}}
-------------------------------------  (hoare_if)
+------------------------------------       (hoare_if)
 {{P}} if b then c₁ else c₂ end {{Q}}
 
          {{P ∧ b}} c {{P}}
- -----------------------------------  (hoare_while)
+ -----------------------------------    (hoare_while)
  {{P}} while b do c end {{P ∧ ¬ b}}
 
           {{P'}} c {{Q'}}
              P ↠ P'
              Q' ↠ Q
-   -----------------------------   (hoare_consequence)
+   -----------------------------  (hoare_consequence)
           {{P}} c {{Q}}
 ```
 

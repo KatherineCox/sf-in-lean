@@ -1781,13 +1781,23 @@ theorem and3_exchange (b c d : Bool) :
 
 theorem or_false_true (b : Bool) (h : (b || false) = true) :
   b = true := by
-  sorry
+  rewrite [Bool.or_false] at h
+  exact h
 
 --  ### Exercise (1 star): zero_neb_add_one ⭐
 
 theorem zero_neb_add_one (n : Nat) :
   (zero == (succ zero + n)) = false := by
-  sorry
+  cases n with
+  | zero =>
+    rewrite [add_zero]
+    rewrite [zero_beq_succ]
+    rfl
+  | succ n' =>
+    rewrite [add_succ]
+    rewrite [zero_beq_succ]
+    rfl
+
 
 --  ### Structural Recursion (Optional)
 

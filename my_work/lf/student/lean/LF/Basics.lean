@@ -1941,7 +1941,10 @@ end Nat
 theorem identity_fn_applied_twice (f : Bool → Bool) :
     (∀ x : Bool, f x = x) →
     ∀ b : Bool, f (f b) = b := by
-  sorry
+  intro h
+  intro b
+  rewrite [h, h]
+  rfl
 
 --  ### Exercise (1 star): negation_fn_applied_twice (Manually graded) ⭐
 

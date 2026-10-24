@@ -179,7 +179,8 @@ sf_recall statement add_succ : ∀ n m : Nat, n + (succ m) = succ (n + m)
 --  from Basics:
 
 theorem succ_eq_add_one (n : Nat) : succ n = n + one := by
-  sorry
+  rewrite [one, add_succ, add_zero]
+  rfl
 
 --  ## Proof by Induction
 

@@ -1966,6 +1966,17 @@ theorem negation_fn_applied_twice (f : Bool -> Bool) :
 --  Prove the following theorem.
 
 theorem and_eq_or (b c : Bool) : (b && c) = (b || c) → b = c := by
+  intro h
+  cases b with
+    |true =>
+      rewrite [Bool.true_and, Bool.true_or] at h
+      rewrite [h]
+      rfl
+    |false =>
+      rewrite [Bool.false_and, Bool.false_or] at h
+      rewrite [h]
+      rfl
+
 
 --  ### Airport Exercise
 

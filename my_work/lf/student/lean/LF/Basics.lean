@@ -2031,23 +2031,27 @@ inductive Traveler : Type where
 
 --  ### Exercise (1 star): buyTicket ⭐
 
-def buyTicket (t : Traveler) : Traveler := sorry
-theorem buyTicket_test1 : buyTicket (.noTicket .ordinary) = .ticketed .ordinary := sorry
-theorem buyTicket_test2 : buyTicket (.checkedIn .prohibited .blocked) = .checkedIn .prohibited .blocked := sorry
+def buyTicket (t : Traveler) : Traveler :=
+  match t with
+  |.noTicket b => Traveler.ticketed b
+  |_ => t
+
+theorem buyTicket_test1 : buyTicket (.noTicket .ordinary) = .ticketed .ordinary := by rfl
+theorem buyTicket_test2 : buyTicket (.checkedIn .prohibited .blocked) = .checkedIn .prohibited .blocked := by rfl
 
 --  (End of exercise)
 
 --  Here are the simplification rules for `buyTicket`:
 
 theorem buyTicket_noTicket (bagContent : BagContent) :
-    buyTicket (.noTicket bagContent) = .ticketed bagContent := sorry
+    buyTicket (.noTicket bagContent) = .ticketed bagContent := by rfl
 
 theorem buyTicket_ticketed (bagContent : BagContent) :
-    buyTicket (.ticketed bagContent) = .ticketed bagContent := sorry
+    buyTicket (.ticketed bagContent) = .ticketed bagContent := by rfl
 
 theorem buyTicket_checkedIn (bagContent : BagContent)
     (screeningStatus : ScreeningStatus) :
-    buyTicket (.checkedIn bagContent screeningStatus) = .checkedIn bagContent screeningStatus := sorry
+    buyTicket (.checkedIn bagContent screeningStatus) = .checkedIn bagContent screeningStatus := by rfl
 
 attribute [irreducible] buyTicket
 
@@ -2059,7 +2063,10 @@ attribute [irreducible] buyTicket
 
 theorem buyTicket_idempotent (t : Traveler) :
     buyTicket (buyTicket t) = buyTicket t := by
-  sorry
+  cases t with
+    |noTicket => rewrite[buyTicket_noTicket, buyTicket_ticketed]; rfl
+    |ticketed => rewrite[buyTicket_ticketed, buyTicket_ticketed]; rfl
+    |checkedIn => rewrite[buyTicket_checkedIn, buyTicket_checkedIn]; rfl
 
 --  (End of exercise)
 

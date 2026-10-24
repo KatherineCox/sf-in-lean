@@ -2180,25 +2180,29 @@ theorem inspectBag_idempotent (t : Traveler) : inspectBag (inspectBag t) = inspe
 
 --  Define `changeBag`.
 
-def changeBag (newContent : BagContent) (t : Traveler) : Traveler := sorry
+def changeBag (newContent : BagContent) (t : Traveler) : Traveler :=
+  match t with
+    |.noTicket _ => .noTicket newContent
+    |.ticketed _ => .ticketed newContent
+    |.checkedIn _ _ => .checkedIn newContent .notScreened
 
-theorem changeBag_test1 : changeBag .prohibited (.ticketed .ordinary) = .ticketed .prohibited := sorry
-theorem changeBag_test2 : changeBag .prohibited (.checkedIn .ordinary .cleared) = .checkedIn .prohibited .notScreened := sorry
+theorem changeBag_test1 : changeBag .prohibited (.ticketed .ordinary) = .ticketed .prohibited := rfl
+theorem changeBag_test2 : changeBag .prohibited (.checkedIn .ordinary .cleared) = .checkedIn .prohibited .notScreened := rfl
 
 --  (End of exercise)
 
 --  As before, we record one simplification rule for each case.
 
 theorem changeBag_noTicket (newContent oldContent : BagContent) :
-    changeBag newContent (.noTicket oldContent) = .noTicket newContent := sorry
+    changeBag newContent (.noTicket oldContent) = .noTicket newContent := rfl
 
 theorem changeBag_ticketed (newContent oldContent : BagContent) :
-    changeBag newContent (.ticketed oldContent) = .ticketed newContent := sorry
+    changeBag newContent (.ticketed oldContent) = .ticketed newContent := rfl
 
 theorem changeBag_checkedIn (newContent oldContent : BagContent)
     (screeningStatus : ScreeningStatus) :
     changeBag newContent (.checkedIn oldContent screeningStatus) =
-    .checkedIn newContent .notScreened := sorry
+    .checkedIn newContent .notScreened := rfl
 
 attribute [irreducible] changeBag
 
@@ -2218,13 +2222,17 @@ theorem inspectBag_changeBag_comm_noTicket
     (oldContent newContent : BagContent) :
     inspectBag (changeBag newContent (.noTicket oldContent)) =
     changeBag newContent (inspectBag (.noTicket oldContent)) := by
-  sorry
+  rewrite [changeBag_noTicket, inspectBag_noTicket]
+  rewrite [inspectBag_noTicket, changeBag_noTicket]
+  rfl
 
 theorem inspectBag_changeBag_comm_ticketed
     (oldContent newContent : BagContent) :
     inspectBag (changeBag newContent (.ticketed oldContent)) =
     changeBag newContent (inspectBag (.ticketed oldContent)) := by
-  sorry
+  rewrite [changeBag_ticketed, inspectBag_ticketed]
+  rewrite [inspectBag_ticketed, changeBag_ticketed]
+  rfl
 
 --  (End of exercise)
 

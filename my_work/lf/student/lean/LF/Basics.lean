@@ -2076,25 +2076,30 @@ theorem buyTicket_idempotent (t : Traveler) :
 
 --  ### Exercise (1 star): checkIn ⭐
 
-def checkIn (t : Traveler) : Traveler := sorry
+def checkIn (t : Traveler) : Traveler :=
+  match t with
+  |.noTicket _ => t
+  |.ticketed b => .checkedIn b .notScreened
+  |.checkedIn _ _ => t
 
-theorem checkIn_test1 : checkIn (.noTicket .ordinary) = .noTicket .ordinary := sorry
-theorem checkIn_test2 : checkIn (.ticketed .prohibited) = .checkedIn .prohibited .notScreened := sorry
-theorem checkIn_test3 : checkIn (.checkedIn .ordinary .cleared) = .checkedIn .ordinary .cleared := sorry
+
+theorem checkIn_test1 : checkIn (.noTicket .ordinary) = .noTicket .ordinary := rfl
+theorem checkIn_test2 : checkIn (.ticketed .prohibited) = .checkedIn .prohibited .notScreened := rfl
+theorem checkIn_test3 : checkIn (.checkedIn .ordinary .cleared) = .checkedIn .ordinary .cleared := rfl
 
 --  (End of exercise)
 
 --  Again, we record one simplification rule for each case:
 
 theorem checkIn_noTicket (bagContent : BagContent) :
-    checkIn (.noTicket bagContent) = .noTicket bagContent := sorry
+    checkIn (.noTicket bagContent) = .noTicket bagContent := by rfl
 
 theorem checkIn_ticketed (bagContent : BagContent) :
-    checkIn (.ticketed bagContent) = .checkedIn bagContent .notScreened := sorry
+    checkIn (.ticketed bagContent) = .checkedIn bagContent .notScreened := by rfl
 
 theorem checkIn_checkedIn (bagContent : BagContent)
     (screeningStatus : ScreeningStatus) :
-    checkIn (.checkedIn bagContent screeningStatus) = .checkedIn bagContent screeningStatus := sorry
+    checkIn (.checkedIn bagContent screeningStatus) = .checkedIn bagContent screeningStatus := by rfl
 
 attribute [irreducible] checkIn
 

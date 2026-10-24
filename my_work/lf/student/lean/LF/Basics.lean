@@ -2124,27 +2124,33 @@ theorem buyTicket_then_checkIn (bagContent : BagContent) :
 
 --  Define `inspectBag`.
 
-def inspectBag (t : Traveler) : Traveler := sorry
+def inspectBag (t : Traveler) : Traveler :=
+  match t with
+  |.checkedIn b _ =>
+    match b with
+    |.ordinary => .checkedIn b .cleared
+    |.prohibited => .checkedIn b .blocked
+  | _ => t
 
-theorem inspectBag_test1 : inspectBag (.ticketed .prohibited) = .ticketed .prohibited := sorry
-theorem inspectBag_test2 : inspectBag (.checkedIn .ordinary .notScreened) = .checkedIn .ordinary .cleared := sorry
-theorem inspectBag_test3 : inspectBag (.checkedIn .prohibited .notScreened) = .checkedIn .prohibited .blocked := sorry
+theorem inspectBag_test1 : inspectBag (.ticketed .prohibited) = .ticketed .prohibited := rfl
+theorem inspectBag_test2 : inspectBag (.checkedIn .ordinary .notScreened) = .checkedIn .ordinary .cleared := rfl
+theorem inspectBag_test3 : inspectBag (.checkedIn .prohibited .notScreened) = .checkedIn .prohibited .blocked := rfl
 
 --  (End of exercise)
 
 --  Again, we record one characterization lemma for each case.
 
 theorem inspectBag_noTicket (bagContent : BagContent) :
-    inspectBag (.noTicket bagContent) = .noTicket bagContent := sorry
+    inspectBag (.noTicket bagContent) = .noTicket bagContent := rfl
 
 theorem inspectBag_ticketed (bagContent : BagContent) :
-    inspectBag (.ticketed bagContent) = .ticketed bagContent := sorry
+    inspectBag (.ticketed bagContent) = .ticketed bagContent := rfl
 
 theorem inspectBag_ordinary (screeningStatus : ScreeningStatus) :
-    inspectBag (.checkedIn .ordinary screeningStatus) = .checkedIn .ordinary .cleared := sorry
+    inspectBag (.checkedIn .ordinary screeningStatus) = .checkedIn .ordinary .cleared := rfl
 
 theorem inspectBag_prohibited (screeningStatus : ScreeningStatus) :
-    inspectBag (.checkedIn .prohibited screeningStatus) = .checkedIn .prohibited .blocked := sorry
+    inspectBag (.checkedIn .prohibited screeningStatus) = .checkedIn .prohibited .blocked := rfl
 
 attribute [irreducible] inspectBag
 
@@ -2154,7 +2160,14 @@ attribute [irreducible] inspectBag
 --  effect as inspecting it once.
 
 theorem inspectBag_idempotent (t : Traveler) : inspectBag (inspectBag t) = inspectBag t := by
-  sorry
+  cases t with
+    |noTicket => rewrite[inspectBag_noTicket, inspectBag_noTicket]; rfl
+    |ticketed => rewrite[inspectBag_ticketed, inspectBag_ticketed]; rfl
+    |checkedIn b =>
+      cases b with
+        |ordinary => rewrite[inspectBag_ordinary, inspectBag_ordinary]; rfl
+        |prohibited => rewrite[inspectBag_prohibited, inspectBag_prohibited]; rfl
+
 
 --  (End of exercise)
 

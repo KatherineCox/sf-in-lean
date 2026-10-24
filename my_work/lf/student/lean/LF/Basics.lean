@@ -1952,14 +1952,20 @@ theorem identity_fn_applied_twice (f : Bool → Bool) :
 --  the previous one but where the hypothesis says that the function `f`
 --  has the property that `f x = !x`.
 
---  FILL IN HERE
+theorem negation_fn_applied_twice (f : Bool -> Bool) :
+  (∀ x : Bool, f x = !x) → ∀ b : Bool, f (f b) = b := by
+  intro h
+  intro b
+  rewrite [h, h]
+  cases b with
+    |true => rewrite[Bool.not_true, Bool.not_false]; rfl
+    |false => rewrite[Bool.not_false, Bool.not_true]; rfl
 
 --  ### Exercise (3 stars): and_eq_or (Optional) ⭐⭐⭐
 
 --  Prove the following theorem.
 
 theorem and_eq_or (b c : Bool) : (b && c) = (b || c) → b = c := by
-  sorry
 
 --  ### Airport Exercise
 

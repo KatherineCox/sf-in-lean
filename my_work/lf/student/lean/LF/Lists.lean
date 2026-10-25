@@ -563,45 +563,51 @@ theorem test_member2 : member 2 [1, 4, 1] = false := rfl
 --  When `removeOne` is applied to a list without the number to remove, it
 --  should return the same list unchanged.
 
-def removeOne (n : Nat) (l : NatList) : NatList := sorry
+def removeOne (n : Nat) (l : NatList) : NatList :=
+  match l with
+  |[] => []
+  |h::t => bif n == h then t else h :: (removeOne n t)
 
-theorem removeOne_nil (n : Nat) : removeOne n nil = nil := sorry
+theorem removeOne_nil (n : Nat) : removeOne n nil = nil := rfl
 
 theorem removeOne_cons_same (n₁ n₂ : Nat) (t : NatList)
   (h : (n₁ == n₂) = true) :
     removeOne n₁ (n₂ :: t) = t := by
-  sorry
+  rw [removeOne, h, Bool.cond_true]
 
 theorem removeOne_cons_diff (n₁ n₂ : Nat) (t : NatList)
   (h : (n₁ == n₂) = false) :
     removeOne n₁ (n₂ :: t) = n₂ :: removeOne n₁ t := by
-  sorry
+  rw [removeOne, h, Bool.cond_false]
 
 example : removeOne 5 [1, 5, 4] = [1, 4] := by
   rw [removeOne_cons_diff _ _ _ rfl]
   rw [removeOne_cons_same _ _ _ rfl]
 
-example : count 5 (removeOne 5 [1, 5, 4]) = 0 := sorry
+example : count 5 (removeOne 5 [1, 5, 4]) = 0 := rfl
 
-theorem test_removeOne1 : count 4 (removeOne 5 [4, 5, 1, 4]) = 2 := sorry
+theorem test_removeOne1 : count 4 (removeOne 5 [4, 5, 1, 4]) = 2 := rfl
 
-theorem test_removeOne2 : count 5 (removeOne 5 [1, 5, 5, 4]) = 1 := sorry
+theorem test_removeOne2 : count 5 (removeOne 5 [1, 5, 5, 4]) = 1 := rfl
 
 --  ### Exercise (3 stars): removeAll (Optional) ⭐⭐⭐
 
-def removeAll (n : Nat) (l : NatList) : NatList := sorry
+def removeAll (n : Nat) (l : NatList) : NatList :=
+  match l with
+  |[] => []
+  |h::t => bif n == h then (removeAll n t) else h :: (removeAll n t)
 
-theorem removeAll_nil (n : Nat) : removeAll n [] = [] := sorry
+theorem removeAll_nil (n : Nat) : removeAll n [] = [] := rfl
 
 theorem removeAll_cons_same (n₁ n₂ : Nat) (t : NatList)
   (h : (n₁ == n₂) = true) :
     removeAll n₁ (n₂ :: t) = removeAll n₁ t := by
-  sorry
+  rw [removeAll, h, Bool.cond_true]
 
 theorem removeAll_cons_diff (n₁ n₂ : Nat) (t : NatList)
   (h : (n₁ == n₂) = false) :
     removeAll n₁ (n₂ :: t) = n₂ :: removeAll n₁ t := by
-  sorry
+  rw [removeAll, h, Bool.cond_false]
 
 example : count 5 (removeAll 5 [5, 1]) = 0 := by
   rw [removeAll_cons_same _ _ _ rfl]
@@ -610,11 +616,11 @@ example : count 5 (removeAll 5 [5, 1]) = 0 := by
   rw [count_cons_diff _ _ _ rfl]
   rw [count_nil]
 
-example : count 5 (removeAll 5 [5, 5]) = 0 := sorry
+example : count 5 (removeAll 5 [5, 5]) = 0 := rfl
 
-theorem test_removeAll1 : count 4 (removeAll 5 [4, 5, 4]) = 2 := sorry
+theorem test_removeAll1 : count 4 (removeAll 5 [4, 5, 4]) = 2 := rfl
 
-theorem test_removeAll2 : count 5 (removeAll 5 [2, 5, 5, 5, 1]) = 0 := sorry
+theorem test_removeAll2 : count 5 (removeAll 5 [2, 5, 5, 5, 1]) = 0 := rfl
 
 --  ### Included
 

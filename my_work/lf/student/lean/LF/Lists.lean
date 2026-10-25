@@ -129,13 +129,13 @@ theorem surjective_pairing_cases (p : NatProd) :
 
 theorem snd_fst_is_swap (p : NatProd) :
     (⟨p.snd, p.fst⟩ : NatProd) = p.swap := by
-  sorry
+  cases p; rfl
 
 --  ### Exercise (1 star): fst_swap_is_snd (Optional) ⭐
 
 theorem fst_swap_is_snd (p : NatProd) :
     p.swap.fst = p.snd := by
-  sorry
+  cases p; rfl
 
 --  ### Structures
 
@@ -346,21 +346,25 @@ def foo (n : Nat) : NatList :=
 --  `countOddMembers` below. Have a look at the lemmas and examples to
 --  understand what these functions should do.
 
-def nonZeros (l : NatList) : NatList := sorry
+def nonZeros (l : NatList) : NatList :=
+  match l with
+  |[] => []
+  |0::t => nonZeros t
+  |h::t => h::nonZeros t
 
 --  The following lemmas should hold about your definition.
 
 theorem nonZeros_cons_zero (t : NatList) :
-    nonZeros (0 :: t) = nonZeros t := sorry
+    nonZeros (0 :: t) = nonZeros t := rfl
 
 theorem nonZeros_nil :
-    nonZeros [] = [] := sorry
+    nonZeros [] = [] := rfl
 
 theorem nonZeros_cons_nonZero (h : Nat) (t : NatList) :
-    nonZeros ((h + 1) :: t) = (h + 1) :: nonZeros t := sorry
+    nonZeros ((h + 1) :: t) = (h + 1) :: nonZeros t := rfl
 
 theorem test_nonZeros : nonZeros [0, 1, 0] = [1] := by
-  sorry
+  rw [nonZeros_cons_zero, nonZeros_cons_nonZero, nonZeros_cons_zero, nonZeros_nil, Nat.zero_add]
 
 --  The next definition uses `bif`, Lean's conditional for boolean tests.
 --  The expression `bif b then x else y` evaluates to `x` when `b` is
@@ -375,25 +379,28 @@ sf_recall
   theorem Bool.cond_false {α} (x y : α) : (bif false then x else y) = y := by
     rfl
 
-def oddMembers (l : NatList) : NatList := sorry
+def oddMembers (l : NatList) : NatList :=
+  match l with
+  |[] => []
+  |h::t => bif h.odd then h :: oddMembers t else oddMembers t
 
 theorem oddMembers_nil :
-    oddMembers [] = [] := sorry
+    oddMembers [] = [] := rfl
 
 theorem oddMembers_cons (h : Nat) (t : NatList) :
     oddMembers (h :: t) =
       bif h.odd then h :: oddMembers t else oddMembers t :=
-  sorry
+  rfl
 
 theorem oddMembers_cons_odd (n : Nat) (l : NatList)
     (h : n.odd = true) :
     oddMembers (n :: l) = n :: oddMembers l := by
-  sorry
+  rfl
 
 theorem oddMembers_cons_not_odd (n : Nat) (l : NatList)
     (h : n.odd = false) :
     oddMembers (n :: l) = oddMembers l := by
-  sorry
+  rfl
 
 --  Now, we can prove that `oddMembers [1, 2]` returns `[1]` using the
 --  lemmas:
@@ -422,20 +429,21 @@ example : oddMembers [1, 2] = [1] := by
 --  with a single `rfl`. This is possible because all of the elements and
 --  lists are concrete — there are no variables involved.
 
-example : oddMembers [1, 2] = [1] := sorry
+example : oddMembers [1, 2] = [1] := rfl
 
-theorem test_oddMembers : oddMembers [0, 1, 2, 3, 0] = [1, 3] := sorry
+theorem test_oddMembers : oddMembers [0, 1, 2, 3, 0] = [1, 3] := rfl
 
 --  For the next problem, `countOddMembers`, we encourage you to implement
 --  it using already-defined functions, rather than recursion.
 
-def countOddMembers (l : NatList) : Nat := sorry
+def countOddMembers (l : NatList) : Nat :=
+  length (oddMembers l)
 
-example : countOddMembers [0, 1, 2, 3, 0] = 2 := sorry
+example : countOddMembers [0, 1, 2, 3, 0] = 2 := rfl
 
-theorem test_countOddMembers1 : countOddMembers [0, 2, 4] = 0 := sorry
+theorem test_countOddMembers1 : countOddMembers [0, 2, 4] = 0 := rfl
 
-theorem test_countOddMembers2 : countOddMembers [] = 0 := sorry
+theorem test_countOddMembers2 : countOddMembers [] = 0 := rfl
 
 --  ### Exercise (3 stars): alternate (Advanced) ⭐⭐⭐
 
@@ -449,19 +457,23 @@ theorem test_countOddMembers2 : countOddMembers [] = 0 := sorry
 --  difficulty, consider pattern matching against both lists at the same
 --  time.
 
-def alternate (l₁ l₂ : NatList) : NatList := sorry
+def alternate (l₁ l₂ : NatList) : NatList :=
+  match l₁, l₂ with
+  |[], l₂ => l₂
+  |l₁, [] => l₁
+  |h₁::t₁, h₂::t₂ => h₁::h₂::(alternate t₁ t₂)
 
 theorem test_alternate1 :
-    alternate [1, 2, 3] [4, 5, 6] = [1, 4, 2, 5, 3, 6] := sorry
+    alternate [1, 2, 3] [4, 5, 6] = [1, 4, 2, 5, 3, 6] := rfl
 
 theorem test_alternate2 :
-    alternate [1] [4, 5, 6] = [1, 4, 5, 6] := sorry
+    alternate [1] [4, 5, 6] = [1, 4, 5, 6] := rfl
 
 theorem test_alternate3 :
-    alternate [1, 2, 3] [4] = [1, 4, 2, 3] := sorry
+    alternate [1, 2, 3] [4] = [1, 4, 2, 3] := rfl
 
 theorem test_alternate4 :
-    alternate [] [20, 30] = [20, 30] := sorry
+    alternate [] [20, 30] = [20, 30] := rfl
 
 --  ### Counting
 
@@ -470,35 +482,38 @@ theorem test_alternate4 :
 --  Define a `count` function for `NatList`s that counts the number of
 --  times an element `n` appears in the list.
 
-def count (n : Nat) (l : NatList) : Nat := sorry
+def count (n : Nat) (l : NatList) : Nat :=
+  match l with
+  |[] => 0
+  |h::t => bif h == n then (1 + count n t) else (count n t)
 
 --  Now prove these lemmas, which should hold about your definition.
 
-theorem count_nil (n : Nat) : count n [] = 0 := sorry
+theorem count_nil (n : Nat) : count n [] = 0 := rfl
 
 theorem count_cons_def (n h : Nat) (t : NatList) :
     count n (h :: t) =
-      bif n == h then count n t + 1 else count n t := sorry
+      bif n == h then count n t + 1 else count n t := rfl
 
 theorem count_cons_same (n₁ n₂ : Nat) (t : NatList)
   (h : (n₁ == n₂) = true) :
     count n₁ (n₂ :: t) = count n₁ t + 1 := by
-  sorry
+  rfl
 
 theorem count_cons_diff (n₁ n₂ : Nat) (t : NatList)
   (h : (n₁ == n₂) = false) :
     count n₁ (n₂ :: t) = count n₁ t := by
-  sorry
+  rfl
 
 example : count 1 [1] = 1 := by
   rw [count_cons_same _ _ _ rfl]
   rw [count_nil]
 
-example : count 2 [2, 2] = 2 := sorry
+example : count 2 [2, 2] = 2 := rfl
 
-theorem test_count1 : count 1 [1, 1, 4] = 2 := sorry
+theorem test_count1 : count 1 [1, 1, 4] = 2 := rfl
 
-theorem test_count2 : count 5 [1, 1, 4] = 0 := sorry
+theorem test_count2 : count 5 [1, 1, 4] = 0 := rfl
 
 --  (End of exercise)
 
@@ -506,35 +521,38 @@ theorem test_count2 : count 5 [1, 1, 4] = 0 := sorry
 --  proof is computationally straightforward — compute both sides of the
 --  equality and check whether they are the same.
 
-example : count 1 [1, 2, 3, 1, 4, 1] = 3 := sorry
-example : count 6 [1, 2, 3, 1, 4, 1] = 0 := sorry
+example : count 1 [1, 2, 3, 1, 4, 1] = 3 := rfl
+example : count 6 [1, 2, 3, 1, 4, 1] = 0 := rfl
 
 --  ### Membership
 
 --  ### Exercise (1 star): membership ⭐
 
-def member (n : Nat) (l : NatList) : Bool := sorry
+def member (n : Nat) (l : NatList) : Bool :=
+  match l with
+  |[] => false
+  |h::t => bif n == h then true else (member n t)
 
-theorem member_nil (n : Nat) : member n [] = false := sorry
+theorem member_nil (n : Nat) : member n [] = false := rfl
 
 theorem member_cons_same (n₁ n₂ : Nat) (t : NatList)
   (h : (n₁ == n₂) = true) :
     member n₁ (n₂ :: t) = true := by
-  sorry
+    rw [member, h, Bool.cond_true]
 
 theorem member_cons_diff (n₁ n₂ : Nat) (t : NatList)
   (h : (n₁ == n₂) = false) :
     member n₁ (n₂ :: t) = member n₁ t := by
-  sorry
+  rw [member, h, Bool.cond_false]
 
 example : member 1 [1] = true := by
   rw [member_cons_same _ _ _ rfl]
 
-example : member 2 [1] = false := sorry
+example : member 2 [1] = false := rfl
 
-theorem test_member1 : member 1 [1, 4, 1] = true := sorry
+theorem test_member1 : member 1 [1, 4, 1] = true := rfl
 
-theorem test_member2 : member 2 [1, 4, 1] = false := sorry
+theorem test_member2 : member 2 [1, 4, 1] = false := rfl
 
 --  ### Removal
 

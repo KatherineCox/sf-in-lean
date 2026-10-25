@@ -395,12 +395,12 @@ theorem oddMembers_cons (h : Nat) (t : NatList) :
 theorem oddMembers_cons_odd (n : Nat) (l : NatList)
     (h : n.odd = true) :
     oddMembers (n :: l) = n :: oddMembers l := by
-  rfl
+  rw [oddMembers, h, Bool.cond_true]
 
 theorem oddMembers_cons_not_odd (n : Nat) (l : NatList)
     (h : n.odd = false) :
     oddMembers (n :: l) = oddMembers l := by
-  rfl
+  rw [oddMembers, h, Bool.cond_false]
 
 --  Now, we can prove that `oddMembers [1, 2]` returns `[1]` using the
 --  lemmas:
@@ -485,7 +485,7 @@ theorem test_alternate4 :
 def count (n : Nat) (l : NatList) : Nat :=
   match l with
   |[] => 0
-  |h::t => bif h == n then (1 + count n t) else (count n t)
+  |h::t => bif n == h then (count n t + 1) else (count n t)
 
 --  Now prove these lemmas, which should hold about your definition.
 
@@ -493,17 +493,18 @@ theorem count_nil (n : Nat) : count n [] = 0 := rfl
 
 theorem count_cons_def (n h : Nat) (t : NatList) :
     count n (h :: t) =
-      bif n == h then count n t + 1 else count n t := rfl
+      bif n == h then count n t + 1 else count n t := by
+    rw [count,]
 
 theorem count_cons_same (n₁ n₂ : Nat) (t : NatList)
   (h : (n₁ == n₂) = true) :
     count n₁ (n₂ :: t) = count n₁ t + 1 := by
-  rfl
+  rw [count, h, Bool.cond_true]
 
 theorem count_cons_diff (n₁ n₂ : Nat) (t : NatList)
   (h : (n₁ == n₂) = false) :
     count n₁ (n₂ :: t) = count n₁ t := by
-  rfl
+  rw [count, h, Bool.cond_false]
 
 example : count 1 [1] = 1 := by
   rw [count_cons_same _ _ _ rfl]

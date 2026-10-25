@@ -977,7 +977,11 @@ theorem reverse_append (l₁ l₂ : NatList) :
 
 theorem reverse_involutive (l : NatList) :
     l.reverse.reverse = l := by
-  sorry
+  induction l with
+  |nil => rfl
+  |cons n l' ih =>
+    rw [reverse_cons, reverse_append, ih]
+    rw [reverse_cons, reverse_nil, nil_append, cons_append, nil_append]
 
 --  There is a short solution to the next one. If you find yourself getting
 --  tangled up, step back and try to look for a simpler way.

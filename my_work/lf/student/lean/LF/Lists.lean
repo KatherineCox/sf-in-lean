@@ -968,7 +968,9 @@ theorem append_nil (l : NatList) :
 
 theorem reverse_append (l₁ l₂ : NatList) :
    (l₁ ++ l₂).reverse = l₂.reverse ++ l₁.reverse := by
-  sorry
+  induction l₁ with
+    |nil => rw [nil_append, reverse_nil, append_nil]
+    |cons n l₁' ih => rw [cons_append, reverse_cons, ih, reverse_cons, append_assoc]
 
 --  An *involution* is a function that is its own inverse. That is,
 --  applying the function twice yields the original input.

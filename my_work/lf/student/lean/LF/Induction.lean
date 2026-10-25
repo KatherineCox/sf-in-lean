@@ -817,19 +817,26 @@ inductive Bin : Type where
 --  definitions of `incr` and `binToNat`, below, with your solution from
 --  Basics, so that this file can be graded on its own.
 
-def incr (m : Bin) : Bin
-  := sorry
+def incr (m : Bin) : Bin :=
+  match m with
+  | .z => .b1 .z
+  | .b0 m => .b1 m
+  | .b1 m => .b0 (incr m)
 
-theorem incr_z : incr .z = .b1 .z := sorry
-theorem incr_b0 m : incr (.b0 m) = .b1 m := sorry
-theorem incr_b1 m : incr (.b1 m) = .b0 (incr m) := sorry
+theorem incr_z : incr .z = .b1 .z := rfl
+theorem incr_b0 m : incr (.b0 m) = .b1 m := rfl
+theorem incr_b1 m : incr (.b1 m) = .b0 (incr m) := rfl
 
-def binToNat (m : Bin) : Nat
-  := sorry
+def binToNat (m : Bin) : Nat  :=
+  match m with
+    |.z => zero
+    |.b0 m => mul (binToNat m) two
+    |.b1 m => add (mul (binToNat m) two) one
 
-theorem binToNat_z : binToNat .z = zero := sorry
-theorem binToNat_b0 m : binToNat (.b0 m) = mul (binToNat m) two := sorry
-theorem binToNat_b1 m : binToNat (.b1 m) = add (mul (binToNat m) two) one := sorry
+
+theorem binToNat_z : binToNat .z = zero := rfl
+theorem binToNat_b0 m : binToNat (.b0 m) = mul (binToNat m) two := rfl
+theorem binToNat_b1 m : binToNat (.b1 m) = add (mul (binToNat m) two) one := rfl
 
 --  THE FOLLOWING DETAILS CAN BE SKIPPED
 attribute [pp_nodot] Bin.b0 Bin.b1
@@ -859,7 +866,14 @@ attribute [pp_nodot] Bin.b0 Bin.b1
 
 theorem bin_to_nat_pres_incr (b : Bin) :
     binToNat (incr b) = (binToNat b) + one := by
-  sorry
+  induction b with
+  | z => rw [incr_z, binToNat_b1, binToNat_z, zero_mul, zero_add]
+  | b0 b ih => rw [incr_b0, binToNat_b1, binToNat_b0]
+  | b1 b ih =>
+    rw [incr_b1, binToNat_b0, ih]
+    rw [binToNat_b1]
+    rw [mul_comm, mul_two, add_shuffle3,add_assoc]
+    rw [mul_comm, mul_two]
 
 --  ### Exercise (3 stars): nat_bin_nat ⭐⭐⭐
 

@@ -1058,19 +1058,15 @@ attribute [irreducible] normalize doubleBin natToBin incr binToNat
 
 theorem natToBin_inc_eq_addone (n : Nat) :
     natToBin (n + one) = incr (natToBin n) := by
-    induction n with
-    | zero =>
-        rw [zero_add, one, natToBin_succ]
-    | succ n' ih =>
-      rw [one, add_succ, natToBin_succ, add_zero]
+    cases n with
+    | zero => rw [zero_add, one, natToBin_succ]
+    | succ n' => rw [one, add_succ, natToBin_succ, add_zero]
 
 theorem natToBin_incinc_eq_addtwo (n : Nat) :
     natToBin (n + two) = incr (incr (natToBin n)) := by
-    induction n with
-    | zero =>
-        rw [zero_add, two, natToBin_succ, one, natToBin_succ]
-    | succ n' ih =>
-      rw [two, one, add_succ, add_succ, natToBin_succ, natToBin_succ, add_zero]
+    cases n with
+    | zero => rw [zero_add, two, natToBin_succ, one, natToBin_succ]
+    | succ n' => rw [two, one, add_succ, add_succ, natToBin_succ, natToBin_succ, add_zero]
 
 theorem natToBin_doub_eq_multwo (n : Nat) :
     natToBin (n * two) = doubleBin (natToBin n) := by

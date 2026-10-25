@@ -406,7 +406,9 @@ attribute [irreducible] double
 --  instead of `rewrite`.
 
 theorem double_add (n : Nat) : double n = n + n := by
-  sorry
+  induction n with
+    |zero => rw[double_zero, zero_add]
+    |succ n' ih => rw [double_succ, ih, add_succ, succ_add]
 
 --  ## Proofs Within Proofs
 

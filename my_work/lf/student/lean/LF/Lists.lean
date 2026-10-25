@@ -988,13 +988,20 @@ theorem reverse_involutive (l : NatList) :
 
 theorem append_assoc4 (l₁ l₂ l₃ l4 : NatList) :
     l₁ ++ (l₂ ++ (l₃ ++ l4)) = ((l₁ ++ l₂) ++ l₃) ++ l4 := by
-  sorry
+  rw [append_assoc, append_assoc]
 
 --  An exercise about your implementation of `nonZeros`:
 
 theorem nonZeros_append (l₁ l₂ : NatList) :
     nonZeros (l₁ ++ l₂) = (nonZeros l₁) ++ (nonZeros l₂) := by
-  sorry
+  induction l₁ with
+  |nil => rfl
+  |cons n l₁' ih =>
+    cases n with
+    |zero => rw [nonZeros_cons_zero, cons_append, nonZeros, ih]
+    |succ n' => rw [cons_append, nonZeros_cons_nonZero, ih, nonZeros_cons_nonZero, cons_append]
+    -- rw [nonZeros_cons_nonZero, cons_append, nonZeros, ih, cons_append]
+    -- rw [cons_append, nonZeros, ih, nonZeros]
 
 --  ### Exercise (2 stars): beq ⭐⭐
 

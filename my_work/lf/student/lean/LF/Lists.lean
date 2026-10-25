@@ -1090,7 +1090,8 @@ theorem remove_does_not_increase_count (l : NatList) :
 theorem involutive_injective (f : Nat → Nat)
   (hInv : ∀ n : Nat, n = f (f n)) :
     (∀ n₁ n₂ : Nat, f n₁ = f n₂ → n₁ = n₂) := by
-  sorry
+  intro n₁ n₂ h
+  rw [hInv n₁, hInv n₂, h]
 
 --  ### Exercise (2 stars): reverse_injective (Advanced) ⭐⭐
 

@@ -1049,7 +1049,7 @@ open NatList
 
 theorem count_member_nonZero (l : NatList) :
     Nat.ble 1 (count 1 (1 :: l)) = true := by
-  rw [count_cons_same, Nat.ble, Nat.ble]
+  rw [count_cons_same _ _ _ rfl, Nat.ble, Nat.ble]
 
 --  (End of exercise)
 

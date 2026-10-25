@@ -1008,28 +1008,35 @@ theorem nonZeros_append (l₁ l₂ : NatList) :
 --  Fill in the definition of `beq`, which compares lists of numbers for
 --  equality. Prove that `beq l l` yields `true` for every list `l`.
 
-def beq (l₁ l₂ : NatList) : Bool := sorry
+def beq (l₁ l₂ : NatList) : Bool :=
+  match l₁, l₂ with
+  |[], [] => true
+  |[], _ => false
+  |_, [] => false
+  |h₁::t₁, h₂::t₂ => bif h₁ == h₂ then beq t₁ t₂ else false
 
-theorem beq_nil : beq [] [] = true := sorry
+theorem beq_nil : beq [] [] = true := rfl
 
 theorem beq_cons_same (h₁ h₂ : Nat) (t₁ t₂ : NatList)
   (h : (h₁ == h₂) = true) :
     beq (h₁ :: t₁) (h₂ :: t₂) = beq t₁ t₂ := by
-  sorry
+  rw [beq, h, Bool.cond_true]
 
 theorem beq_cons_diff (h₁ h₂ : Nat) (t₁ t₂ : NatList)
   (h : (h₁ == h₂) = false) :
     beq (h₁ :: t₁) (h₂ :: t₂) = false := by
-  sorry
+  rw [beq, h, Bool.cond_false]
 
-example : beq [] [] = true := sorry
-example : beq [1, 2, 3] [1, 2, 3] = true := sorry
+example : beq [] [] = true := rfl
+example : beq [1, 2, 3] [1, 2, 3] = true := rfl
 example : beq [1, 2, 3] [1, 2, 4] = false := by
-  sorry
+  rfl
 
 theorem beq_refl (l : NatList) :
     beq l l = true := by
-  sorry
+  induction l with
+  |nil => rfl
+  |cons n l' ih => rw [beq, BEq.refl n, Bool.cond_true, ih]
 
 --  ### List Exercises, Part 2
 

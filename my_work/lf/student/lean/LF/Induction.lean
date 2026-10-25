@@ -868,7 +868,7 @@ theorem bin_to_nat_pres_incr (b : Bin) :
     binToNat (incr b) = (binToNat b) + one := by
   induction b with
   | z => rw [incr_z, binToNat_b1, binToNat_z, zero_mul, zero_add]
-  | b0 b ih => rw [incr_b0, binToNat_b1, binToNat_b0]
+  | b0 b => rw [incr_b0, binToNat_b1, binToNat_b0]
   | b1 b ih =>
     rw [incr_b1, binToNat_b0, ih]
     rw [binToNat_b1]
@@ -992,17 +992,54 @@ sf_expect_failure_in
 --  the `Bin` and *only* processes each bit once. Do not try to "look
 --  ahead" at future bits, as this will complicate the proof.
 
-def normalize (b : Bin) : Bin := sorry
+def normalize (b : Bin) : Bin :=
+  match b with
+  | .z => .z
+  | .b0 b' => doubleBin (normalize b')
+  | .b1 b' => .b1 (normalize b')
 
 --  Also specify the characterizing lemmas for this definition:
 
---  FILL IN HERE
+theorem normalize_z : normalize .z = .z := rfl
+theorem normalize_b0 : normalize (.b0 b) = doubleBin (normalize b) := rfl
+theorem normalize_b1 : normalize (.b1 b) = .b1 (normalize b) := rfl
+
 
 --  Next, it would be a good idea to do some `example` proofs to check that
 --  your definition of `normalize` works the way you intend before you
 --  proceed. They won't be graded, but do fill in a few below.
 
---  FILL IN HERE
+-- 0, 00, 000
+example (_ : Bin) : (normalize .z) = .z := by rfl
+example (_ : Bin) : (normalize (.b0 .z)) = .z := by rfl
+example (_ : Bin) : (normalize (.b0 (.b0 .z))) = .z := by rfl
+example (_ : Bin) : (normalize (.b0 (.b0 (.b0 .z)))) = .z := by rfl
+
+-- 1, 01, 001
+example (_ : Bin) : (normalize (.b1 .z)) = .b1 .z := by rfl
+example (_ : Bin) : (normalize (.b1 (.b0 .z))) = .b1 .z := by rfl
+example (_ : Bin) : (normalize (.b1 (.b0 (.b0 .z)))) = .b1 .z := by rfl
+
+-- 10, 010, 0010
+example (_ : Bin) : (normalize (.b0 (.b1 .z))) = .b0 (.b1 .z) := by rfl
+example (_ : Bin) : (normalize (.b0 (.b1 (.b0 .z)))) = .b0 (.b1 .z) := by rfl
+example (_ : Bin) : (normalize (.b0 (.b1 (.b0 (.b0 .z))))) = .b0 (.b1 .z) := by rfl
+
+-- 11, 011, 0011
+example (_ : Bin) : (normalize (.b1 (.b1 .z))) = .b1 (.b1 .z) := by rfl
+example (_ : Bin) : (normalize (.b1 (.b1 (.b0 .z)))) = .b1 (.b1 .z) := by rfl
+example (_ : Bin) : (normalize (.b1 (.b1 (.b0 (.b0 .z))))) = .b1 (.b1 .z) := by rfl
+
+-- 100, 0100, 00100
+example (_ : Bin) : (normalize (.b0 (.b0 (.b1 .z)))) = .b0 (.b0 (.b1 .z)) := by rfl
+example (_ : Bin) : (normalize (.b0 (.b0 (.b1 (.b0 .z))))) = .b0 (.b0 (.b1 .z)) := by rfl
+example (_ : Bin) : (normalize (.b0 (.b0 (.b1 (.b0 (.b0 .z)))))) = .b0 (.b0 (.b1 .z)) := by rfl
+
+-- 101, 0101, 00101
+example (_ : Bin) : (normalize (.b1 (.b0 (.b1 .z)))) = .b1 (.b0 (.b1 .z)) := by rfl
+example (_ : Bin) : (normalize (.b1 (.b0 (.b1 (.b0 .z))))) = .b1 (.b0 (.b1 .z)) := by rfl
+example (_ : Bin) : (normalize (.b1 (.b0 (.b1 (.b0 (.b0 .z)))))) = .b1 (.b0 (.b1 .z)) := by rfl
+
 
 --  Now that we have defined all of our functions and their characterizing
 --  lemmas, we mark the definitions irreducible as usual. From here on,
@@ -1019,11 +1056,14 @@ attribute [irreducible] normalize doubleBin natToBin incr binToNat
 --  have one lemma for the `b0` case (which also makes use of
 --  `double_incr_bin`) and another for the `b1` case.
 
---  FILL IN HERE
-
 theorem bin_nat_bin (b : Bin) :
     natToBin (binToNat b) = normalize b := by
-  sorry
+  induction b with
+  | z => rw [binToNat_z, natToBin_zero, normalize_z]
+  | b0 b' ih =>
+    rw [binToNat_b0]
+    rw [normalize_b0, ←ih]
+  | b1 b' ih => sorry
 
 --  (End of exercise)
 

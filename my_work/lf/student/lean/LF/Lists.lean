@@ -962,7 +962,9 @@ theorem length_append (l₁ l₂ : NatList) :
 
 theorem append_nil (l : NatList) :
     l ++ [] = l := by
-  sorry
+  induction l with
+    |nil => rfl
+    |cons n l' ih => rw [cons_append,ih]
 
 theorem reverse_append (l₁ l₂ : NatList) :
    (l₁ ++ l₂).reverse = l₂.reverse ++ l₁.reverse := by

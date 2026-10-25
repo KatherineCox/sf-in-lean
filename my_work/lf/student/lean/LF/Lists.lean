@@ -1049,7 +1049,7 @@ open NatList
 
 theorem count_member_nonZero (l : NatList) :
     Nat.ble 1 (count 1 (1 :: l)) = true := by
-  sorry
+  rw [count_cons_same, Nat.ble, Nat.ble]
 
 --  (End of exercise)
 
@@ -1066,7 +1066,12 @@ theorem ble_self_succ (n : Nat) :
 
 theorem remove_does_not_increase_count (l : NatList) :
     Nat.ble (count 0 (removeOne 0 l)) (count 0 l) = true := by
-  sorry
+  induction l with
+  | nil => rw [removeOne_nil, count_nil, Nat.ble]
+  | cons n l' ih =>
+    cases n with
+      |zero => rw [removeOne_cons_same _ _ _ rfl, count_cons_same _ _ _ rfl, ble_self_succ  ]
+      |succ n' => rw [removeOne_cons_diff _ _ _ rfl, count_cons_diff _ _ _ rfl, count_cons_diff _ _ _ rfl, ih]
 
 --  ### Exercise (3 stars): count_append (Optional, Manually graded) ⭐⭐⭐
 

@@ -675,7 +675,9 @@ theorem add_comm' (n m : Nat) : n + m = m + n := by
 
 theorem mul_one (p : Nat) :
     one * p = p := by
-  sorry
+  induction p with
+  | zero => rw [mul_zero]
+  | succ n ih => rw [mul_succ, ih, one, add_succ, add_zero]
 
 --  (End of exercise)
 
@@ -688,7 +690,9 @@ theorem mul_one (p : Nat) :
 
 theorem mul_two (p : Nat) :
     two * p = p + p := by
-  sorry
+  induction p with
+  | zero => rw [mul_zero, add_zero]
+  | succ n ih => rw [mul_succ, ih, two, one, add_succ, add_succ, add_zero, add_succ, succ_add]
 
 --  ### Exercise (3 stars): mul_comm ⭐⭐⭐
 

@@ -145,11 +145,12 @@ sf_expect_failure_in
 
 theorem mul_three (n : Nat) :
     3 * n = n + n + n := by
-  sorry
+  rw [Nat.add_one_mul, Nat.add_one_mul, Nat.one_mul]
 
 theorem mul_three_beq (n : Nat) :
     (3 * n == n + n + n) = true := by
-  sorry
+  rw [mul_three]
+  exact ReflBEq.rfl
 
 --  ## Structuring Proofs with `calc`
 
@@ -216,7 +217,12 @@ theorem succ_mul_succ (n m : Nat) :
 
 theorem succ_mul_succ' (n m : Nat) :
     (n + 1) * (m + 1) = n * m + n + m + 1 := by
-  sorry
+  calc (n + 1) * (m + 1)
+    _ = n * (m + 1) + 1 * (m + 1) := by rw [Nat.add_mul]
+    _ = n * (m + 1) + (m + 1) := by rw [Nat.one_mul]
+    _ = n * m + n * 1 + (m + 1) := by rw [Nat.mul_add]
+    _ = n * m + n + (m + 1) := by rw [Nat.mul_one]
+    _ = n * m + n + m + 1 := by rw [←Nat.add_assoc]
 
 --  (End of exercise)
 
@@ -300,7 +306,7 @@ example (n : Nat) : addThrice n = n + addTwice n := by
 --  as appropriate.
 
 theorem rwUnfold (n m : Nat) (h : m = n) : addThrice m = n + (n + n) := by
-  sorry
+  rw [h, addThrice, Nat.add_assoc]
 
 --  (End of exercise)
 
@@ -478,7 +484,9 @@ example (n : Nat) : Nat.double (n + 0) = Nat.double n := by
 
 theorem Nat.even_succ (n : Nat) :
     (n + 1).even = !(n.even) := by
-  sorry
+  induction n with
+  | zero => rfl
+  | succ n ih => rw [even, ih, Bool.not_not]
 
 --  (End of exercise)
 
@@ -493,13 +501,17 @@ theorem Nat.double_succ (n : Nat) : (n + 1).double = n.double + 2 := by rfl
 --  ### Exercise (2 stars): double_add ⭐⭐
 
 theorem Nat.double_add (n : Nat) : n.double = n + n := by
-  sorry
+  induction n with
+  | zero => rfl
+  | succ n ih =>
+    rw [double_succ, ih, succ_add, add_succ, Nat.add_assoc]
 
 --  ### Exercise (2 stars): double_mul ⭐⭐
 
 theorem Nat.double_mul (n : Nat) : n.double = 2 * n := by
-  sorry
-
+  cases n with
+  | zero => rfl
+  | succ n => rw [double_add, Nat.two_mul]
 --  (End of exercise)
 
 --  In the remainder of the book, we use Lean's built-in natural numbers

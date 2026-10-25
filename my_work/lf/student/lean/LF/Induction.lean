@@ -747,15 +747,26 @@ theorem all3_spec (b c : Bool) :
 
 theorem right_distrib (n m p : Nat) :
     (n + m) * p = (n * p) + (m * p) := by
-  sorry
+  induction p with
+  | zero => rw [mul_zero, mul_zero, mul_zero, add_zero]
+  | succ p' ih =>
+    rewrite [mul_succ, ih]
+    rewrite [add_shuffle3, add_assoc, mul_comm, ←succ_mul, mul_comm]
+--    rw []
+    rw [add_shuffle3, mul_comm m p', ←add_assoc, ←succ_mul, mul_comm (succ p') m]
+
 
 theorem left_distrib (n m p : Nat) :
     p * (n + m) = (p * n) + (p * m) := by
-  sorry
+  rw [mul_comm, right_distrib, mul_comm p n, mul_comm m p]
 
 theorem mul_assoc (n m p : Nat) :
     n * (m * p) = (n * m) * p := by
-  sorry
+  induction p with
+  | zero => rw [mul_zero, mul_zero, mul_zero]
+  | succ p' ih =>
+    rw [mul_succ, left_distrib, ih]
+    rw [mul_succ]
 
 --  ## A New Tactic Combinator: `<;>`
 

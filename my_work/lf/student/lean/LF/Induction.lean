@@ -1080,12 +1080,12 @@ theorem natToBin_doub_eq_multwo (n : Nat) :
       rw [natToBin_succ, double_incr_bin, ←ih]
       rw [succ_mul, natToBin_incinc_eq_addtwo]
 
-theorem doubleBin_b0b (b : Bin) :
-  doubleBin b = .b0 b := by
+theorem incr_doubleBin (b : Bin) :
+  incr (doubleBin b) = .b1 b := by
     cases b with
-    | z => rw [doubleBin_z]
-    | b0 n => sorry
-    | b1 n => sorry
+    | z => rw [doubleBin_z, incr_z]
+    | b0 n => rw [doubleBin_b0, incr_b0]
+    | b1 n => rw [doubleBin_b1, incr_b0]
 
 
 
@@ -1098,7 +1098,7 @@ theorem bin_nat_bin (b : Bin) :
     rw [normalize_b0, ←ih]
   | b1 b' ih =>
     rw [binToNat_b1, natToBin_inc_eq_addone, natToBin_doub_eq_multwo]
-    rw [normalize_b1, ←ih, ←incr_b0,]
+    rw [normalize_b1, ←ih, incr_doubleBin]
 
 --  (End of exercise)
 

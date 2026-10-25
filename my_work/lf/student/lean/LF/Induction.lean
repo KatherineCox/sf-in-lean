@@ -1056,14 +1056,49 @@ attribute [irreducible] normalize doubleBin natToBin incr binToNat
 --  have one lemma for the `b0` case (which also makes use of
 --  `double_incr_bin`) and another for the `b1` case.
 
+theorem natToBin_inc_eq_addone (n : Nat) :
+    natToBin (n + one) = incr (natToBin n) := by
+    induction n with
+    | zero =>
+        rw [zero_add, one, natToBin_succ]
+    | succ n' ih =>
+      rw [one, add_succ, natToBin_succ, add_zero]
+
+theorem natToBin_incinc_eq_addtwo (n : Nat) :
+    natToBin (n + two) = incr (incr (natToBin n)) := by
+    induction n with
+    | zero =>
+        rw [zero_add, two, natToBin_succ, one, natToBin_succ]
+    | succ n' ih =>
+      rw [two, one, add_succ, add_succ, natToBin_succ, natToBin_succ, add_zero]
+
+theorem natToBin_doub_eq_multwo (n : Nat) :
+    natToBin (n * two) = doubleBin (natToBin n) := by
+    induction n with
+    | zero => rw [zero_mul, natToBin_zero, doubleBin_z]
+    | succ n' ih =>
+      rw [natToBin_succ, double_incr_bin, ←ih]
+      rw [succ_mul, natToBin_incinc_eq_addtwo]
+
+theorem doubleBin_b0b (b : Bin) :
+  doubleBin b = .b0 b := by
+    cases b with
+    | z => rw [doubleBin_z]
+    | b0 n => sorry
+    | b1 n => sorry
+
+
+
 theorem bin_nat_bin (b : Bin) :
     natToBin (binToNat b) = normalize b := by
   induction b with
   | z => rw [binToNat_z, natToBin_zero, normalize_z]
   | b0 b' ih =>
-    rw [binToNat_b0]
+    rw [binToNat_b0, natToBin_doub_eq_multwo]
     rw [normalize_b0, ←ih]
-  | b1 b' ih => sorry
+  | b1 b' ih =>
+    rw [binToNat_b1, natToBin_inc_eq_addone, natToBin_doub_eq_multwo]
+    rw [normalize_b1, ←ih, ←incr_b0,]
 
 --  (End of exercise)
 

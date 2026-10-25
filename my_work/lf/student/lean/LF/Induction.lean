@@ -318,19 +318,43 @@ theorem beq_self (n : Nat) : (n == n) = true := by
 
 theorem zero_mul (n : Nat) :
     zero * n = zero := by
-  sorry
+  induction n with
+    |zero => rewrite [mul_zero]; rfl
+    |succ n' ih =>
+      rewrite [mul_succ]
+      rewrite [ih]
+      rewrite [add_zero]
+      rfl
 
 theorem succ_add (n m : Nat) :
     (succ n) + m = succ (n + m) := by
-  sorry
+  induction m with
+    |zero => rewrite [add_zero, add_zero]; rfl
+    |succ m' ih =>
+      rewrite [add_succ]
+      rewrite [ih]
+      rewrite [add_succ]
+      rfl
 
 theorem add_comm (n m : Nat) :
     n + m = m + n := by
-  sorry
+  induction m with
+    |zero => rewrite [add_zero, zero_add]; rfl
+    |succ m' ih =>
+      rewrite [add_succ]
+      rewrite [ih]
+      rewrite [succ_add]
+      rfl
 
 theorem add_assoc (n m p : Nat) :
     n + (m + p) = (n + m) + p := by
-  sorry
+  induction p with
+    |zero => rewrite [add_zero, add_zero]; rfl
+    |succ p' ih =>
+      rewrite [add_succ, add_succ]
+      rewrite [ih]
+      rewrite [add_succ]
+      rfl
 
 --  ### Tip: The `rw` Tactic
 

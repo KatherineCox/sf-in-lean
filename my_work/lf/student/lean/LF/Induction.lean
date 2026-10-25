@@ -880,9 +880,13 @@ theorem bin_to_nat_pres_incr (b : Bin) :
 --  Write a function to convert natural numbers to binary numbers. Also
 --  write some simplification lemmas for it.
 
-def natToBin (n : Nat) : Bin := sorry
+def natToBin (n : Nat) : Bin :=
+  match n with
+  | .zero => .z
+  | .succ n' => incr (natToBin n')
 
---  FILL IN HERE
+theorem natToBin_zero : natToBin zero = .z := rfl
+theorem natToBin_succ : natToBin (succ n) = incr (natToBin n) := rfl
 
 --  Prove that, if we start with any `Nat`, convert it to `Bin`, and
 --  convert it back, we get the `Nat` that we started with.
@@ -896,7 +900,9 @@ def natToBin (n : Nat) : Bin := sorry
 
 theorem nat_bin_nat (n : Nat) :
     binToNat (natToBin n) = n := by
-  sorry
+  induction n with
+  | zero => rw [natToBin_zero, binToNat_z]
+  | succ n ih => rw [natToBin_succ, bin_to_nat_pres_incr, ih, one, add_one, add_zero]
 
 --  ## Bin to Nat and Back (Advanced)
 

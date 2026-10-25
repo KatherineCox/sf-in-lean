@@ -727,15 +727,23 @@ theorem mul_comm (m n : Nat) :
 
 theorem ble_refl (n : Nat) :
     Nat.ble n n = true := by
-  sorry
+  induction n with
+  | zero => rw [zero_ble]
+  | succ n ih => rw [succ_ble_succ, ih]
 
 theorem andb_false (b : Bool) :
     (b && false) = false := by
-  sorry
+  rw [Bool.and_false]
 
 theorem all3_spec (b c : Bool) :
     ((b && c) || ((!b) || (!c))) = true := by
-  sorry
+  cases b with
+  | false => rw [Bool.false_and, Bool.false_or, Bool.not_false, Bool.true_or]
+  | true =>
+      rewrite [Bool.true_and, Bool.not_true, Bool.false_or]
+      cases c with
+      | false => rw [Bool.not_false, Bool.or_true]
+      | true => rw [Bool.true_or]
 
 theorem right_distrib (n m p : Nat) :
     (n + m) * p = (n * p) + (m * p) := by

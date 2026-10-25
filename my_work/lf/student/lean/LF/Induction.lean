@@ -924,25 +924,40 @@ sf_expect_failure_in
 
 theorem double_incr (n : Nat) :
     double (succ n) = (double n) + two := by
-  sorry
+  rw [double_succ, two, add_succ, one, add_one, add_zero]
 
 --  Now define a similar doubling function for `Bin`.
 
-def doubleBin (b : Bin) : Bin := sorry
+def doubleBin (b : Bin) : Bin :=
+  match b with
+  | .z => .z
+  | _ => .b0 b
 
 --  Fill in the characterizing lemmas for this definition below:
 
---  FILL IN HERE
+theorem doubleBin_z : doubleBin .z = .z := rfl
+theorem doubleBin_b0 : doubleBin (.b0 b) = (.b0 (.b0 b)) := rfl
+theorem doubleBin_b1 : doubleBin (.b1 b) = (.b0 (.b1 b)) := rfl
+
 
 --  Check that your function correctly doubles zero.
 
-theorem double_bin_zero : doubleBin .z = .z := sorry
+theorem double_bin_zero : doubleBin .z = .z := rfl
 
 --  Prove this lemma, which corresponds to `double_incr`.
 
 theorem double_incr_bin (b : Bin) :
     doubleBin (incr b) = incr (incr (doubleBin b)) := by
-  sorry
+  cases b with
+  | z =>
+    rw [incr_z, doubleBin_b1]
+    rw [doubleBin_z, incr_z, incr_b1, incr_z]
+  | b0 b' =>
+    rw [incr_b0, doubleBin_b1]
+    rw [doubleBin_b0, incr_b0, incr_b1, incr_b0]
+  | b1 b' =>
+    rw [incr_b1, doubleBin_b0]
+    rw [doubleBin_b1, incr_b0, incr_b1, incr_b1]
 
 --  (End of exercise)
 

@@ -626,19 +626,22 @@ theorem test_removeAll2 : count 5 (removeAll 5 [2, 5, 5, 5, 1]) = 0 := rfl
 
 --  ### Exercise (3 stars): included (Optional) ⭐⭐⭐
 
-def included (l₁ l₂ : NatList) : Bool := sorry
+def included (l₁ l₂ : NatList) : Bool :=
+  match l₁ with
+  |[] => true
+  |h::t => bif (member h l₂) then (included t (removeOne h l₂)) else false
 
-theorem included_nil (l₂ : NatList) : included nil l₂ = true := sorry
+theorem included_nil (l₂ : NatList) : included nil l₂ = true := rfl
 
 theorem included_cons_member (n : Nat) (l₁ l₂ : NatList)
   (h : member n l₂ = true) :
     included (cons n l₁) l₂ = included l₁ (removeOne n l₂) := by
-  sorry
+  rw [included, h, Bool.cond_true]
 
 theorem included_cons_nonmember (n : Nat) (l₁ l₂ : NatList)
   (h : member n l₂ = false) :
     included (cons n l₁) l₂ = false := by
-  sorry
+  rw [included, h, Bool.cond_false]
 
 example : included [1] [2, 1] = true := by
   rw [included_cons_member]
@@ -646,11 +649,11 @@ example : included [1] [2, 1] = true := by
   · rw [member_cons_diff _ _ _ rfl]
     rw [member_cons_same _ _ _ rfl]
 
-example : included [1, 1] [2, 1, 4, 1] = true := sorry
+example : included [1, 1] [2, 1, 4, 1] = true := rfl
 
-theorem test_included1 : included [1, 2] [2, 1, 4, 1] = true := sorry
+theorem test_included1 : included [1, 2] [2, 1, 4, 1] = true := rfl
 
-theorem test_included2 : included [1, 2, 2] [2, 1, 4, 1] = false := sorry
+theorem test_included2 : included [1, 2, 2] [2, 1, 4, 1] = false := rfl
 
 --  ## Reasoning About Lists
 

@@ -700,17 +700,21 @@ theorem mul_two (p : Nat) :
 --  `add_shuffle3`. You don't need to use induction.
 
 theorem add_shuffle3 (n m p : Nat) : n + m + p = n + p + m := by
-  sorry
+  rw [←add_assoc, add_comm m p, add_assoc]
 
 theorem succ_mul (m n : Nat) :
     (succ n) * m = (n * m) + m := by
-  sorry
+  induction m with
+  | zero => rw [mul_zero, mul_zero, add_zero]
+  | succ m' ih => rw [mul_succ, ih, mul_succ, add_succ, add_succ, add_shuffle3]
 
 --  Now prove commutativity of multiplication.
 
 theorem mul_comm (m n : Nat) :
     m * n = n * m := by
-  sorry
+  induction n with
+  | zero => rw [mul_zero, zero_mul]
+  | succ n ih => rw [mul_succ, ih, ←succ_mul]
 
 --  ### Exercise (3 stars): more_exercises (Optional) ⭐⭐⭐
 

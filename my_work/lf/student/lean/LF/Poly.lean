@@ -615,16 +615,18 @@ example : nth? [true] 2 = none := by rfl
 --  function from the last chapter. Be sure that it passes the unit tests
 --  below.
 
-def head? {α : Type} (l : List α) : Option α := sorry
+def head? {α : Type} (l : List α) : Option α :=
+  match l with
+  |[] => none
+  |h::_ => some h
 
-theorem head?_nil {α : Type} : head? ([] : List α) = none := sorry
+theorem head?_nil {α : Type} : head? ([] : List α) = none := rfl
 
-theorem head?_cons {α : Type} {head : α} {tail : List α} : head? (head :: tail) = some head :=
-  sorry
+theorem head?_cons {α : Type} {head : α} {tail : List α} : head? (head :: tail) = some head := rfl
 
-theorem test_head?1 : head? [1, 2] = some 1 := sorry
+theorem test_head?1 : head? [1, 2] = some 1 := rfl
 
-theorem test_head?2 : head? [[1], [2]] = some [1] := sorry
+theorem test_head?2 : head? [[1], [2]] = some [1] := rfl
 
 --  ## Functions as Data
 

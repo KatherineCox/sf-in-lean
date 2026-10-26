@@ -883,18 +883,19 @@ theorem map_rev {α : Type} {β : Type} {f : α → β} {l : List α} :
 --      flatMap (fun n => [n, n + 1, n + 2]) [1, 5, 10]
 --        = [1, 2, 3, 5, 6, 7, 10, 11, 12]
 
-def flatMap {α β : Type} (f : α → List β) (l : List α) : List β := sorry
+def flatMap {α β : Type} (f : α → List β) (l : List α) : List β := match l with
+  |[] => []
+  |h::t => f h ++ flatMap f t
 
 theorem test_flatMap : flatMap (fun n => [n, n, n]) [1, 5, 4]
-  = [1, 1, 1, 5, 5, 5, 4, 4, 4] := sorry
+  = [1, 1, 1, 5, 5, 5, 4, 4, 4] := rfl
 
 --  (End of exercise)
 
-theorem flatMap_nil {α : Type} {β : Type} (f : α → List β) : flatMap f [] = [] :=
-   sorry
+theorem flatMap_nil {α : Type} {β : Type} (f : α → List β) : flatMap f [] = [] := rfl
 
 theorem flatMap_cons {α : Type} {β : Type} (f : α → List β) h t :
-   flatMap f (h :: t) = f h ++ flatMap f t := sorry
+   flatMap f (h :: t) = f h ++ flatMap f t := rfl
 
 --  Lists are not the only inductive type for which `map` makes sense. Here
 --  is a `map` for the `Option` type:

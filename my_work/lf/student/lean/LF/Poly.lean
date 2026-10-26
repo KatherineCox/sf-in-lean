@@ -1318,11 +1318,27 @@ theorem mult_3 : mult two three = plus three three := rfl
 --  Hint: the type argument to a Church numeral need not just be `α`.
 --  Finding the right type can be tricky.
 
-def exp (n m : CNat) : CNat := sorry
+def exp (n m : CNat) : CNat :=
+  fun (α : Type) (f : α → α) (x : α) =>
+  -- fun (α : Type) (f : α → α) (x : α) => m α (n α (n α f)) x
+  -- fun (α : Type) (f : α → α) (x : α) => m α (n α f) x
+  -- fun (α : Type) (f : α → α) (x : α) => m α (n α f) (n α f x)
+  -- fun (α : Type) (f : α → α) (x : α) => m α (n α (n α f)) x
+  -- fun (α : Type) (f : α → α) (x : α) => (n α f x)
+  -- fun (α : Type) (f : α → α) (x : α) => n α (n α f) x
 
-theorem exp_1 : exp two two = plus two two := sorry
-theorem exp_2 : exp three zero = one := sorry
-theorem exp_3 : exp three two = plus (mult two (mult two two)) one := sorry
+  -- n a f x          # this is n (applied to f and x)
+  -- n α (m α f) x    # this is mul, i.e. n*m (applied to f and x)
+  -- a single multiply would
+        -- need a numeral as input
+        -- return a numeral as output
+        -- a numeral's signature is (α → α) → α → α
+        -- a single multiply
+
+
+theorem exp_1 : exp two two = plus two two := rfl
+theorem exp_2 : exp three zero = one := rfl
+theorem exp_3 : exp three two = plus (mult two (mult two two)) one := rfl
 
 --  (End of exercise)
 

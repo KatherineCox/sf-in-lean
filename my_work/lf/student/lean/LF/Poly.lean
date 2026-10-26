@@ -1301,14 +1301,14 @@ theorem plus_3 : plus (plus two two) three = plus one (plus three three) := rfl
 --  paradox in which a type contains itself. So leave the type argument
 --  unchanged.
 
-def mult (n m : CNat) : CNat := sorry
+def mult (n m : CNat) : CNat :=
+  fun (α : Type) (f : α → α) (x : α) => n α (m α f) x
 
+theorem mult_1 : mult one one = one := rfl
+theorem mult_2 : mult zero (plus three three) = zero := rfl
+theorem mult_3 : mult two three = plus three three := rfl
 
-theorem mult_1 : mult one one = one := sorry
-theorem mult_2 : mult zero (plus three three) = zero := sorry
-theorem mult_3 : mult two three = plus three three := sorry
-
---  ### Exercise (3 stars): church_exp (Advanced) ⭐⭐⭐
+--  ### Exercise (3 stars): church_exp (Advanced) rfl
 
 --  Exponentiation:
 --

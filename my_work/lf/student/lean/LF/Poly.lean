@@ -554,16 +554,22 @@ theorem zip_cons_cons {α β : Type} {x : α} {y : β} {l₁ : List α} {l₂ : 
 --  you can use `dsimp only` to simplify expressions accessing the `fst` or
 --  `snd` elements of a pair.
 
-def unzip {α : Type} {β : Type} (l : List (α × β)) : List α × List β := sorry
+def unzip {α : Type} {β : Type} (l : List (α × β)) : List α × List β :=
+  match l with
+  |[] => ([], [])
+  |h::t => (h.fst::(unzip t).fst, h.snd::(unzip t).snd)
 
-theorem unzip_test1 : unzip [(1, false), (2, true)] = ([1, 2], [false, true]) := by
-  sorry
+theorem unzip_nil {α : Type} {β : Type}: unzip [] = (([],[]) : List α × List β) := by rfl
+
+theorem unzip_cons: unzip ( ((x:α),(y:β)) :: l:List (α × β) ) = ( x::(unzip l).fst, y::(unzip l).snd) := rfl
+
+theorem unzip_test1 : unzip [(1, false), (2, true)] = ([1, 2], [false, true]) := by rfl
 
 theorem unzip_test_fst : (unzip [(1, false), (2, true)]).fst = [1, 2] := by
-  sorry
+  rw [unzip_cons, unzip_cons, unzip_nil]
 
 theorem unzip_test_snd : (unzip [(1, false), (2, true)]).snd = [false, true] := by
-  sorry
+  rw [unzip_cons, unzip_cons, unzip_nil]
 
 --  ### Polymorphic Options
 

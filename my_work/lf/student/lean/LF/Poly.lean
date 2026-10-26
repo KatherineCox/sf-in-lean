@@ -1129,7 +1129,8 @@ def prodCurry {α β γ : Type} (f : α × β → γ) (x : α) (y : β) : γ := 
 --  As an exercise, define its inverse, `prodUncurry`. Then prove the
 --  theorems below to show that the two are really inverses.
 
-def prodUncurry {α β γ : Type} (f : α → β → γ) (p : α × β) : γ := sorry
+def prodUncurry {α β γ : Type} (f : α → β → γ) (p : α × β) : γ :=
+  f p.fst p.snd
 
 --  As a (trivial) example of the usefulness of currying, we can use it to
 --  shorten one of the examples that we saw above:
@@ -1150,11 +1151,11 @@ example : map (Nat.add 3) [2, 0, 2] = [5, 3, 5] := by rfl
 
 theorem uncurry_curry {α β γ : Type} {x : α} {y : β} {f : α → β → γ} :
     prodCurry (prodUncurry f) x y = f x y := by
-  sorry
+  rw [prodCurry, prodUncurry]
 
 theorem curry_uncurry {α β γ : Type} {p : α × β} {f : α × β → γ} :
     prodUncurry (prodCurry f) p = f p := by
-  sorry
+  rw [prodUncurry, prodCurry]
 
 --  ### Exercise (2 stars): nth_error_informal (Advanced, Optional, Manually graded) ⭐⭐
 

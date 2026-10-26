@@ -771,11 +771,12 @@ example : filter (·.length == 1)
 --  `filterEvenGt7` that takes a list of natural numbers as input and
 --  returns a list of just those that are even and greater than `7`.
 
-def filterEvenGt7 (l : List Nat) : List Nat := sorry
+def filterEvenGt7 (l : List Nat) : List Nat :=
+  filter (fun n => Nat.even n &&  n > 7) l
 
-theorem test_filterEvenGt7_1 : filterEvenGt7 [1, 2, 6, 9, 10, 3, 12, 8] = [10, 12, 8] := sorry
+theorem test_filterEvenGt7_1 : filterEvenGt7 [1, 2, 6, 9, 10, 3, 12, 8] = [10, 12, 8] := rfl
 
-theorem test_filterEvenGt7_2 : filterEvenGt7 [5, 2, 6, 19, 129] = [] := sorry
+theorem test_filterEvenGt7_2 : filterEvenGt7 [5, 2, 6, 19, 129] = [] := rfl
 
 --  ### Exercise (3 stars): partition ⭐⭐⭐
 

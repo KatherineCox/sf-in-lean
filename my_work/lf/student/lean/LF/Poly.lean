@@ -1319,13 +1319,15 @@ theorem mult_3 : mult two three = plus three three := rfl
 --  Finding the right type can be tricky.
 
 def exp (n m : CNat) : CNat :=
-  fun (α : Type) (f : α → α) (x : α) =>
+  fun (α : Type) (f : α → α) (x : α) => (m (α → α) (n α) f) x
   -- fun (α : Type) (f : α → α) (x : α) => m α (n α (n α f)) x
   -- fun (α : Type) (f : α → α) (x : α) => m α (n α f) x
   -- fun (α : Type) (f : α → α) (x : α) => m α (n α f) (n α f x)
   -- fun (α : Type) (f : α → α) (x : α) => m α (n α (n α f)) x
   -- fun (α : Type) (f : α → α) (x : α) => (n α f x)
   -- fun (α : Type) (f : α → α) (x : α) => n α (n α f) x
+
+  --def CNat := ∀ (α : Type), (α → α) → α → α
 
   -- n a f x          # this is n (applied to f and x)
   -- n α (m α f) x    # this is mul, i.e. n*m (applied to f and x)

@@ -428,15 +428,21 @@ theorem rev_cons {α : Type} {x : α} {l : List α} :
 
 theorem append_nil {α : Type} {l : List α} :
     l ++ [] = l := by
-  sorry
+  induction l with
+  | nil => rw [List.nil_append]
+  | cons h t ih => rw [List.cons_append, ih]
 
 theorem append_assoc {α : Type} {l₁ l₂ l₃ : List α} :
     l₁ ++ l₂ ++ l₃ = l₁ ++ (l₂ ++ l₃) := by
-  sorry
+  induction l₁ with
+  |nil => rw [List.nil_append, List.nil_append]
+  |cons h t ih => rw [List.cons_append, List.cons_append, ih, List.cons_append]
 
 theorem append_length {α : Type} {l₁ l₂ : List α} :
     (l₁ ++ l₂).length = l₁.length + l₂.length := by
-  sorry
+  induction l₁ with
+  |nil => rw [List.nil_append, List.length_nil, Nat.zero_add]
+  |cons h t ih => rw [List.cons_append, List.length_cons, ih, List.length_cons, Nat.add_right_comm]
 
 --  ### Exercise (2 stars): more_poly_exercises ⭐⭐
 

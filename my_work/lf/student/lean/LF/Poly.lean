@@ -1078,7 +1078,11 @@ example : foldLength [4, 7, 0] = 3 := by rfl
 
 theorem fold_length_correct {α : Type} {l : List α} :
     foldLength l = l.length := by
-  sorry
+    rw [foldLength]
+    induction l with
+    |nil => rw [fold, List.length_nil]
+    |cons n l' ih =>
+      rw [fold, ih, List.length_cons]
 
 --  ### Exercise (3 stars): fold_map (Manually graded) ⭐⭐⭐
 

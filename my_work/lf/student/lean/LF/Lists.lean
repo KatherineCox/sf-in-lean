@@ -1102,7 +1102,7 @@ theorem involutive_injective (f : Nat → Nat)
 
 theorem reverse_injective (l₁ l₂ : NatList)
     (h : l₁.reverse = l₂.reverse) : l₁ = l₂ := by
-  sorry
+  rw [←reverse_involutive l₁,←reverse_involutive l₂, h]
 
 --  ## Options
 
@@ -1164,19 +1164,27 @@ theorem NatOption.elim_some (d₁ d₂ : Nat) : elim d₁ (.some d₂) = d₂ :=
 --  Using the same idea, fix the `head` function from earlier so we don't
 --  have to pass a default element for the `nil` case.
 
-def head? (l : NatList) : NatOption := sorry
+def head? (l : NatList) : NatOption :=
+  match l with
+  |[] => .none
+  |h::_ => .some h
 
-example : head? [] = .none := sorry
-theorem test_head?1 : head? [1] = .some 1 := sorry
-theorem test_head?2 : head? [5, 6] = .some 5 := sorry
+example : head? [] = .none := rfl
+theorem test_head?1 : head? [1] = .some 1 := rfl
+theorem test_head?2 : head? [5, 6] = .some 5 := rfl
 
 --  ### Exercise (1 star): option_elim_head? (Optional) ⭐
 
 --  This exercise relates your new `head?` to the old `head`.
 
+theorem head?_nil : head? [] = .none := by rfl
+theorem head?_cons (h : Nat) (t : NatList) : head? (h :: t) = .some h := by rfl
+
 theorem option_elim_head? (l : NatList) (default : Nat) :
     head default l = NatOption.elim default (head? l) := by
-  sorry
+  cases l with
+  |nil => rw [head_nil, head?_nil, NatOption.elim_none]
+  |cons n l' => rw [head_cons, head?_cons, NatOption.elim_some]
 
 --  (End of exercise)
 
@@ -1206,7 +1214,7 @@ def MyId.beq (x₁ x₂ : MyId) : Bool :=
 --  ### Exercise (1 star): MyId.beq_refl ⭐
 
 theorem MyId.beq_refl (x : MyId) : MyId.beq x x = true := by
-  sorry
+  rw [MyId.beq, BEq.refl]
 
 --  (End of exercise)
 
@@ -1274,13 +1282,14 @@ def find (x : MyId) (d : PartialMap) : NatOption :=
 
 theorem update_eq (d : PartialMap) (x : MyId) (n : Nat) :
     find x (update d x n) = .some n := by
-  sorry
+  rw [update, find, MyId.beq_refl, Bool.cond_true]
 
 --  ### Exercise (1 star): update_neq ⭐
 
 theorem update_neq (d : PartialMap) (x y : MyId) (o : Nat) :
     MyId.beq x y = false → find x (update d y o) = find x d := by
-  sorry
+  intro h
+  rw [update, find, h, Bool.cond_false]
 
 --  (End of exercise)
 

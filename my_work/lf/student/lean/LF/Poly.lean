@@ -858,11 +858,20 @@ theorem map_cons {α : Type} {β : Type} {f : α → β} {x : α} {l : List α} 
 --  Show that `map` and `List.rev` commute. (Hint: You may need to define
 --  an auxiliary lemma.)
 
---  FILL IN HERE
+theorem map_distrib {α : Type} {β : Type} {f : α → β} {l₁ l₂ : List α} : map f (l₁ ++ l₂) = (map f l₁) ++ (map f l₂) := by
+  induction l₁ with
+  |nil => rw [List.nil_append, map_nil, List.nil_append]
+  |cons n l' ih =>
+    rw [List.cons_append, map_cons, map_cons, ih, List.cons_append]
+
 
 theorem map_rev {α : Type} {β : Type} {f : α → β} {l : List α} :
     map f l.rev = (map f l).rev := by
-  sorry
+  induction l with
+  |nil => rw [rev_nil, map_nil, rev_nil]
+  |cons n l' ih =>
+    rw [rev_cons, map_cons, map_distrib, ih]
+    rw [rev_cons, map, map_nil]
 
 --  ### Exercise (2 stars): flat_map ⭐⭐
 

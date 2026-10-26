@@ -450,11 +450,15 @@ theorem append_length {α : Type} {l₁ l₂ : List α} :
 
 theorem reverse_append {α : Type} {l₁ l₂ : List α} :
     (l₁ ++ l₂).rev = l₂.rev ++ l₁.rev := by
-  sorry
+  induction l₁ with
+  |nil => rw [List.nil_append, rev_nil, append_nil]
+  |cons h t ih => rw [List.cons_append, rev_cons, ih, rev_cons, append_assoc]
 
 theorem reverse_reverse {α : Type} (l : List α) :
     l.rev.rev = l := by
-  sorry
+  induction l with
+  |nil => rw [rev_nil, rev_nil]
+  |cons h t ih => rw [rev_cons, reverse_append, ih, rev_cons, rev_nil, List.nil_append, List.cons_append, List.nil_append]
 
 --  ### Polymorphic Pairs
 

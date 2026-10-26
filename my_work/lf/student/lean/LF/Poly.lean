@@ -1279,11 +1279,12 @@ theorem scc_3 : scc two = three := rfl
 --
 --  Hint: the "zero" argument to a Church numeral need not be just `x`.
 
-def plus (n m : CNat) : CNat := sorry
+def plus (n m : CNat) : CNat :=
+  fun (α : Type) (f : α → α) (x : α) => n α f (m α f x)
 
-theorem plus_1 : plus zero one = one := sorry
-theorem plus_2 : plus two three = plus three two := sorry
-theorem plus_3 : plus (plus two two) three = plus one (plus three three) := sorry
+theorem plus_1 : plus zero one = one := rfl
+theorem plus_2 : plus two three = plus three two := rfl
+theorem plus_3 : plus (plus two two) three = plus one (plus three three) := rfl
 
 --  ### Exercise (3 stars): church_mult (Advanced) ⭐⭐⭐
 

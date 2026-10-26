@@ -1279,4 +1279,4 @@ theorem exp_3 : exp three two = plus (mult two (mult two two)) one := sorry
 
 end Church
 
--- Source revision: 2d86b23, committed 2026-10-01 22:21 UTC
+-- Source revision: 84e9604, committed 2026-10-24 23:09 UTC

@@ -1255,11 +1255,20 @@ example : two  Nat Nat.succ 0 = 2 := by rfl
 --  `fun X f x => f^(n+1) x` as output. In other words, do it `n` times,
 --  then do it once more.
 
-def scc (n : CNat) : CNat := sorry
+def scc (n : CNat) : CNat :=
+  fun (α : Type) (f : α → α) (x : α) => f (n α f x)
 
-example : scc zero = one := sorry
-theorem scc_2 : scc one = two := sorry
-theorem scc_3 : scc two = three := sorry
+-- n is a function (f x) => ...
+  -- we want to consume a numeral n
+  -- our return type is also a numeral; it has the same signature, so we can "receive" the f ourselves in the n' that we return; we don't have to try to "extract" it out of the input n
+
+-- zero = x
+-- one = f x = fun (α : Type) (f : α → α) (x : α) => f x
+-- two = f (f x)
+
+example : scc zero = one := rfl
+theorem scc_2 : scc one = two := rfl
+theorem scc_3 : scc two = three := rfl
 
 --  ### Exercise (3 stars): church_plus (Advanced) ⭐⭐⭐
 

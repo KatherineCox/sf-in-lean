@@ -1081,19 +1081,23 @@ theorem fold_length_correct {α : Type} {l : List α} :
     rw [foldLength]
     induction l with
     |nil => rw [fold, List.length_nil]
-    |cons n l' ih =>
-      rw [fold, ih, List.length_cons]
+    |cons n l' ih => rw [fold, ih, List.length_cons]
 
 --  ### Exercise (3 stars): fold_map (Manually graded) ⭐⭐⭐
 
 --  We can also define `map` in terms of `fold`. Finish `foldMap` below.
 
-def foldMap {α β : Type} (f : α → β) (l : List α) : List β := sorry
+def foldMap {α β : Type} (f : α → β) (l : List α) : List β :=
+  fold (fun a b => (f a)::b) l []
 
 --  Write down a theorem `fold_map_correct` stating that `foldMap` is
 --  correct, and prove it in Lean.
 
---  FILL IN HERE
+theorem fold_map_correct {α β : Type} {f : α → β} {l : List α} : foldMap f l = map f l := by
+  rw [foldMap]
+  induction l with
+  |nil => rw [fold, map_nil]
+  |cons n l' ih => rw [fold, ih, map_cons]
 
 --  ### Exercise (2 stars): currying (Advanced) ⭐⭐
 

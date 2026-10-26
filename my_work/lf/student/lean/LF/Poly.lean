@@ -788,10 +788,11 @@ theorem test_filterEvenGt7_2 : filterEvenGt7 [5, 2, 6, 19, 129] = [] := rfl
 --  elements in the two sublists should be the same as their order in the
 --  original list.
 
-def partition {α : Type} (test : α → Bool) (l : List α) : List α × List α := sorry
+def partition {α : Type} (test : α → Bool) (l : List α) : List α × List α :=
+  (filter test l, filter (!test ·) l)
 
-theorem test_partition1 : partition (· % 2 != 0) [1, 2, 3, 4, 5] = ([1, 3, 5], [2, 4]) := sorry
-theorem test_partition2 : partition (fun _ => false) [5, 9, 0] = ([], [5, 9, 0]) := sorry
+theorem test_partition1 : partition (· % 2 != 0) [1, 2, 3, 4, 5] = ([1, 3, 5], [2, 4]) := rfl
+theorem test_partition2 : partition (fun _ => false) [5, 9, 0] = ([], [5, 9, 0]) := rfl
 
 --  ### Map
 
